@@ -1,0 +1,281 @@
+[
+  {
+    "path": "assets/fonts",
+    "files": [
+      {
+        "type": "font",
+        "key": "FONT_PRESS_START_2P",
+        "url": "Press_Start_2P/PressStart2P-Regular.ttf",
+        "format": "truetype"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/hud",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "HUD_NUMBERS",
+        "textureURL": "heart_and_hud_numbers.png",
+        "atlasURL": "heart_and_hud_numbers.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/ui",
+    "files": [
+      {
+        "type": "image",
+        "key": "UI_DIALOG",
+        "url": "dialog_ui.png"
+      },
+      {
+        "type": "image",
+        "key": "UI_CURSOR",
+        "url": "cursor_white.png"
+      },
+      {
+        "type": "spritesheet",
+        "key": "UI_ICONS",
+        "url": "icons.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      }
+    ]
+  },
+  {
+    "path": "assets/images/player",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "PLAYERTMP",
+        "textureURL": "main_green.png",
+        "atlasURL": "main_green.json"
+      },
+      {
+        "type": "spritesheet",
+        "key": "DAGGER",
+        "url": "dagger.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER",
+        "textureURL": "idle-sheet.png",
+        "atlasURL": "idle.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_WALK",
+        "textureURL": "walk-sheet.png",
+        "atlasURL": "walk.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_AXE",
+        "textureURL": "axe_sheet.png",
+        "atlasURL": "axe.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/levels/common",
+    "files": [
+      {
+        "type": "image",
+        "key": "COLLISION",
+        "url": "collision.png"
+      },
+      {
+        "type": "atlas",
+        "key": "DUNGEON_OBJECTS",
+        "textureURL": "dungeon_objects.png",
+        "atlasURL": "dungeon_objects.json"
+      },
+      {
+        "type": "image",
+        "key": "POT",
+        "url": "pot.png"
+      },
+      {
+        "type": "spritesheet",
+        "key": "POT_BREAK",
+        "url": "pot_break.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      }
+    ]
+  },
+  {
+    "path": "assets/images/object",
+    "files": [
+      {
+        "type": "spritesheet",
+        "key": "MAPLE_TREE",
+        "url": "maple_tree.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "json",
+        "key": "MAPLE_TREE_DEFINITIONS",
+        "url": "maple_tree.json"
+      },
+      {
+        "type": "json",
+        "key": "MAHOGANY_TREE_DEFINITIONS",
+        "url": "mahogany_tree.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "MAHOGANY_ANIMATION",
+        "textureURL": "mahogany_animation.png",
+        "atlasURL": "mahogany_animation.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/enemies",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "SPIDER",
+        "textureURL": "spider.png",
+        "atlasURL": "spider.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "WISP",
+        "textureURL": "wisp.png",
+        "atlasURL": "wisp.json"
+      },
+      {
+        "type": "spritesheet",
+        "key": "ENEMY_DEATH",
+        "url": "enemy_death.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "aseprite",
+        "key": "DROW",
+        "textureURL": "drow.png",
+        "atlasURL": "drow.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/levels/dungeon_1",
+    "files": [
+      {
+        "type": "image",
+        "key": "DUNGEON_1_BACKGROUND",
+        "url": "dungeon_1_background.png"
+      },
+      {
+        "type": "image",
+        "key": "DUNGEON_1_FOREGROUND",
+        "url": "dungeon_1_foreground.png"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "DUNGEON_1_LEVEL",
+        "url": "dungeon_1.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/levels/world",
+    "files": [
+      {
+        "type": "image",
+        "key": "WORLD_BACKGROUND",
+        "url": "world_background.png"
+      },
+      {
+        "type": "image",
+        "key": "WORLD_FOREGROUND",
+        "url": "world_foreground.png"
+      },
+
+      {
+        "type": "image",
+        "key": "WORLD_SUMMER_GRASS",
+        "url": "tilesets/Tileset Grass Summer.png"
+      },
+      {
+        "type": "image",
+        "key": "WORLD_SUMMER_GRASS_WATER",
+        "url": "tilesets/Tileset Grass Water Summer.png"
+      },
+      {
+        "type": "image",
+        "key": "WORLD_WATER",
+        "url": "tilesets/Water Ground animations tiles.png"
+      },
+      {
+        "type": "image",
+        "key": "WORLD_WATERFALL",
+        "url": "tilesets/Summer Waterfall.png"
+      },
+      {
+        "type": "image",
+        "key": "WORLD_SUMMER_CLIFF",
+        "url": "tilesets/Tileset Grass Cliff Tileset Summer.png"
+      },
+      {
+        "type": "spritesheet",
+        "key": "WORLD_MAHOGANY_TREE",
+        "url": "tilesets/Mahogany Tree.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "image",
+        "key": "WORLD_TILESET1",
+        "url": "world_tileset1.png"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "WORLD_MAP",
+        "url": "worldtile.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "WORLD_MAP2",
+        "url": "system_map.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/audio/sfx",
+    "files": [
+      {
+          "type": "audio",
+          "key": "CHOPPING_WOOD",
+          "url": "action/chopping_wood.wav"
+      },
+      {
+          "type": "audio",
+          "key": "AXE_SWING",
+          "url": "action/axe_swing.wav"
+      },
+      {
+          "type": "audio",
+          "key": "TREE_FALLING",
+          "url": "object/tree_falling.mp3"
+      },
+      {
+          "type": "audio",
+          "key": "POPPING",
+          "url": "object/popping.mp3"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/object/item",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "WOOD_LOG_ANIMATION",
+        "textureURL": "wood_log_sheet.png",
+        "atlasURL": "wood_log.json"
+      }
+    ]
+  }
+]

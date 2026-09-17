@@ -1,0 +1,71 @@
+{
+  "tree_seed": {
+    "chopCount": 5,
+    "dropCount": 2,
+    "tiles": [
+      [20, 21]
+    ],
+    "footprint": {
+      "width": 8,
+      "height": 8,
+      "offsetX": 4,
+      "offsetY": 2
+    }
+  },
+  "tree_small": {
+    "chopCount": 5,
+    "dropCount": 2,
+    "tiles": [
+      [22, 23]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 16,
+      "offsetX": 8,
+      "offsetY": 0
+    }
+  },
+  "tree_medium": {
+    "chopCount": 5,
+    "dropCount": 2,
+    "tiles": [
+      [54, 55],
+      [30, 31],
+      [6, 7]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 16,
+      "offsetX": 8,
+      "offsetY": -16
+    }
+  },
+  "tree_large": {
+    "chopCount": 5,
+    "dropCount": 2,
+    "tiles": [
+      [26, 27],
+      [16, 17],
+      [6, 7]
+    ],
+    "footprint": {
+      "width": 8,
+      "height": 8,
+      "offsetX": 12,
+      "offsetY": 6
+    }
+  },
+  "chopped_tree": {
+    "chopCount": 5,
+    "dropCount": 2,
+    "tiles": [
+      [64, 65]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 16,
+      "offsetX": 8,
+      "offsetY": -16
+    }
+  }
+}
