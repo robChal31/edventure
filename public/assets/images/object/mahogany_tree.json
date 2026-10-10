@@ -12,7 +12,7 @@
       "offsetY": 2
     }
   },
-  "tree_small": {
+  "mahogany_tree_small": {
     "chopCount": 5,
     "dropCount": 2,
     "tiles": [
@@ -25,9 +25,24 @@
       "offsetY": 0
     }
   },
-  "tree_medium": {
+  "mahogany_tree_medium": {
     "chopCount": 5,
     "dropCount": 2,
+    "tiles": [
+      [52, 53],
+      [28, 29],
+      [4, 5]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 16,
+      "offsetX": 8,
+      "offsetY": -14
+    }
+  },
+  "mahogany_tree_large": {
+    "chopCount": 5,
+    "dropCount": 3,
     "tiles": [
       [54, 55],
       [30, 31],
@@ -40,19 +55,34 @@
       "offsetY": -16
     }
   },
-  "tree_large": {
+  "no_leaf_mahogany": {
     "chopCount": 5,
-    "dropCount": 2,
+    "dropCount": 3,
     "tiles": [
-      [26, 27],
-      [16, 17],
-      [6, 7]
+      [62, 63],
+      [38, 39],
+      [14, 15]
     ],
     "footprint": {
-      "width": 8,
-      "height": 8,
-      "offsetX": 12,
-      "offsetY": 6
+      "width": 16,
+      "height": 16,
+      "offsetX": 8,
+      "offsetY": -16
+    }
+  },
+  "dark_green_mahogany_tree_large": {
+    "chopCount": 5,
+    "dropCount": 3,
+    "tiles": [
+      [60, 61],
+      [36, 37],
+      [12, 13]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 16,
+      "offsetX": 8,
+      "offsetY": -16
     }
   },
   "chopped_tree": {

@@ -1,21 +1,32 @@
 
 import { ASSET_KEYS } from "../common/assets";
-import { TreeDefinitions } from "../common/types/object";
 import { KeyboardComponent } from "../components/input/keyboard-component";
 import { WORLD_CONFIG } from "../config/world-config";
 import { Player } from "../game-objects/player/player";
-import { Tree } from "../game-objects/tree";
+import { ObjectVisibilitySystem } from "../systems/object-visibility-system";
+import { WorldMap } from "../world/world-map";
+import { WorldObjectLoader } from "../world/world-object-loader";
 import { SCENE_KEYS } from "./scene-keys";
 import Phaser from "phaser";
+import { InteractionSystem } from "../systems/interaction-system";
+import { PlayerAction } from "../common/types";
+import { CollisionSystem } from "../systems/collision-system";
+import { VILLAGE_MAP } from "../world/maps/village-map";
+import { WorldObjectFactory } from "../world/world-object-factory";
+import { WorldObjectRegistry } from "../world/world-object-registry";
+import { MapAnimationLoader } from "../world/map-animation-loader";
 
 export class GameScene extends Phaser.Scene {
     #controls!: KeyboardComponent;
     #player!: Player;
-    #map!: Phaser.Tilemaps.Tilemap;
-    #cursors!: Phaser.Types.Input.Keyboard.CursorKeys | null;
-    #waterLayer!: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer;
-    #trees: Tree[] = [];
-
+    #worldObjectLoader!: WorldObjectLoader;
+    #worldObjectFactory!: WorldObjectFactory;
+    #worldObjectRegistry!: WorldObjectRegistry;
+    #worldMap!: WorldMap;
+    #objectVisibilitySystem!: ObjectVisibilitySystem;
+    #interactionSystem!: InteractionSystem;
+    #collisionSystem!: CollisionSystem;
+    #mapAnimationLoader!: MapAnimationLoader;
     constructor() {
         super({
             key: SCENE_KEYS.GAME_SCENE,
@@ -28,14 +39,15 @@ export class GameScene extends Phaser.Scene {
 
     public create(): void {
         this.#initControls();
-        this.#initMap();
+        this.#initWorld();
+        this.#initMapAnimations();
+        this.#initObjects();
         this.#initCamera();
         this.#initPlayer();
-        this.#initInput();
-        this.#initCollisions();
+        this.#initSystems();
+        this.#collisionSystem.setup();
         this.#initDebug();
     }
-
     // ─────────────────────────────────────────
     // CONTROLS
     // ─────────────────────────────────────────
@@ -50,137 +62,63 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ─────────────────────────────────────────
-    // MAP
+    // WORLD
     // ─────────────────────────────────────────
 
-    #initMap(): void {
-        this.#map = this.make.tilemap({
-            key: ASSET_KEYS.WORLD_MAP2,
-        });
-
-        // ─────────────────────────────────────────
-        // TILESETS
-        // ─────────────────────────────────────────
-
-        const summerGrass =
-            this.#map.addTilesetImage(
-                "summer_grass",
-                ASSET_KEYS.WORLD_SUMMER_GRASS
-            );
-
-        const summerGrassWater =
-            this.#map.addTilesetImage(
-                "summer_grass_water",
-                ASSET_KEYS.WORLD_SUMMER_GRASS_WATER
-            );
-
-        const water =
-            this.#map.addTilesetImage(
-                "water",
-                ASSET_KEYS.WORLD_WATER
-            );
-
-        const waterfall =
-            this.#map.addTilesetImage(
-                "waterfall",
-                ASSET_KEYS.WORLD_WATERFALL
-            );
-
-        const summerCliff =
-            this.#map.addTilesetImage(
-                "summer_cliff",
-                ASSET_KEYS.WORLD_SUMMER_CLIFF
-            );
-
-        const definitions: TreeDefinitions = this.cache.json.get("MAHOGANY_TREE_DEFINITIONS");
-
-        if (!summerGrass || !summerGrassWater || !water || !waterfall || !summerCliff) {
-            console.error("Failed to load one or more map tilesets");
-            return;
-        }
-
-        const tilesets = [
-            summerGrass,
-            summerGrassWater,
-            water,
-            waterfall,
-            summerCliff,
-        ];
-
-        // ─────────────────────────────────────────
-        // CREATE MAP LAYERS
-        // ─────────────────────────────────────────
-
-        this.#map.layers.forEach(
-            (layerData) => {
-
-                const layer =
-                    this.#map.createLayer(
-                        layerData.name,
-                        tilesets,
-                        0,
-                        0
-                    );
-
-                if (!layer) {
-                    console.error(
-                        "Failed to create layer:",
-                        layerData.name
-                    );
-
-                    return;
-                }
-
-                layer.setScale(
-                    WORLD_CONFIG.scale
-                );
-
-                if (layerData.name === "water") {
-                    this.#waterLayer = layer;
-                }
-            }
-        );
-
-        const treeObjectLayer = this.#map.getObjectLayer("mahogany_tree");
-
-        treeObjectLayer?.objects.forEach((object) => {
-            if (object.gid == null || object.x == null || object.y == null) {
-                return;
-            }
-            const tree = new Tree(
-                this,
-                ASSET_KEYS.WORLD_MAHOGANY_TREE,
-                object.x * WORLD_CONFIG.scale,
-                object.y * WORLD_CONFIG.scale,
-                WORLD_CONFIG.scale,
-                definitions.tree_medium,
-                definitions.chopped_tree,
-            );
-
-            this.#trees.push(tree);
-        });
-
-        this.#waterLayer.setCollisionByExclusion([-1]);
-        // ─────────────────────────────────────────
-        // PHYSICS WORLD BOUNDS
-        // ─────────────────────────────────────────
-
-        this.physics.world.setBounds(
-            0,
-            0,
-            this.#map.widthInPixels *
-                WORLD_CONFIG.scale,
-            this.#map.heightInPixels *
-                WORLD_CONFIG.scale
+    #initWorld(): void {
+        this.#worldMap = new WorldMap(
+            this,
+            VILLAGE_MAP
         );
     }
 
+    #initSystems(): void {
+        this.#objectVisibilitySystem =
+            new ObjectVisibilitySystem(
+                this.#player,
+                this.#worldObjectRegistry.visibleObjects
+            );
+
+        this.#interactionSystem =
+            new InteractionSystem(
+                this.#player,
+                this.#worldObjectRegistry.interactables
+            );
+
+        this.#collisionSystem =
+            new CollisionSystem(
+                this,
+                this.#player,
+                this.#worldMap,
+                this.#worldObjectRegistry.collidables
+            );
+    }
     // ─────────────────────────────────────────
     // CAMERA
     // ─────────────────────────────────────────
 
     #initCamera(): void {
-        this.cameras.main.setBounds(0, 0, this.#map.widthInPixels * WORLD_CONFIG.scale, this.#map.heightInPixels * WORLD_CONFIG.scale);
+        const map = this.#worldMap.map;
+        const worldWidth = map.widthInPixels * WORLD_CONFIG.scale;
+        const worldHeight = map.heightInPixels * WORLD_CONFIG.scale;
+
+        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+
+        const applyZoom = () => {
+            const zoomX = this.scale.width / worldWidth;
+            const zoomY = this.scale.height / worldHeight;
+
+            // COVER — pakai max, TANPA floor
+            const zoom = Math.max(zoomX, zoomY);
+
+            this.cameras.main.setZoom(zoom);
+        };
+
+        applyZoom();
+        this.scale.on("resize", applyZoom);
+        this.events.once("shutdown", () => {
+            this.scale.off("resize", applyZoom);
+        });
     }
 
     // ─────────────────────────────────────────
@@ -188,9 +126,11 @@ export class GameScene extends Phaser.Scene {
     // ─────────────────────────────────────────
 
     #initPlayer(): void {
-        const spawnX = (this.#map.widthInPixels * WORLD_CONFIG.scale)/2;
+       const map = this.#worldMap.map;
 
-        const spawnY = (this.#map.heightInPixels * WORLD_CONFIG.scale)/2;
+        const spawnX = (map.widthInPixels * WORLD_CONFIG.scale) / 2;
+
+        const spawnY = (map.heightInPixels * WORLD_CONFIG.scale) / 2;
 
         this.#player = new Player({
             scene: this,
@@ -205,13 +145,16 @@ export class GameScene extends Phaser.Scene {
             controls: this.#controls,
 
             onAxeAction: () => {
-                this.#chopTree();
+                this.#handlePlayerInteraction({
+                    type: "axe",
+                    onMiss: () => {
+                        this.sound.play(ASSET_KEYS.AXE_SWING);
+                    },
+                });
             },
         });
 
         this.#player.setScale(WORLD_CONFIG.scale);
-
-        this.#player.setDepth(this.#player.y);
 
         this.cameras.main.startFollow(
             this.#player,
@@ -219,160 +162,72 @@ export class GameScene extends Phaser.Scene {
             0.08,
             0.08
         );
-
-        this.#player.setCollideWorldBounds(true);
     }
 
-    // ─────────────────────────────────────────
-    // INPUT
-    // ─────────────────────────────────────────
-
-    #initInput(): void {
-        this.#cursors = this.input.keyboard ? this.input.keyboard.createCursorKeys() : null;
+    #handlePlayerInteraction(action: PlayerAction): void {
+        this.#interactionSystem.interact(action);
     }
 
+    #initObjects(): void {
+        this.#worldObjectFactory =
+            new WorldObjectFactory(this);
 
-    #initCollisions(): void {
-        // ★ Collision untuk ground2 (tebing / rintangan)
-        const cliffIndexes = [1389, 1391, 1392, 1398, 1399, 1437, 1446, 1464, 1488, 1510, 1512, 1533, 1534];
-        cliffIndexes.forEach((index) => {
-            this.#waterLayer.setCollision(index);
-        });
+        this.#worldObjectLoader =
+            new WorldObjectLoader(
+                VILLAGE_MAP,
+                this.#worldObjectFactory
+            );
 
-        // Player vs water
-        this.physics.add.collider(this.#player, this.#waterLayer);
+        const objects =
+            this.#worldObjectLoader.loadObjects(
+                this.#worldMap.map
+            );
 
-        this.#trees.forEach((tree) => {
-            if (tree.collisionBody) {
-                this.physics.add.collider(
-                    this.#player,
-                    tree.collisionBody
-                );
+        this.#worldObjectRegistry =
+            new WorldObjectRegistry();
+
+        this.#worldObjectRegistry.registerAll(
+            objects
+        );
+    }
+
+    #initMapAnimations(): void {
+        this.#mapAnimationLoader =
+            new MapAnimationLoader(
+                this,
+                VILLAGE_MAP
+            );
+
+        this.#mapAnimationLoader.load(
+            this.#worldMap.map
+        );
+    }
+
+    #initDebug(): void {
+        this.#worldMap.waterLayer.renderDebug(
+            this.add.graphics(),
+            {
+                tileColor: null,
+                collidingTileColor: new Phaser.Display.Color(168, 85, 247, 80),
+                faceColor: new Phaser.Display.Color(168, 85, 247, 255),
             }
-        });
-
-        // Opsional: Player vs world bounds (biar ga keluar map)
-        this.#player.setCollideWorldBounds(true);
+        );
     }
 
     // ─────────────────────────────────────────
     // UPDATE
     // ─────────────────────────────────────────
-
     public update(): void {
-        const speed = 200;
-
-        const body =
-            this.#player.body as
-                | Phaser.Physics.Arcade.Body
-                | null;
-
-        if (
-            !body ||
-            !this.#cursors
-        ) {
-            return;
-        }
-
-        body.setVelocity(0);
-
-        if (
-            this.#cursors.left.isDown
-        ) {
-            body.setVelocityX(
-                -speed
-            );
-        } else if (
-            this.#cursors.right.isDown
-        ) {
-            body.setVelocityX(
-                speed
-            );
-        }
-
-        if (
-            this.#cursors.up.isDown
-        ) {
-            body.setVelocityY(
-                -speed
-            );
-        } else if (
-            this.#cursors.down.isDown
-        ) {
-            body.setVelocityY(
-                speed
-            );
-        }
-
-        this.#player.setDepth(
-            this.#player.y
-        );
-
-        this.#trees.forEach((tree) => {
-            tree.setDepth(tree.y);
-
-            const treeBounds = tree.getBounds();
-            const playerBounds = this.#player.getBounds();
-
-            // Area deteksi dibuat lebih kecil, fokus ke bagian bawah tree
-            const overlapLeft = treeBounds.left + 8;
-            const overlapRight = treeBounds.right - 8;
-            const overlapTop = treeBounds.top + 32;
-            const overlapBottom = treeBounds.bottom;
-
-            const playerX = playerBounds.centerX;
-            const playerY = playerBounds.bottom;
-
-            const isBehindTree =
-                playerX >= overlapLeft &&
-                playerX <= overlapRight &&
-                playerY >= overlapTop &&
-                playerY <= overlapBottom;
-
-            tree.setAlpha(isBehindTree ? 0.5 : 1);
-        });
-        
-    }
-
-    #initDebug(): void {
-        this.#waterLayer.renderDebug(
-            this.add.graphics(),
-            {
-                tileColor: 0x00ff00,
-                collidingTileColor: 0xff0000,
-                faceColor: 0xffffff,
+        this.#player.setDepth(9999);
+        this.#worldObjectRegistry.objects.forEach(
+            ({ depthSortable }) => {
+                depthSortable?.setDepth(
+                    depthSortable.y
+                );
             }
         );
-    }
 
-    #chopTree(): void {
-        const playerX = this.#player.x;
-        const playerY = this.#player.y;
-
-        const chopDistance = 32;
-
-        let targetX = playerX;
-        let targetY = playerY;
-
-        switch (this.#player.direction) {
-            case "up":
-                targetY -= chopDistance;
-                break;
-
-            case "down":
-                targetY += chopDistance;
-                break;
-
-            case "side":
-                targetX += this.#player.flipX ? -chopDistance : chopDistance;
-                break;
-        }
-
-        const targetTree = this.#trees.find(tree =>
-            tree.containsPoint(targetX, targetY)
-        );
-
-        targetTree ? targetTree?.chop() : this.#player.scene.sound.play(ASSET_KEYS.AXE_SWING);
+        this.#objectVisibilitySystem.update();
     }
 }
 

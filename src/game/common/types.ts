@@ -21,10 +21,24 @@ export type CollisionConfig = {
     };
 
 };
-
 export type FootprintConfig = {
     width: number;
     height: number;
     offsetX: number;
     offsetY: number;
 };
+export type VisibilityConfig = {
+    offsetLeft?: number;
+    offsetRight?: number;
+    offsetTop?: number;
+    offsetBottom?: number;
+    alpha?: number;
+};
+export type PlayerAction = {
+    type: "axe" | "sword" | "pickaxe";
+    onMiss: () => void;
+};
+export interface DepthSortable {
+    y: number;
+    setDepth(value: number): this;
+}

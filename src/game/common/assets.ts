@@ -38,12 +38,17 @@ export const ASSET_KEYS = {
   WORLD_WATER: 'WORLD_WATER',
   WORLD_WATERFALL: 'WORLD_WATERFALL',
   WORLD_SUMMER_CLIFF: 'WORLD_SUMMER_CLIFF',
+  WORLD_ALL_PROPS_SEASON: 'WORLD_ALL_PROPS_SEASON',
   WORLD_MAHOGANY_TREE: 'WORLD_MAHOGANY_TREE',
   MAPLE_TREE: 'MAPLE_TREE',
+
+  //TERAIN
+  WATERFALL_ANIMATION: 'WATERFALL_ANIMATION',
 
   //OBJECTS
   MAHOGANY_ANIMATION: 'MAHOGANY_ANIMATION',
   WOOD_LOG_ANIMATION: 'WOOD_LOG_ANIMATION',
+  WATER_PROPS_SUMMER_ANIMATION: 'WATER_PROPS_SUMMER_ANIMATION',
 
   //SFX
   CHOPPING_WOOD: 'CHOPPING_WOOD',
@@ -198,8 +203,33 @@ export const HEART_TEXTURE_FRAME = {
 } as const;
 
 export const MAHOGANY_ANIMATION_KEYS = {
-    LIGHT_GREEN: 'light_green_mahogany',
+    MAHOGANY_TREE_SMALL_ANIMATION: 'mahogany_tree_small',
+    MAHOGANY_TREE_MEDIUM_ANIMATION: 'mahogany_tree_medium',
+    MAHOGANY_TREE_LARGE_ANIMATION: 'mahogany_tree_large',
+    MAHOGANY_NO_LEAF_ANIMATION: 'no_leaf_mahogany',
+    MAHOGANY_DARK_GREEN_TREE_LARGE_ANIMATION: 'dark_green_mahogany_tree_large'
 } as const;
+
+export const WATERFALL_ANIMATION_KEYS = {
+  SUMMER_WATERFALL_ANIMATION: 'summer_waterfal',
+}
+
+export const WATER_PROPS_SUMMER_ANIMATION_KEYS = {
+  WHITE_LOTUS: 'white_lotus',
+  WATER_STONE4: 'water_stone4',
+  BLUE_LOTUS: 'blue_lotus',
+  ORANGE_LOTUS: 'orange_lotus',
+  WATER_STONE1: 'water_stone1',
+  LOTUS_LEAF1: 'lotus_leaf1',
+  WATER_STONE2: 'water_stone2',
+  LOTUS_LEAF2: 'lotus_leaf2',
+  WATER_STONE3: 'water_stone3',
+  LOTUS_FLOWER: 'lotus_flower',
+  WATER_GRASS1: 'water_grass1',
+  WATER_GRASS2: 'water_grass2',
+  WATER_LAVENDER_FLOAT: 'water_lavender_float',
+  WATER_LAVENDER: 'water_lavender',
+}
 
 export const WOOD_LOG_ANIMATION_KEYS = {
   LIGHT_ROUND_LOG: 'light_round_log'

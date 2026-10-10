@@ -220,6 +220,11 @@
         "url": "tilesets/Tileset Grass Cliff Tileset Summer.png"
       },
       {
+        "type": "image",
+        "key": "WORLD_ALL_PROPS_SEASON",
+        "url": "tilesets/ALL props seasons.png"
+      },
+      {
         "type": "spritesheet",
         "key": "WORLD_MAHOGANY_TREE",
         "url": "tilesets/Mahogany Tree.png",
@@ -275,6 +280,28 @@
         "key": "WOOD_LOG_ANIMATION",
         "textureURL": "wood_log_sheet.png",
         "atlasURL": "wood_log.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/object/water_props",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "WATER_PROPS_SUMMER_ANIMATION",
+        "textureURL": "water_props_summerr_sheet.png",
+        "atlasURL": "water_props_summer.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/images/levels/world/terain",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "WATERFALL_ANIMATION",
+        "textureURL": "summer_waterfal_sheet.png",
+        "atlasURL": "summer_waterfall.json"
       }
     ]
   }

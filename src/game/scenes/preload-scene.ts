@@ -25,5 +25,7 @@ export class PreloadScene extends Phaser.Scene {
         this.anims.createFromAseprite(ASSET_KEYS.PLAYER_AXE);
         this.anims.createFromAseprite(ASSET_KEYS.MAHOGANY_ANIMATION);
         this.anims.createFromAseprite(ASSET_KEYS.WOOD_LOG_ANIMATION);
+        this.anims.createFromAseprite(ASSET_KEYS.WATERFALL_ANIMATION);
+        this.anims.createFromAseprite(ASSET_KEYS.WATER_PROPS_SUMMER_ANIMATION);
     }
 }

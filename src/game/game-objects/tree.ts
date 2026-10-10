@@ -1,19 +1,46 @@
-import Phaser from 'phaser';
-import { FootprintConfig } from '../common/types';
-import { ASSET_KEYS, MAHOGANY_ANIMATION_KEYS } from '../common/assets';
-import { TreeDefinition } from '../common/types/object';
-import { ItemSpawn } from './item/item_spawn';
+import Phaser from "phaser";
 
-export class Tree extends Phaser.GameObjects.Container {
+import { FootprintConfig } from "../common/types";
+import {
+    ASSET_KEYS,
+    MAHOGANY_ANIMATION_KEYS,
+} from "../common/assets";
+import {
+    TreeAnimationKey,
+    TreeDefinition,
+} from "../common/types/object";
+import {
+    Interactable,
+    InteractionContext,
+} from "../common/types/interaction";
+import { Collidable } from "../common/types/collision";
+import { VisibleObject } from "../common/types/world-object";
+import { WORLD_CONFIG } from "../config/world-config";
+import { DropSystem } from "../components/game-object/item/drop-system";
+
+export class Tree
+    extends Phaser.GameObjects.Container
+    implements Interactable, Collidable, VisibleObject
+{
     #animation!: Phaser.GameObjects.Sprite;
     #staticTiles: Phaser.GameObjects.Image[] = [];
 
     #chopCount = 0;
     #chopLimit: number;
+
     #treeDefinition: TreeDefinition;
     #choppedTree?: TreeDefinition;
+
     #isChopping = false;
     #isChopped = false;
+
+    #dropSystem: DropSystem;
+    #scale: number;
+    #treeAnimation: TreeAnimationKey =
+        MAHOGANY_ANIMATION_KEYS.MAHOGANY_TREE_SMALL_ANIMATION;
+
+    #interactionDebug?: Phaser.GameObjects.Rectangle;
+
     public collisionBody: Phaser.GameObjects.Rectangle | null = null;
 
     constructor(
@@ -23,16 +50,151 @@ export class Tree extends Phaser.GameObjects.Container {
         y: number,
         scale: number,
         treeDefinition: TreeDefinition,
-        choppedTree?: TreeDefinition
+        animationKey: TreeAnimationKey,
+        choppedTree?: TreeDefinition,
     ) {
         super(scene, x, y);
 
-        const tileSize = 16;
-        const visualOffsetY = -tileSize;
-        const treeHeight = treeDefinition.tiles.length * tileSize;
+        this.#treeDefinition = treeDefinition;
         this.#choppedTree = choppedTree;
         this.#chopLimit = treeDefinition.chopCount;
-        this.#treeDefinition = treeDefinition;
+        this.#treeAnimation = animationKey;
+        this.#dropSystem = new DropSystem(scene);
+
+        this.setScale(scale);
+
+        this.#createAnimation(scene);
+        this.#createStaticTiles(scene, image, treeDefinition);
+
+        scene.add.existing(this);
+        this.#scale = scale;
+        this.#createCollisionBody(
+            scene,
+            treeDefinition.footprint,
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    // Interaction
+    // -------------------------------------------------------------------------
+
+    public interact(context: InteractionContext): void {
+        if (context.action.type !== "axe") {
+            return;
+        }
+
+        this.chop();
+    }
+
+    public getInteractionBounds(): Phaser.Geom.Rectangle {
+        const bounds = this.collisionBody?.getBounds();
+
+        if (!bounds) {
+            return new Phaser.Geom.Rectangle();
+        }
+
+        const padding = 4;
+
+        return new Phaser.Geom.Rectangle(
+            bounds.x - padding,
+            bounds.y - padding,
+            bounds.width + padding * 2,
+            bounds.height + padding * 2
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    // Chop
+    // -------------------------------------------------------------------------
+
+    public chop(): void {
+        if (this.#isChopped || this.#isChopping) {
+            return;
+        }
+
+        this.scene.sound.play(ASSET_KEYS.CHOPPING_WOOD);
+
+        this.#isChopping = true;
+        this.#chopCount++;
+
+        this.#playChopAnimation(() => {
+            this.#isChopping = false;
+
+            if (this.#chopCount >= this.#chopLimit) {
+                this.#setChopped();
+            }
+        });
+    }
+
+    #playChopAnimation(onComplete?: () => void): void {
+        this.#setStaticTilesVisible(false);
+
+        this.#animation.setVisible(true);
+        this.#animation.play(this.#treeAnimation);
+
+        this.#animation.once(
+            Phaser.Animations.Events.ANIMATION_COMPLETE,
+            () => {
+                this.#animation.stop();
+                this.#animation.setVisible(false);
+
+                this.#setStaticTilesVisible(true);
+
+                onComplete?.();
+            }
+        );
+    }
+
+    #setChopped(): void {
+        if (this.#isChopped || !this.#choppedTree) {
+            return;
+        }
+
+        this.#isChopped = true;
+
+        this.scene.sound.play(ASSET_KEYS.TREE_FALLING);
+
+        const oldTiles = [...this.#staticTiles];
+
+        this.scene.tweens.add({
+            targets: oldTiles,
+            x: "+=2",
+            duration: 60,
+            yoyo: true,
+            repeat: 2,
+            ease: "Sine.inOut",
+
+            onComplete: () => {
+                this.#replaceWithChoppedTree(oldTiles);
+            },
+        });
+    }
+
+    #replaceWithChoppedTree(
+        oldTiles: Phaser.GameObjects.Image[]
+    ): void {
+        oldTiles.forEach(tile => tile.destroy());
+
+        this.#staticTiles = [];
+
+        this.#createChoppedTiles();
+
+        this.#applyCollisionFootprint(
+            this.#choppedTree!.footprint, this.#scale
+        );
+
+        this.#spawnItems();
+    }
+
+    // -------------------------------------------------------------------------
+    // Visual
+    // -------------------------------------------------------------------------
+
+    #createAnimation(scene: Phaser.Scene): void {
+        const tileSize = WORLD_CONFIG.tileSize;
+        const treeHeight = this.#treeDefinition.tiles.length * tileSize;
+        const visualOffsetY = -tileSize;
+
         this.#animation = scene.add.sprite(
             0,
             visualOffsetY - (treeHeight - tileSize),
@@ -43,107 +205,22 @@ export class Tree extends Phaser.GameObjects.Container {
         this.#animation.setVisible(false);
 
         this.add(this.#animation);
-        this.setScale(scale)
-        treeDefinition.tiles.forEach((row, rowIndex) => {
+    }
+
+    #createStaticTiles(
+        scene: Phaser.Scene,
+        image: string,
+        definition: TreeDefinition
+    ): void {
+        const tileSize = WORLD_CONFIG.tileSize;
+        const visualOffsetY = -tileSize;
+
+        definition.tiles.forEach((row, rowIndex) => {
             row.forEach((frame, colIndex) => {
                 const tile = scene.add.image(
                     colIndex * tileSize,
                     -rowIndex * tileSize + visualOffsetY,
                     image,
-                    frame
-                )
-                tile.setOrigin(0, 0);
-                this.add(tile);
-                this.#staticTiles.push(tile);
-            })
-        })
-
-        scene.add.existing(this);
-        const footprints = treeDefinition.footprint;
-        if(footprints) {
-            const scaledOffsetX = footprints.offsetX * scale;
-            const scaledOffsetY = footprints.offsetY * scale;
-            const scaledWidth = footprints.width * scale;
-            const scaledHeight = footprints.height * scale;
-
-            this.collisionBody = scene.add.rectangle(
-                x + scaledOffsetX,
-                y + scaledOffsetY,
-                scaledWidth,
-                scaledHeight
-            )
-
-            this.collisionBody.setOrigin(0, 0);
-            this.collisionBody.setVisible(false);
-            // Tree tidak boleh terdorong oleh player
-            scene.physics.add.existing(this.collisionBody, true);
-        }
-    }
-
-    public playChopAnimation(onComplete?: () => void): void {
-        this.#staticTiles.forEach(tile => tile.setVisible(false));
-
-        this.#animation.setVisible(true);
-
-        this.#animation.play(
-            MAHOGANY_ANIMATION_KEYS.LIGHT_GREEN
-        );
-
-        this.#animation.once(
-            Phaser.Animations.Events.ANIMATION_COMPLETE,
-            () => {
-                this.#animation.stop();
-                this.#animation.setVisible(false);
-
-                this.#staticTiles.forEach(tile => tile.setVisible(true));
-
-                onComplete?.();
-            }
-        );
-    }
-
-    public containsPoint(x: number, y: number): boolean {
-        return this.collisionBody?.getBounds().contains(x, y) ?? false;
-    }
-
-    public chop(): void {
-        if (this.#isChopped || this.#isChopping) {
-            return;
-        }
-        this.scene.sound.play(ASSET_KEYS.CHOPPING_WOOD);
-        this.#isChopping = true;
-        this.#chopCount++;
-
-        this.playChopAnimation(() => {
-            this.#isChopping = false;
-
-            if (this.#chopCount >= this.#chopLimit) {
-                this.setChopped();
-            }
-        });
-    }
-
-    private setChopped(): void {
-        if (!this.#choppedTree) {
-            return;
-        }
-        setTimeout(() => {
-            
-        }, 1000);
-        this.#staticTiles.forEach(tile => tile.destroy());
-        this.#staticTiles = [];
-
-        const tiles = this.#choppedTree.tiles;
-
-        const tileSize = 16;
-        const visualOffsetY = -tileSize;
-        this.scene.sound.play(ASSET_KEYS.TREE_FALLING);
-        tiles.forEach((row, rowIndex) => {
-            row.forEach((frame, colIndex) => {
-                const tile = this.scene.add.image(
-                    colIndex * tileSize,
-                    -rowIndex * tileSize + visualOffsetY,
-                    ASSET_KEYS.WORLD_MAHOGANY_TREE,
                     frame
                 );
 
@@ -153,16 +230,77 @@ export class Tree extends Phaser.GameObjects.Container {
                 this.#staticTiles.push(tile);
             });
         });
-
-        this.#isChopped = true;
-        this.updateCollisionBody(
-            this.#choppedTree.footprint
-        );
-
-        this.#spawnItems();
     }
 
-    private updateCollisionBody(footprint: FootprintConfig): void {
+    #createChoppedTiles(): void {
+        if (!this.#choppedTree) {
+            return;
+        }
+
+        const tileSize = WORLD_CONFIG.tileSize;
+        const visualOffsetY = -tileSize;
+
+        this.#choppedTree.tiles.forEach((row, rowIndex) => {
+            row.forEach((frame, colIndex) => {
+                const tile = this.scene.add.image(
+                    colIndex * tileSize,
+                    -rowIndex * tileSize + visualOffsetY - 4,
+                    ASSET_KEYS.WORLD_MAHOGANY_TREE,
+                    frame
+                );
+
+                tile.setOrigin(0, 0);
+                tile.setAlpha(0);
+                tile.setScale(0.95);
+
+                this.add(tile);
+                this.#staticTiles.push(tile);
+
+                this.scene.tweens.add({
+                    targets: tile,
+                    y: "+=4",
+                    alpha: 1,
+                    scale: 1,
+                    duration: 180,
+                    ease: "Back.out",
+                });
+            });
+        });
+    }
+
+    #setStaticTilesVisible(visible: boolean): void {
+        this.#staticTiles.forEach(tile => tile.setVisible(visible));
+    }
+
+    // -------------------------------------------------------------------------
+    // Collision
+    // -------------------------------------------------------------------------
+
+    #createCollisionBody(
+        scene: Phaser.Scene,
+        footprint: FootprintConfig | undefined,
+    ): void {
+        if (!footprint) {
+            return;
+        }
+
+        this.collisionBody = scene.add.rectangle(
+            this.x,
+            this.y,
+            footprint.width * this.#scale,
+            footprint.height * this.#scale
+        );
+
+        this.collisionBody.setOrigin(0, 0);
+        this.collisionBody.setVisible(false);
+
+        scene.physics.add.existing(this.collisionBody, true);
+
+        this.#applyCollisionFootprint(footprint, this.#scale);
+        this.#createInteractionDebug();
+    }
+
+    #applyCollisionFootprint(footprint: FootprintConfig, scale: number): void {
         if (!this.collisionBody?.body) {
             return;
         }
@@ -177,115 +315,52 @@ export class Tree extends Phaser.GameObjects.Container {
             this.y + scaledOffsetY
         );
 
-        const body = this.collisionBody.body as Phaser.Physics.Arcade.StaticBody;
+        const body =
+            this.collisionBody.body as Phaser.Physics.Arcade.StaticBody;
 
-        body.setSize(
-            scaledWidth,
-            scaledHeight
-        );
-
+        body.setSize(scaledWidth, scaledHeight);
         body.position.set(
             this.x + scaledOffsetX,
             this.y + scaledOffsetY
         );
-
         body.updateFromGameObject();
     }
 
-    #spawnItems(): void {
-        const dropCount = this.#treeDefinition.dropCount;
+    // -------------------------------------------------------------------------
+    // Interaction Debug
+    // -------------------------------------------------------------------------
 
+    #createInteractionDebug(): void {
+        const bounds = this.getInteractionBounds();
+
+        this.#interactionDebug = this.scene.add.rectangle(
+            bounds.centerX,
+            bounds.centerY,
+            bounds.width,
+            bounds.height
+        );
+
+        this.#interactionDebug.setOrigin(0.5);
+        this.#interactionDebug.setStrokeStyle(2);
+        this.#interactionDebug.setFillStyle(0x00ff00, 0.15);
+    }
+
+    // -------------------------------------------------------------------------
+    // Drops
+    // -------------------------------------------------------------------------
+
+    #spawnItems(): void {
         if (!this.collisionBody) {
             return;
         }
 
-        const spacing = 10;
-        const edgePadding = 32;
-        const spawnDistance = 8;
-
-        const treeBounds = this.collisionBody.getBounds();
-        const worldBounds = this.scene.physics.world.bounds;
-
-        const directions: ('top' | 'bottom' | 'left' | 'right')[] = [];
-
-        // Tentukan arah yang masih aman dari edge
-        if (treeBounds.left > worldBounds.left + edgePadding) {
-            directions.push('left');
-        }
-
-        if (treeBounds.right < worldBounds.right - edgePadding) {
-            directions.push('right');
-        }
-
-        if (treeBounds.top > worldBounds.top + edgePadding) {
-            directions.push('top');
-        }
-
-        if (treeBounds.bottom < worldBounds.bottom - edgePadding) {
-            directions.push('bottom');
-        }
-
-        // Fallback kalau posisinya sangat dekat semua edge
-        if (directions.length === 0) {
-            directions.push('bottom');
-        }
-
-        const direction = Phaser.Utils.Array.GetRandom(directions);
-
-        let startX = this.x;
-        let startY = this.y;
-
-        const clusterWidth = spacing;
-        const clusterHeight = Math.ceil(dropCount / 2) * spacing;
-
-        switch (direction) {
-            case 'left':
-                startX = treeBounds.left - spawnDistance - clusterWidth;
-                startY = treeBounds.centerY - clusterHeight / 2;
-                break;
-
-            case 'right':
-                startX = treeBounds.right + spawnDistance;
-                startY = treeBounds.centerY - clusterHeight / 2;
-                break;
-
-            case 'top':
-                startX = treeBounds.centerX - clusterWidth / 2;
-                startY = treeBounds.top - spawnDistance - clusterHeight;
-                break;
-
-            case 'bottom':
-                startX = treeBounds.centerX - clusterWidth / 2;
-                startY = treeBounds.bottom + spawnDistance;
-                break;
-        }
-
-        // Random sedikit supaya tidak selalu persis di tengah sisi
-        const randomOffset = 12;
-
-        if (direction === 'left' || direction === 'right') {
-            startY += Phaser.Math.Between(-randomOffset, randomOffset);
-        } else {
-            startX += Phaser.Math.Between(-randomOffset, randomOffset);
-        }
-
-        for (let i = 0; i < dropCount; i++) {
-            const row = Math.floor(i / 2);
-            const col = i % 2;
-
-            const targetX = startX + col * spacing;
-            const targetY = startY + row * spacing;
-
-            const spawnX = this.x;
-            const spawnY = this.y - 8;
-
-            new ItemSpawn(
-                this.scene,
-                spawnX,
-                spawnY,
-                targetX,
-                targetY
-            );
-        }
+        this.#dropSystem.spawn({
+            count: this.#treeDefinition.dropCount,
+            spawnPosition: new Phaser.Math.Vector2(
+                this.x,
+                this.y - 8
+            ),
+            bounds: this.collisionBody.getBounds(),
+        });
     }
 }

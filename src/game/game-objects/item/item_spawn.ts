@@ -21,7 +21,7 @@ export class ItemSpawn extends Phaser.Physics.Arcade.Sprite {
 
         this.setScale(0);
         this.setAlpha(0);
-
+        this.setDepth(10);
         this.play({
             key: WOOD_LOG_ANIMATION_KEYS.LIGHT_ROUND_LOG,
             repeat: -1

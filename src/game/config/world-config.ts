@@ -1,4 +1,4 @@
 export const WORLD_CONFIG = {
-    scale: 2,
+    scale: 1,
     tileSize: 16,
 } as const;

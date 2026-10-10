@@ -1,7 +1,6 @@
 // game-objects/player/player.ts
-import { ASSET_KEYS, PLAYER_ANIMATION_KEYS } from "@/game/common/assets";
+import { PLAYER_ANIMATION_KEYS } from "@/game/common/assets";
 import { PlayerDirection, Position } from "@/game/common/types";
-import { InputComponent } from "@/game/components/input/input-component";
 import { KeyboardComponent } from "@/game/components/input/keyboard-component";
 import Phaser from "phaser";
 
@@ -15,7 +14,7 @@ export type PlayerConfig = {
 }
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-    #controls!: InputComponent
+    #controls!: KeyboardComponent
     #direction: PlayerDirection = "down";
     #isWearingAxe = false;
     #isAxeActionPlaying = false;
@@ -47,6 +46,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.#isAxeActionPlaying) {
             return;
         }
+
+        this.#updateMovement();
 
         if (this.#controls.isTestWearAxeAnimationDown) {
             this.#isWearingAxe = !this.#isWearingAxe;
@@ -194,7 +195,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         );
     }
 
-    public get direction(): string {
+    #updateMovement(): void {
+        const body = this.body as Phaser.Physics.Arcade.Body;
+
+        const speed = 100;
+
+        body.setVelocity(0);
+
+        if (this.#controls.isLeftDown) {
+            body.setVelocityX(-speed);
+        } else if (this.#controls.isRightDown) {
+            body.setVelocityX(speed);
+        }
+
+        if (this.#controls.isUpDown) {
+            body.setVelocityY(-speed);
+        } else if (this.#controls.isDownDown) {
+            body.setVelocityY(speed);
+        }
+    }
+
+    public get direction(): PlayerDirection {
         return this.#direction;
     }
 }

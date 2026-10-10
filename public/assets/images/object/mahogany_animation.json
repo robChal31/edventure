@@ -232,11 +232,11 @@
   "size": { "w": 192, "h": 240 },
   "scale": "1",
   "frameTags": [
-   { "name": "small_light_green_mahogany", "from": 0, "to": 3, "direction": "forward", "color": "#000000ff" },
-   { "name": "light_green_mahogany", "from": 4, "to": 7, "direction": "forward", "color": "#000000ff" },
+   { "name": "mahogany_tree_medium", "from": 0, "to": 3, "direction": "forward", "color": "#000000ff" },
+   { "name": "mahogany_tree_large", "from": 4, "to": 7, "direction": "forward", "color": "#000000ff" },
    { "name": "maroon_mahogany", "from": 8, "to": 11, "direction": "forward", "color": "#000000ff" },
    { "name": "white_mahogany", "from": 12, "to": 15, "direction": "forward", "color": "#000000ff" },
-   { "name": "dark_green_mahogany", "from": 16, "to": 19, "direction": "forward", "color": "#000000ff" },
+   { "name": "dark_green_mahogany_tree_large", "from": 16, "to": 19, "direction": "forward", "color": "#000000ff" },
    { "name": "chopped_mahogany", "from": 20, "to": 23, "direction": "forward", "color": "#000000ff" },
    { "name": "no_leaf_mahogany", "from": 24, "to": 27, "direction": "forward", "color": "#000000ff" }
   ],
