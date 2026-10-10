@@ -1,13 +1,24 @@
 import { GameScene } from "./scenes/game-scene";
 import { PreloadScene } from "./scenes/preload-scene";
+import type { ActivityController, GameOptions } from "./game-options";
 import Phaser from "phaser";
 
-export function createGame(parent: HTMLElement) {
+export type GameHandle = {
+    game: Phaser.Game;
+    controller: ActivityController;
+    destroy: () => void;
+};
 
+export function createGame(
+    parent: HTMLElement,
+    options?: GameOptions
+): GameHandle {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    
-    return new Phaser.Game({
+
+    const gameScene = new GameScene(options);
+
+    const game = new Phaser.Game({
         type: Phaser.WEBGL,
         pixelArt: true,
         roundPixels: true,
@@ -22,10 +33,16 @@ export function createGame(parent: HTMLElement) {
             default: "arcade",
             arcade: {
                 gravity: { y: 0, x: 0 },
-                debug: true
-            }
+                debug: false,
+            },
         },
         backgroundColor: "#1a1a2e",
-        scene: [PreloadScene, GameScene],
+        scene: [new PreloadScene(), gameScene],
     });
+
+    return {
+        game,
+        controller: gameScene.controller,
+        destroy: () => game.destroy(true),
+    };
 }

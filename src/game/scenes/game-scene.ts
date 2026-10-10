@@ -1,6 +1,6 @@
 
 import { ASSET_KEYS } from "../common/assets";
-import { KeyboardComponent } from "../components/input/keyboard-component";
+import { VirtualInputComponent } from "../components/input/virtual-input-component";
 import { WORLD_CONFIG } from "../config/world-config";
 import { Player } from "../game-objects/player/player";
 import { ObjectVisibilitySystem } from "../systems/object-visibility-system";
@@ -15,9 +15,12 @@ import { VILLAGE_MAP } from "../world/maps/village-map";
 import { WorldObjectFactory } from "../world/world-object-factory";
 import { WorldObjectRegistry } from "../world/world-object-registry";
 import { MapAnimationLoader } from "../world/map-animation-loader";
+import type { ActivityController, GameOptions } from "../game-options";
+import { FishingActivity } from "../activities/fishing/fishing-activity";
+import { FISHING_CONFIG } from "../activities/fishing/fishing-config";
 
 export class GameScene extends Phaser.Scene {
-    #controls!: KeyboardComponent;
+    #controls!: VirtualInputComponent;
     #player!: Player;
     #worldObjectLoader!: WorldObjectLoader;
     #worldObjectFactory!: WorldObjectFactory;
@@ -27,10 +30,27 @@ export class GameScene extends Phaser.Scene {
     #interactionSystem!: InteractionSystem;
     #collisionSystem!: CollisionSystem;
     #mapAnimationLoader!: MapAnimationLoader;
-    constructor() {
+    #activity?: FishingActivity;
+    #options?: GameOptions;
+    #controller!: ActivityController;
+
+    constructor(options?: GameOptions) {
         super({
             key: SCENE_KEYS.GAME_SCENE,
         });
+        this.#options = options;
+
+        this.#controller = {
+            cast: () => this.#activity?.attemptCast(),
+            answer: (index) => this.#activity?.answer(index),
+            restart: () => this.#activity?.restart(),
+            setVirtualDirection: (dir, pressed) =>
+                this.#controls?.setVirtualDirection(dir, pressed),
+        };
+    }
+
+    public get controller(): ActivityController {
+        return this.#controller;
     }
 
     // ─────────────────────────────────────────
@@ -46,7 +66,16 @@ export class GameScene extends Phaser.Scene {
         this.#initPlayer();
         this.#initSystems();
         this.#collisionSystem.setup();
-        this.#initDebug();
+
+        // Keep the existing collision debug overlay only in free-roam
+        // (no quiz) mode; the fishing activity renders a clean view.
+        if (!this.#options?.quiz) {
+            this.#initDebug();
+        }
+
+        this.#initActivity();
+
+        this.#options?.onEvent({ type: "game:ready" });
     }
     // ─────────────────────────────────────────
     // CONTROLS
@@ -58,7 +87,7 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        this.#controls = new KeyboardComponent(this.input.keyboard);
+        this.#controls = new VirtualInputComponent(this.input.keyboard);
     }
 
     // ─────────────────────────────────────────
@@ -126,11 +155,16 @@ export class GameScene extends Phaser.Scene {
     // ─────────────────────────────────────────
 
     #initPlayer(): void {
-       const map = this.#worldMap.map;
+        const map = this.#worldMap.map;
 
-        const spawnX = (map.widthInPixels * WORLD_CONFIG.scale) / 2;
+        let spawnX = (map.widthInPixels * WORLD_CONFIG.scale) / 2;
+        let spawnY = (map.heightInPixels * WORLD_CONFIG.scale) / 2;
 
-        const spawnY = (map.heightInPixels * WORLD_CONFIG.scale) / 2;
+        // When a quiz activity is active, start beside the river.
+        if (this.#options?.quiz) {
+            spawnX = FISHING_CONFIG.spawn.x;
+            spawnY = FISHING_CONFIG.spawn.y;
+        }
 
         this.#player = new Player({
             scene: this,
@@ -151,6 +185,10 @@ export class GameScene extends Phaser.Scene {
                         this.sound.play(ASSET_KEYS.AXE_SWING);
                     },
                 });
+            },
+
+            onInteract: () => {
+                this.#activity?.onPlayerInteract();
             },
         });
 
@@ -215,6 +253,51 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ─────────────────────────────────────────
+    // ACTIVITY
+    // ─────────────────────────────────────────
+
+    #initActivity(): void {
+        if (!this.#options?.quiz) {
+            return;
+        }
+
+        this.#activity = new FishingActivity({
+            scene: this,
+            player: this.#player,
+            waterPoints: this.#computeWaterPoints(),
+            quiz: this.#options.quiz,
+            emit: this.#options.onEvent,
+        });
+
+        this.#activity.create();
+    }
+
+    #computeWaterPoints(): { x: number; y: number }[] {
+        const points: { x: number; y: number }[] = [];
+        const layer = this.#worldMap.waterLayer;
+        if (!layer) {
+            return points;
+        }
+
+        const data = layer.layer.data as Phaser.Tilemaps.Tile[][];
+        const tw = this.#worldMap.map.tileWidth * WORLD_CONFIG.scale;
+        const th = this.#worldMap.map.tileHeight * WORLD_CONFIG.scale;
+
+        data.forEach((row) => {
+            row.forEach((tile) => {
+                if (tile && tile.index > 0) {
+                    points.push({
+                        x: tile.x * tw + tw / 2,
+                        y: tile.y * th + th / 2,
+                    });
+                }
+            });
+        });
+
+        return points;
+    }
+
+    // ─────────────────────────────────────────
     // UPDATE
     // ─────────────────────────────────────────
     public update(): void {
@@ -228,6 +311,6 @@ export class GameScene extends Phaser.Scene {
         );
 
         this.#objectVisibilitySystem.update();
+        this.#activity?.update();
     }
 }
-
