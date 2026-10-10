@@ -11,6 +11,8 @@ export type PlayerConfig = {
     frame?: number
     controls: KeyboardComponent
     onAxeAction?: () => void;
+    /** Fired when the interact/cast key (X or Space) is just pressed. */
+    onInteract?: () => void;
 }
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -18,7 +20,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     #direction: PlayerDirection = "down";
     #isWearingAxe = false;
     #isAxeActionPlaying = false;
+    #isCasting = false;
+    #inputLocked = false;
     #onAxeAction?: () => void;
+    #onInteract?: () => void;
 
     constructor(config: PlayerConfig) {
         const { scene, position, assetKey, frame } = config;
@@ -34,6 +39,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.#controls = config.controls
         this.#onAxeAction = config.onAxeAction
+        this.#onInteract = config.onInteract
 
         this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_DOWN, repeat: -1 });
         config.scene.events.on(Phaser.Scenes.Events.UPDATE, this.update, this);
@@ -43,11 +49,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update(): void {
-        if (this.#isAxeActionPlaying) {
+        if (this.#isAxeActionPlaying || this.#isCasting) {
             return;
         }
 
         this.#updateMovement();
+
+        if (this.#inputLocked) {
+            this.#playIdle();
+            return;
+        }
+
+        if (this.#onInteract && this.#controls.isInteractKeyJustDown) {
+            this.#onInteract();
+            return;
+        }
 
         if (this.#controls.isTestWearAxeAnimationDown) {
             this.#isWearingAxe = !this.#isWearingAxe;
@@ -195,8 +211,62 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         );
     }
 
+    public setInputLocked(locked: boolean): void {
+        this.#inputLocked = locked;
+        if (locked) {
+            const body = this.body as Phaser.Physics.Arcade.Body;
+            body.setVelocity(0);
+        }
+    }
+
+    public get isCasting(): boolean {
+        return this.#isCasting;
+    }
+
+    /**
+     * Plays the rod-swing (reuses the existing axe swing animation) as the
+     * fishing cast motion and reports completion.
+     */
+    public playCast(onComplete?: () => void): void {
+        if (this.#isCasting || this.#isAxeActionPlaying) {
+            onComplete?.();
+            return;
+        }
+
+        this.#isCasting = true;
+
+        let animationKey: string;
+        switch (this.#direction) {
+            case "up":
+                animationKey = PLAYER_ANIMATION_KEYS.BACK_SWING_AXE;
+                break;
+            case "down":
+                animationKey = PLAYER_ANIMATION_KEYS.FRONT_SWING_AXE;
+                break;
+            case "side":
+                animationKey = PLAYER_ANIMATION_KEYS.SIDE_SWING_AXE;
+                break;
+        }
+
+        this.play(animationKey);
+
+        this.once(
+            Phaser.Animations.Events.ANIMATION_COMPLETE,
+            () => {
+                this.#isCasting = false;
+                this.#playIdle();
+                onComplete?.();
+            }
+        );
+    }
+
     #updateMovement(): void {
         const body = this.body as Phaser.Physics.Arcade.Body;
+
+        if (this.#inputLocked) {
+            body.setVelocity(0);
+            return;
+        }
 
         const speed = 100;
 
