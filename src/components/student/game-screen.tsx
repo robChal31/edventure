@@ -181,8 +181,8 @@ export default function GameScreen({ quiz, onMenu }: GameScreenProps) {
                 />
             )}
 
-            {/* Touch controls */}
-            {!summary && (
+            {/* Touch controls (hidden while answering) */}
+            {!summary && phase !== "answering" && (
                 <TouchControls
                     controller={controller}
                     canCast={phase === "idle" && ready}
