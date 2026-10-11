@@ -30,7 +30,7 @@ export default function FishingHud({
                 <div className="font-pixel text-[10px] text-emerald-300">
                     🐟 {caught}/{answered} caught
                 </div>
-                <div className="mt-1 flex justify-end gap-0.5" aria-hidden>
+                <div className="mt-1 flex max-w-[45vw] flex-wrap justify-end gap-0.5" aria-hidden>
                     {Array.from({ length: total }).map((_, i) => (
                         <span
                             key={i}

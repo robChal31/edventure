@@ -1,5 +1,3 @@
-import { BEACH_MAP } from "../world/maps/beach-map";
-
 export const ASSET_PACK_KEYS = {
   MAIN: 'MAIN',
 } as const;
@@ -8,6 +6,7 @@ export const ASSET_KEYS = {
   PLAYER: 'PLAYER',
   PLAYER_WALK: 'PLAYER_WALK',
   PLAYER_AXE: 'PLAYER_AXE',
+  PLAYER_FISHING: 'PLAYER_FISHING',
   WORLD_MAP: 'WORLD_MAP',
   WORLD_MAP2: 'WORLD_MAP2',
   BEACH_MAP : 'BEACH_MAP',
@@ -78,6 +77,35 @@ export const PLAYER_ANIMATION_KEYS = {
   BACK_SWING_AXE: 'back_swing_axe',
   SIDE_IDLE_AXE: 'side_idle_axe',
   SIDE_SWING_AXE: 'side_swing_axe',
+
+  // Fishing — tag names from animations/player/fishing/fishing.json.
+  // Left/Right have their own art, so they are played without flipX.
+  FISHING_CAST_DOWN: 'Down',
+  FISHING_CAST_UP: 'Up',
+  FISHING_CAST_RIGHT: 'Right',
+  FISHING_CAST_LEFT: 'Left',
+} as const;
+
+/**
+ * Extra fishing animations derived from the PLAYER_FISHING tags at boot
+ * (see game-objects/player/player-fishing-animations.ts).
+ */
+export const PLAYER_FISHING_ANIMATION_KEYS = {
+  // Throw that stops before the splash (bait landed on sand/bridge/...).
+  MISS_DOWN: 'fishing_miss_down',
+  MISS_UP: 'fishing_miss_up',
+  MISS_RIGHT: 'fishing_miss_right',
+  MISS_LEFT: 'fishing_miss_left',
+  // Splash replay when a fish bites the float.
+  BITE_DOWN: 'fishing_bite_down',
+  BITE_UP: 'fishing_bite_up',
+  BITE_RIGHT: 'fishing_bite_right',
+  BITE_LEFT: 'fishing_bite_left',
+  // Throw played backwards: reel the line in.
+  REEL_DOWN: 'fishing_reel_down',
+  REEL_UP: 'fishing_reel_up',
+  REEL_RIGHT: 'fishing_reel_right',
+  REEL_LEFT: 'fishing_reel_left',
 } as const;
 
 export const MAHOGANY_ANIMATION_KEYS = {

@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { DEBUG_CONFIG } from "../config/debug-config";
 
 import { FootprintConfig } from "../common/types";
 import {
@@ -331,6 +332,10 @@ export class Tree
     // -------------------------------------------------------------------------
 
     #createInteractionDebug(): void {
+        if (!DEBUG_CONFIG.interaction) {
+            return;
+        }
+
         const bounds = this.getInteractionBounds();
 
         this.#interactionDebug = this.scene.add.rectangle(

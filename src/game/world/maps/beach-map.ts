@@ -29,8 +29,15 @@ export const BEACH_MAP: WorldMapDefinition = {
 
     layers: {
         ground: "sand",
-        water: "shallow_water",
+        // Both water layers block walking and can hold fish / the float.
+        shallow_water: "shallow_water",
+        deep_water: "deep_water",
+        // Piers drawn over the water: walkable, never fishable.
+        bridge: "bridge",
     },
+
+    // On the sand at the foot of the right-hand pier (tile 24,17).
+    spawn: { x: 392, y: 280, facing: "down" },
 
     objectLayers: [
         "fishman_house",

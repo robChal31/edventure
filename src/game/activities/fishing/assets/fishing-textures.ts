@@ -2,16 +2,17 @@ import Phaser from "phaser";
 
 /**
  * Procedurally generates the pixel-art textures the fishing activity
- * needs (fish, bobber, splash, sparkle, bite indicator). No external
- * binary assets are required.
+ * needs (fish, splash, bubble, dust, sparkle, bite indicator). The rod,
+ * line and float come from the player's fishing animation sheet.
  */
 
 export const FISHING_TEXTURE_KEYS = {
     FISH: (variant: number, frame: number) =>
         `lw_fish_${variant}_${frame}`,
     FISH_SWIM: (variant: number) => `lw_fish_swim_${variant}`,
-    BOBBER: "lw_bobber",
     SPLASH: "lw_splash",
+    BUBBLE: "lw_bubble",
+    DUST: "lw_dust",
     SPARKLE: "lw_sparkle",
     EXCLAIM: "lw_exclaim",
 } as const;
@@ -86,26 +87,6 @@ function paintFish(
     ctx.fillRect(2, 3, 1, 1);
 }
 
-function paintBobber(ctx: CanvasRenderingContext2D): void {
-    ctx.clearRect(0, 0, 8, 12);
-    // Antenna
-    ctx.fillStyle = "#111827";
-    ctx.fillRect(3, 0, 2, 2);
-    // Red top half
-    ctx.fillStyle = "#ef4444";
-    ctx.fillRect(1, 2, 6, 3);
-    ctx.fillStyle = "#fca5a5";
-    ctx.fillRect(1, 2, 6, 1);
-    // White bottom half
-    ctx.fillStyle = "#f8fafc";
-    ctx.fillRect(1, 5, 6, 3);
-    ctx.fillStyle = "#cbd5e1";
-    ctx.fillRect(1, 7, 6, 1);
-    // Tip
-    ctx.fillStyle = "#111827";
-    ctx.fillRect(3, 8, 2, 2);
-}
-
 function paintSplash(ctx: CanvasRenderingContext2D): void {
     ctx.clearRect(0, 0, 4, 4);
     ctx.fillStyle = "#e0f2fe";
@@ -113,6 +94,24 @@ function paintSplash(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = "#bae6fd";
     ctx.fillRect(0, 1, 1, 2);
     ctx.fillRect(3, 1, 1, 2);
+}
+
+function paintBubble(ctx: CanvasRenderingContext2D): void {
+    ctx.clearRect(0, 0, 5, 5);
+    ctx.fillStyle = "#e0f2fe";
+    ctx.fillRect(1, 0, 3, 1);
+    ctx.fillRect(1, 4, 3, 1);
+    ctx.fillRect(0, 1, 1, 3);
+    ctx.fillRect(4, 1, 1, 3);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(1, 1, 1, 1);
+}
+
+function paintDust(ctx: CanvasRenderingContext2D): void {
+    ctx.clearRect(0, 0, 3, 3);
+    ctx.fillStyle = "#f5deb3";
+    ctx.fillRect(0, 1, 3, 1);
+    ctx.fillRect(1, 0, 1, 3);
 }
 
 function paintSparkle(ctx: CanvasRenderingContext2D): void {
@@ -168,8 +167,9 @@ export function createFishingTextures(scene: Phaser.Scene): void {
         );
     });
 
-    make(FISHING_TEXTURE_KEYS.BOBBER, 8, 12, paintBobber);
     make(FISHING_TEXTURE_KEYS.SPLASH, 4, 4, paintSplash);
+    make(FISHING_TEXTURE_KEYS.BUBBLE, 5, 5, paintBubble);
+    make(FISHING_TEXTURE_KEYS.DUST, 3, 3, paintDust);
     make(FISHING_TEXTURE_KEYS.SPARKLE, 5, 5, paintSparkle);
     make(FISHING_TEXTURE_KEYS.EXCLAIM, 6, 10, paintExclaim);
 

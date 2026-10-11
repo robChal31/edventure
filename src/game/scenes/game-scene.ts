@@ -2,6 +2,8 @@
 import { ASSET_KEYS } from "../common/assets";
 import { VirtualInputComponent } from "../components/input/virtual-input-component";
 import { WORLD_CONFIG } from "../config/world-config";
+import { DEBUG_CONFIG } from "../config/debug-config";
+import { DEPTH_CONFIG } from "../config/depth-config";
 import { Player } from "../game-objects/player/player";
 import { ObjectVisibilitySystem } from "../systems/object-visibility-system";
 import { WorldMap } from "../world/world-map";
@@ -11,14 +13,23 @@ import Phaser from "phaser";
 import { InteractionSystem } from "../systems/interaction-system";
 import { PlayerAction } from "../common/types";
 import { CollisionSystem } from "../systems/collision-system";
-import { VILLAGE_MAP } from "../world/maps/village-map";
 import { WorldObjectFactory } from "../world/world-object-factory";
 import { WorldObjectRegistry } from "../world/world-object-registry";
 import { MapAnimationLoader } from "../world/map-animation-loader";
+import { HUB_MAP_ID, MapId, WORLD_MAPS } from "../world/maps/map-registry";
+import { WorldMapDefinition } from "../world/world-map-definition";
 import type { ActivityController, GameOptions } from "../game-options";
-import { FishingActivity } from "../activities/fishing/fishing-activity";
-import { FISHING_CONFIG } from "../activities/fishing/fishing-config";
-import { BEACH_MAP } from "../world/maps/beach-map";
+import type { Activity, MapObject } from "../activities/activity";
+import { ACTIVITY_REGISTRY } from "../activities/activity-registry";
+import type { PlayableQuiz } from "@/quiz/types";
+
+/** Data passed to `scene.restart()` when travelling between maps. */
+type GameSceneData = {
+    mapId?: MapId;
+    quiz?: PlayableQuiz | null;
+};
+
+const TRAVEL_FADE_MS = 450;
 
 export class GameScene extends Phaser.Scene {
     #controls!: VirtualInputComponent;
@@ -31,9 +42,18 @@ export class GameScene extends Phaser.Scene {
     #interactionSystem!: InteractionSystem;
     #collisionSystem!: CollisionSystem;
     #mapAnimationLoader!: MapAnimationLoader;
-    #activity?: FishingActivity;
+    #mapSprites: Phaser.GameObjects.Sprite[] = [];
+    #activity?: Activity;
     #options?: GameOptions;
     #controller!: ActivityController;
+
+    // Per-run state (reset in init/create on every map load).
+    #mapId: MapId = HUB_MAP_ID;
+    #quiz: PlayableQuiz | null = null;
+    #isReady = false;
+    #isTravelling = false;
+    #hasBooted = false;
+    #playerBodyDebug?: Phaser.GameObjects.Graphics;
 
     constructor(options?: GameOptions) {
         super({
@@ -42,11 +62,15 @@ export class GameScene extends Phaser.Scene {
         this.#options = options;
 
         this.#controller = {
-            cast: () => this.#activity?.attemptCast(),
-            answer: (index) => this.#activity?.answer(index),
+            startQuiz: (quiz) =>
+                this.#travelTo(ACTIVITY_REGISTRY[quiz.activityId].mapId, quiz),
+            returnToHub: () => this.#travelTo(HUB_MAP_ID, null),
+            cast: () => this.#handleFishingKey(),
+            answer: (answer) => this.#activity?.answer(answer),
             restart: () => this.#activity?.restart(),
             setVirtualDirection: (dir, pressed) =>
                 this.#controls?.setVirtualDirection(dir, pressed),
+            setKeyboardEnabled: (enabled) => this.#setKeyboardEnabled(enabled),
         };
     }
 
@@ -55,31 +79,76 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ─────────────────────────────────────────
+    // INIT (runs before every create, also after scene.restart)
+    // ─────────────────────────────────────────
+
+    public init(data?: GameSceneData): void {
+        if (data?.mapId) {
+            // Travelling between maps.
+            this.#mapId = data.mapId;
+            this.#quiz = data.quiz ?? null;
+        } else {
+            // First boot: open what the React shell asked for.
+            this.#quiz = this.#options?.initialQuiz ?? null;
+            this.#mapId = this.#quiz
+                ? ACTIVITY_REGISTRY[this.#quiz.activityId].mapId
+                : (this.#options?.initialMap ?? HUB_MAP_ID);
+        }
+
+        this.#activity = undefined;
+        this.#mapSprites = [];
+        this.#playerBodyDebug = undefined;
+        this.#isReady = false;
+        this.#isTravelling = false;
+    }
+
+    private get mapDefinition(): WorldMapDefinition {
+        return WORLD_MAPS[this.#mapId];
+    }
+
+    // ─────────────────────────────────────────
     // CREATE
     // ─────────────────────────────────────────
 
     public create(): void {
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.#onShutdown, this);
+
         this.#initControls();
         this.#initWorld();
         this.#initMapAnimations();
         this.#initObjects();
         this.#initCamera();
         this.#initPlayer();
-        this.#initDebugPlayer();
         this.#initSystems();
         this.#collisionSystem.setup();
-
-        // Keep the existing collision debug overlay only in free-roam
-        // (no quiz) mode; the fishing activity renders a clean view.
         this.#initDebug();
-        if (!this.#options?.quiz) {
-            this.#initDebug();
+
+        this.#isReady = true;
+
+        if (!this.#hasBooted) {
+            this.#hasBooted = true;
+            this.#options?.onEvent({ type: "game:ready" });
         }
 
-        this.#initActivity();
+        // Announce the map first: the shell resets its overlays on this event,
+        // then the activity sends its own HUD / prompt events.
+        this.#options?.onEvent({
+            type: "map:loaded",
+            mapId: this.#mapId,
+            activityId: this.#quiz?.activityId ?? null,
+            quizId: this.#quiz?.id ?? null,
+        });
 
-        this.#options?.onEvent({ type: "game:ready" });
+        this.#initActivity();
+        this.cameras.main.fadeIn(TRAVEL_FADE_MS, 0, 0, 0);
     }
+
+    #onShutdown(): void {
+        this.#activity?.destroy();
+        this.#activity = undefined;
+        this.#isReady = false;
+    }
+
     // ─────────────────────────────────────────
     // CONTROLS
     // ─────────────────────────────────────────
@@ -93,6 +162,17 @@ export class GameScene extends Phaser.Scene {
         this.#controls = new VirtualInputComponent(this.input.keyboard);
     }
 
+    #setKeyboardEnabled(enabled: boolean): void {
+        const keyboard = this.input?.keyboard;
+        if (!keyboard) return;
+
+        // While disabled Phaser neither reads nor swallows keys, so HTML
+        // inputs get every key (F, Space, T, H...). Reset so no key stays
+        // "held" from before.
+        keyboard.manager.enabled = enabled;
+        keyboard.resetKeys();
+    }
+
     // ─────────────────────────────────────────
     // WORLD
     // ─────────────────────────────────────────
@@ -100,8 +180,7 @@ export class GameScene extends Phaser.Scene {
     #initWorld(): void {
         this.#worldMap = new WorldMap(
             this,
-            // VILLAGE_MAP
-            BEACH_MAP
+            this.mapDefinition
         );
     }
 
@@ -130,10 +209,10 @@ export class GameScene extends Phaser.Scene {
     // ─────────────────────────────────────────
 
     #initCamera(): void {
-        const map = this.#worldMap.map;
-        const worldWidth = map.widthInPixels * WORLD_CONFIG.scale;
-        const worldHeight = map.heightInPixels * WORLD_CONFIG.scale;
+        const worldWidth = this.#worldMap.widthInPixels;
+        const worldHeight = this.#worldMap.heightInPixels;
 
+        this.cameras.main.resetFX();
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
 
         const applyZoom = () => {
@@ -158,28 +237,21 @@ export class GameScene extends Phaser.Scene {
     // ─────────────────────────────────────────
 
     #initPlayer(): void {
-        const map = this.#worldMap.map;
+        const spawn = this.mapDefinition.spawn;
 
-        let spawnX = (map.widthInPixels * WORLD_CONFIG.scale) / 2;
-        let spawnY = (map.heightInPixels * WORLD_CONFIG.scale) / 2;
-
-        // When a quiz activity is active, start beside the river.
-        if (this.#options?.quiz) {
-            spawnX = FISHING_CONFIG.spawn.x;
-            spawnY = FISHING_CONFIG.spawn.y;
-        }
+        const position = spawn
+            ? { x: spawn.x * WORLD_CONFIG.scale, y: spawn.y * WORLD_CONFIG.scale }
+            : { x: this.#worldMap.widthInPixels / 2, y: this.#worldMap.heightInPixels / 2 };
 
         this.#player = new Player({
             scene: this,
 
-            position: {
-                x: spawnX,
-                y: spawnY,
-            },
+            position,
 
             assetKey: ASSET_KEYS.PLAYER,
             frame: 0,
             controls: this.#controls,
+            facing: spawn?.facing,
 
             onAxeAction: () => {
                 this.#handlePlayerInteraction({
@@ -190,9 +262,7 @@ export class GameScene extends Phaser.Scene {
                 });
             },
 
-            onInteract: () => {
-                this.#activity?.onPlayerInteract();
-            },
+            onFishingAction: () => this.#handleFishingKey(),
         });
 
         this.#player.setScale(WORLD_CONFIG.scale);
@@ -209,14 +279,28 @@ export class GameScene extends Phaser.Scene {
         this.#interactionSystem.interact(action);
     }
 
+    /** F / Space / the CAST button. */
+    #handleFishingKey(): void {
+        if (!this.#isReady || this.#isTravelling) return;
+
+        if (this.#activity) {
+            this.#activity.handlePrimaryAction();
+            return;
+        }
+
+        this.#options?.onEvent({
+            type: "prompt",
+            message: "Pick a quest on the Quest Board (press Q) to go fishing!",
+        });
+    }
+
     #initObjects(): void {
         this.#worldObjectFactory =
             new WorldObjectFactory(this);
 
         this.#worldObjectLoader =
             new WorldObjectLoader(
-                // VILLAGE_MAP,
-                BEACH_MAP,
+                this.mapDefinition,
                 this.#worldObjectFactory
             );
 
@@ -237,47 +321,47 @@ export class GameScene extends Phaser.Scene {
         this.#mapAnimationLoader =
             new MapAnimationLoader(
                 this,
-                // VILLAGE_MAP
-                BEACH_MAP
+                this.mapDefinition
             );
 
-        this.#mapAnimationLoader.load(
+        this.#mapSprites = this.#mapAnimationLoader.load(
             this.#worldMap.map
         );
     }
 
-    #initDebug(): void {
-        this.#collisionSystem.initDebug();
+    // ─────────────────────────────────────────
+    // DEBUG (add ?debug to the URL)
+    // ─────────────────────────────────────────
 
-        this.#worldMap.waterLayer.renderDebug(
-            this.add.graphics(),
-            {
-                tileColor: null,
-                collidingTileColor: new Phaser.Display.Color(168, 85, 247, 80),
-                faceColor: new Phaser.Display.Color(168, 85, 247, 255),
-            }
-        );
+    #initDebug(): void {
+        if (DEBUG_CONFIG.collision) {
+            this.#collisionSystem.initDebug();
+
+            this.#worldMap.waterLayers.forEach((layer) => {
+                const graphics = this.add.graphics();
+                graphics.setDepth(DEPTH_CONFIG.DEBUG);
+                layer.renderDebug(graphics, {
+                    tileColor: null,
+                    collidingTileColor: new Phaser.Display.Color(168, 85, 247, 80),
+                    faceColor: new Phaser.Display.Color(168, 85, 247, 255),
+                });
+            });
+        }
+
+        if (DEBUG_CONFIG.playerBody) {
+            this.#playerBodyDebug = this.add.graphics();
+            this.#playerBodyDebug.setDepth(DEPTH_CONFIG.DEBUG);
+        }
     }
 
-    // Di GameScene, setelah #initPlayer()
-    #initDebugPlayer(): void {
-        const body = this.#player.body as Phaser.Physics.Arcade.Body;
-        const graphics = this.add.graphics();
-        graphics.setDepth(99999);
+    #drawPlayerBodyDebug(): void {
+        const graphics = this.#playerBodyDebug;
+        const body = this.#player.body as Phaser.Physics.Arcade.Body | null;
+        if (!graphics || !body) return;
 
-        graphics.lineStyle(2, 0xff0000, 1);
-
-        // Render di setiap frame (kalau player gerak, body ikut)
-        this.events.on(Phaser.Scenes.Events.UPDATE, () => {
-            graphics.clear();
-            graphics.lineStyle(2, 0xff0000, 1);
-            graphics.strokeRect(
-                body.x,
-                body.y,
-                body.width,
-                body.height
-            );
-        });
+        graphics.clear();
+        graphics.lineStyle(1, 0xff0000, 1);
+        graphics.strokeRect(body.x, body.y, body.width, body.height);
     }
 
     // ─────────────────────────────────────────
@@ -285,50 +369,67 @@ export class GameScene extends Phaser.Scene {
     // ─────────────────────────────────────────
 
     #initActivity(): void {
-        if (!this.#options?.quiz) {
+        if (!this.#quiz) {
+            this.#player.setInputLocked(false);
             return;
         }
 
-        this.#activity = new FishingActivity({
+        const entry = ACTIVITY_REGISTRY[this.#quiz.activityId];
+
+        this.#activity = entry.create({
             scene: this,
             player: this.#player,
-            waterPoints: this.#computeWaterPoints(),
-            quiz: this.#options.quiz,
-            emit: this.#options.onEvent,
+            worldMap: this.#worldMap,
+            mapObjects: this.#collectMapObjects(),
+            quiz: this.#quiz,
+            emit: (event) => this.#options?.onEvent(event),
         });
 
         this.#activity.create();
     }
 
-    #computeWaterPoints(): { x: number; y: number }[] {
-        const points: { x: number; y: number }[] = [];
-        const layer = this.#worldMap.waterLayer;
-        if (!layer) {
-            return points;
-        }
+    #collectMapObjects(): MapObject[] {
+        const objects: MapObject[] = [...this.#mapSprites];
 
-        const data = layer.layer.data as Phaser.Tilemaps.Tile[][];
-        const tw = this.#worldMap.map.tileWidth * WORLD_CONFIG.scale;
-        const th = this.#worldMap.map.tileHeight * WORLD_CONFIG.scale;
-
-        data.forEach((row) => {
-            row.forEach((tile) => {
-                if (tile && tile.index > 0) {
-                    points.push({
-                        x: tile.x * tw + tw / 2,
-                        y: tile.y * th + th / 2,
-                    });
-                }
-            });
+        this.#worldObjectRegistry.objects.forEach(({ gameObject }) => {
+            if (
+                gameObject instanceof Phaser.GameObjects.Sprite ||
+                gameObject instanceof Phaser.GameObjects.Image
+            ) {
+                objects.push(gameObject);
+            }
         });
 
-        return points;
+        return objects;
+    }
+
+    // ─────────────────────────────────────────
+    // TRAVEL
+    // ─────────────────────────────────────────
+
+    #travelTo(mapId: MapId, quiz: PlayableQuiz | null): void {
+        if (!this.#isReady || this.#isTravelling) return;
+
+        this.#isTravelling = true;
+        this.#player.setInputLocked(true);
+        this.#options?.onEvent({ type: "travel:start", to: mapId });
+
+        this.cameras.main.fadeOut(TRAVEL_FADE_MS, 0, 0, 0);
+        this.cameras.main.once(
+            Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+            () => {
+                const data: GameSceneData = { mapId, quiz };
+                this.scene.restart(data);
+            }
+        );
     }
 
     // ─────────────────────────────────────────
     // UPDATE
     // ─────────────────────────────────────────
-    public update(): void {
+    public update(time: number, delta: number): void {
+        if (!this.#isReady) return;
+
         // Player: depth = body bottom (kaki)
         const playerBody = this.#player.body as Phaser.Physics.Arcade.Body;
         if (playerBody) {
@@ -348,6 +449,7 @@ export class GameScene extends Phaser.Scene {
         });
 
         this.#objectVisibilitySystem.update();
-        this.#activity?.update();
+        this.#activity?.update(time, delta);
+        this.#drawPlayerBodyDebug();
     }
 }
