@@ -3,6 +3,7 @@ import { Player } from "../game-objects/player/player";
 import { Interactable } from "../common/types/interaction";
 import { PlayerAction } from "../common/types";
 import { WORLD_CONFIG } from "../config/world-config";
+import { DEBUG_CONFIG } from "../config/debug-config";
 import { InteractionTargetSelector } from "../common/system/interaction/interaction-target-selector";
 
 export class InteractionSystem {
@@ -106,6 +107,10 @@ export class InteractionSystem {
     #showDebugRange(
         bounds: Phaser.Geom.Rectangle
     ): void {
+        if (!DEBUG_CONFIG.interaction) {
+            return;
+        }
+
         if (!this.#debugRange) {
             this.#debugRange =
                 this.player.scene.add.rectangle(

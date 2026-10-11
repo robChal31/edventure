@@ -1,4 +1,5 @@
 import { ASSET_KEYS, ASSET_PACK_KEYS } from "../common/assets";
+import { createPlayerFishingAnimations } from "../game-objects/player/player-fishing-animations";
 import { SCENE_KEYS } from "./scene-keys";
 import Phaser from "phaser";
 
@@ -23,6 +24,8 @@ export class PreloadScene extends Phaser.Scene {
         this.anims.createFromAseprite(ASSET_KEYS.PLAYER);
         this.anims.createFromAseprite(ASSET_KEYS.PLAYER_WALK);
         this.anims.createFromAseprite(ASSET_KEYS.PLAYER_AXE);
+        // Down/Up/Right/Left cast tags + derived miss/bite/reel animations.
+        createPlayerFishingAnimations(this.anims);
         this.anims.createFromAseprite(ASSET_KEYS.MAHOGANY_ANIMATION);
         this.anims.createFromAseprite(ASSET_KEYS.WOOD_LOG_ANIMATION);
         this.anims.createFromAseprite(ASSET_KEYS.WATERFALL_ANIMATION);

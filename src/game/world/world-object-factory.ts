@@ -38,6 +38,7 @@ export class WorldObjectFactory {
                     return null;
                 }
                 return this.#createStaticObject(
+                    type,
                     x,
                     y,
                     gid,
@@ -87,6 +88,7 @@ export class WorldObjectFactory {
     }
 
     #createStaticObject(
+        layerName: string,
         x: number,
         y: number,
         rawGid: number,
@@ -122,6 +124,8 @@ export class WorldObjectFactory {
 
         image.setOrigin(0, 1);
         image.setScale(WORLD_CONFIG.scale);
+        // The Tiled object layer name, e.g. "fishman_house".
+        image.setName(layerName);
 
         return {
             gameObject: image,

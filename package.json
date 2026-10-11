@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "esbuild tests/quiz-session.test.ts --bundle --platform=node --packages=external --format=cjs --outfile=.tmp-tests/quiz-session.test.cjs && node .tmp-tests/quiz-session.test.cjs"
+    "test": "esbuild \"tests/*.test.ts\" --bundle --platform=node --packages=external --format=cjs --outdir=.tmp-tests --out-extension:.js=.cjs --log-level=warning && node --test \".tmp-tests/*.test.cjs\""
   },
   "dependencies": {
     "next": "16.3.3",

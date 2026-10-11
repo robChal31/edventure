@@ -330,6 +330,12 @@
         "key": "PLAYER_AXE",
         "textureURL": "axe/axe_sheet.png",
         "atlasURL": "axe/axe.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FISHING",
+        "textureURL": "fishing/fishing.png",
+        "atlasURL": "fishing/fishing.json"
       }
     ]
   }

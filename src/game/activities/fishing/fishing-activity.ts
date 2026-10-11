@@ -1,58 +1,74 @@
 import Phaser from "phaser";
-import { Player } from "@/game/game-objects/player/player";
+import { describeCorrectAnswer } from "@/quiz/grading";
 import { QuizSession } from "@/quiz/quiz-session";
-import type { Quiz } from "@/quiz/types";
-import type {
-    FishingPhase,
-    GameEvent,
-    VirtualDirection,
-} from "@/game/game-options";
+import type { AnswerValue } from "@/quiz/types";
 import { sfx } from "@/game/common/audio/sfx";
+import { DEBUG_CONFIG } from "@/game/config/debug-config";
+import type { FishingPhase, GameEvent } from "@/game/game-options";
+import type { Player } from "@/game/game-objects/player/player";
+import type { Point } from "@/game/world/water/water-grid";
+import { WaterDebugOverlay } from "@/game/world/water/water-debug";
+import { WaterSurface } from "@/game/world/water/water-surface";
+import type { Activity, ActivityContext } from "../activity";
+import { createFishingTextures } from "./assets/fishing-textures";
+import { resolveCast, type CastResult } from "./cast/cast-resolver";
+import { FeedbackEffects } from "./effects/feedback-effects";
+import { WaterEffects } from "./effects/water-effects";
+import { AmbientFishSchool } from "./fish/ambient-fish-school";
+import { Fish, fishFootprint, randomFishVariant } from "./fish/fish";
+import { planFishApproach, planNibble, type FishApproach } from "./fish/fish-approach";
 import { FISHING_CONFIG } from "./fishing-config";
-import { FishingSpot } from "./fishing-spot";
-import { Fish, AmbientFishSchool } from "./fish";
-import {
-    FISHING_TEXTURE_KEYS,
-    createFishingTextures,
-} from "./assets/fishing-textures";
+import { FISHING_TEXT, missMessage } from "./fishing-messages";
 
-export type FishingActivityContext = {
-    scene: Phaser.Scene;
-    player: Player;
-    waterPoints: { x: number; y: number }[];
-    quiz: Quiz;
-    emit: (event: GameEvent) => void;
-};
+const { timing } = FISHING_CONFIG;
 
 /**
- * The Fishing activity. Orchestrates the full loop:
- *   move to spot -> cast -> wait -> bite -> answer -> catch/escape -> next.
- * Exactly one challenge is run per quiz question.
+ * The Fishing activity. One challenge per quiz question:
+ *
+ *   idle ─F─▶ casting ─(float on water)─▶ waiting ─▶ bite ─▶ answering
+ *     ▲          │                          │                   │
+ *     │       (miss: sand / pier /          F (reel in)     catching | escaped
+ *     │        boat...) reeling ◀───────────┘                   │
+ *     └─────────────────────────────────────────────────────────┘ (next question)
+ *
+ * There are no fishing spots: wherever the student stands, the cast counts
+ * if the float lands on a water layer. Fish only ever appear in open water.
  */
-export class FishingActivity {
-    #ctx: FishingActivityContext;
+export class FishingActivity implements Activity {
+    #ctx: ActivityContext;
     #session: QuizSession;
-    #phase: FishingPhase = "idle";
-    #spot!: FishingSpot;
+    #surface: WaterSurface;
+    #water: WaterEffects;
+    #feedback: FeedbackEffects;
     #school?: AmbientFishSchool;
+    #debug?: WaterDebugOverlay;
+    #footprint = fishFootprint();
 
-    #lineGraphics!: Phaser.GameObjects.Graphics;
-    #bobber?: Phaser.GameObjects.Sprite;
-    #bobberOut = false;
-    #currentFish?: Fish;
-    #rippleEvent?: Phaser.Time.TimerEvent;
+    #phase: FishingPhase = "idle";
+    #cast: CastResult | null = null;
+    #fish: Fish | null = null;
+    #timers = new Set<Phaser.Time.TimerEvent>();
+    #rippleTimer: Phaser.Time.TimerEvent | null = null;
+    #revealPending = false;
+    /** Bumped whenever a round is cancelled so stale callbacks do nothing. */
+    #round = 0;
 
-    constructor(ctx: FishingActivityContext) {
+    constructor(ctx: ActivityContext) {
         this.#ctx = ctx;
         this.#session = new QuizSession(ctx.quiz);
+        this.#surface = new WaterSurface(ctx.worldMap, ctx.mapObjects);
+        this.#water = new WaterEffects(ctx.scene);
+        this.#feedback = new FeedbackEffects(ctx.scene);
     }
 
     private get scene(): Phaser.Scene {
         return this.#ctx.scene;
     }
+
     private get player(): Player {
         return this.#ctx.player;
     }
+
     private emit(event: GameEvent): void {
         this.#ctx.emit(event);
     }
@@ -61,285 +77,255 @@ export class FishingActivity {
         return this.#phase;
     }
 
+    // ─────────────────────────────────────────
+    // Activity lifecycle
+    // ─────────────────────────────────────────
+
     public create(): void {
         createFishingTextures(this.scene);
 
-        this.#lineGraphics = this.scene.add.graphics();
-        this.#lineGraphics.setDepth(8000);
+        if (DEBUG_CONFIG.water) {
+            this.#debug = new WaterDebugOverlay(this.scene, this.#surface);
+        }
 
-        this.#spot = new FishingSpot(
-            this.scene,
-            FISHING_CONFIG.spot.anchor
-        );
+        if (!this.#surface.hasOpenWater) {
+            console.warn(
+                "FishingActivity: no open water found — check the map's water layers."
+            );
+        }
 
-        this.#school = new AmbientFishSchool(
-            this.scene,
-            this.#ctx.waterPoints
-        );
+        this.#school = new AmbientFishSchool(this.scene, this.#surface);
 
-        this.#emitHud();
-        this.#setPhase("idle");
-        this.#promptIdle();
+        this.#toIdle();
     }
 
-    // ─────────────────────────────────────────
-    // Public control surface
-    // ─────────────────────────────────────────
-
-    public onPlayerInteract(): void {
-        this.attemptCast();
+    public handlePrimaryAction(): void {
+        switch (this.#phase) {
+            case "idle":
+                this.#castLine();
+                break;
+            case "waiting":
+                this.#reelInEarly();
+                break;
+            default:
+                // Busy (casting, biting, answering, ...): ignore.
+                break;
+        }
     }
 
-    public setVirtualDirection(dir: VirtualDirection, pressed: boolean): void {
-        // Handled by the input component; no-op here for API symmetry.
-        void dir;
-        void pressed;
-    }
-
-    public attemptCast(): void {
-        if (this.#phase !== "idle") {
+    public answer(answer: AnswerValue): void {
+        if (this.#phase !== "answering" || this.#revealPending) {
             return;
         }
 
-        if (!this.#spot.isPlayerInRange(this.player)) {
-            this.emit({
-                type: "prompt",
-                message: "Walk to the glowing spot by the river to fish!",
-            });
-            return;
-        }
-
-        this.#beginCast();
-    }
-
-    public answer(optionIndex: number): void {
-        if (this.#phase !== "answering") {
-            return;
-        }
-
-        const outcome = this.#session.submitAnswer(optionIndex);
+        const outcome = this.#session.submitAnswer(answer);
         if (!outcome) {
             return;
         }
 
-        const feedback = outcome.correct
-            ? "Correct! You caught a fish!"
-            : `Not quite. The fish got away!`;
+        this.#revealPending = true;
 
         this.emit({
             type: "answer",
             correct: outcome.correct,
-            selectedIndex: outcome.selectedIndex,
-            correctIndex: outcome.question.correctIndex,
             question: outcome.question,
+            answer: outcome.answer,
+            correctAnswer: describeCorrectAnswer(outcome.question),
             caught: this.#session.correctCount,
             answered: this.#session.answeredCount,
             total: this.#session.total,
-            feedback,
+            feedback: outcome.correct ? FISHING_TEXT.correct : FISHING_TEXT.incorrect,
         });
-
-        this.#emitHud();
+        // Update the catch count now, but keep showing this question's number
+        // until the next challenge starts.
+        this.#emitHud(this.#session.answeredCount);
 
         if (outcome.correct) {
             sfx.correct();
-            this.#doCatch();
         } else {
             sfx.wrong();
-            this.#doEscape();
         }
+
+        // Let the student see the reveal on the question card first.
+        this.#later(timing.revealDuration, () => {
+            this.#revealPending = false;
+            if (outcome.correct) {
+                this.#catchFish();
+            } else {
+                this.#loseFish();
+            }
+        });
     }
 
     public restart(): void {
-        this.#clearVisuals();
+        this.#clearRound();
+
+        if (this.player.active) {
+            this.player.stopFishing();
+            this.player.setInputLocked(false);
+        }
+
         this.#session = new QuizSession(this.#ctx.quiz);
-        this.#emitHud();
-        this.#setPhase("idle");
-        this.#promptIdle();
+        this.#toIdle();
     }
-
-    public destroy(): void {
-        this.#clearVisuals();
-        this.#school?.destroy();
-        this.#spot?.destroy();
-        this.#lineGraphics?.destroy();
-        this.player.setInputLocked(false);
-    }
-
-    // ─────────────────────────────────────────
-    // Update loop (rod + line + spot highlight)
-    // ─────────────────────────────────────────
 
     public update(): void {
-        const inRange = this.#spot.isPlayerInRange(this.player);
-        this.#spot.setHighlighted(this.#phase === "idle" && inRange);
+        // Rod, line and float are part of the player's fishing animation;
+        // nothing to redraw per frame.
+    }
 
-        this.#lineGraphics.clear();
-        if (this.#bobberOut && this.#bobber) {
-            this.#drawLine();
-        }
+    /** Scene shutdown: the scene destroys game objects itself. */
+    public destroy(): void {
+        this.#clearRound();
+        this.#school?.destroy();
+        this.#school = undefined;
+        this.#debug?.destroy();
+        this.#debug = undefined;
     }
 
     // ─────────────────────────────────────────
-    // Loop stages
+    // Cast
     // ─────────────────────────────────────────
 
-    #promptIdle(): void {
-        this.player.setInputLocked(false);
-        this.emit({
-            type: "prompt",
-            message: `Question ${this.#session.currentNumber} of ${this.#session.total} — stand at the glowing spot and press SPACE / tap CAST.`,
-        });
-    }
+    #castLine(): void {
+        const cast = resolveCast(this.player, this.#surface);
+        this.#cast = cast;
+        this.#debug?.markProbe(cast.point.x, cast.point.y, cast.hit);
 
-    #beginCast(): void {
         this.#setPhase("casting");
-        this.emit({ type: "prompt", message: null });
+        this.#prompt(null);
         sfx.cast();
 
-        this.player.playCast(() => {
-            this.#launchBobber();
-        });
-    }
-
-    #launchBobber(): void {
-        const target = {
-            x:
-                FISHING_CONFIG.spot.castTarget.x +
-                Phaser.Math.Between(
-                    -FISHING_CONFIG.spot.castJitter.x,
-                    FISHING_CONFIG.spot.castJitter.x
-                ),
-            y:
-                FISHING_CONFIG.spot.castTarget.y +
-                Phaser.Math.Between(
-                    -FISHING_CONFIG.spot.castJitter.y,
-                    FISHING_CONFIG.spot.castJitter.y
-                ),
-        };
-
-        this.#bobber = this.scene.add.sprite(
-            this.player.x,
-            this.player.y - 10,
-            FISHING_TEXTURE_KEYS.BOBBER
+        this.player.castLine(
+            cast.inWater,
+            this.#guard(() => this.#onBaitLanded(cast)),
+            this.#guard(() => this.#onCastFinished(cast))
         );
-        this.#bobber.setDepth(8500);
-        this.#bobberOut = true;
-
-        const from = { x: this.#bobber.x, y: this.#bobber.y };
-        const peak = Math.min(from.y, target.y) - 40;
-        const proxy = { t: 0 };
-
-        this.scene.tweens.add({
-            targets: proxy,
-            t: 1,
-            duration: FISHING_CONFIG.timing.castFly,
-            ease: "Sine.out",
-            onUpdate: () => {
-                const t = proxy.t;
-                const x = Phaser.Math.Linear(from.x, target.x, t);
-                const y =
-                    (1 - t) * (1 - t) * from.y +
-                    2 * (1 - t) * t * peak +
-                    t * t * target.y;
-                this.#bobber?.setPosition(x, y);
-            },
-            onComplete: () => {
-                sfx.splash();
-                this.#spawnSplash(target.x, target.y);
-                this.#startWaiting();
-            },
-        });
     }
 
-    #startWaiting(): void {
-        this.#setPhase("waiting");
+    #onBaitLanded(cast: CastResult): void {
+        const { x, y } = cast.point;
 
-        // Gentle bobbing.
-        if (this.#bobber) {
-            this.scene.tweens.add({
-                targets: this.#bobber,
-                y: this.#bobber.y + 2,
-                duration: 500,
-                yoyo: true,
-                repeat: -1,
-                ease: "Sine.inOut",
-            });
+        if (cast.inWater) {
+            sfx.splash();
+            this.#water.ripple(x, y);
+            return;
         }
 
-        // Periodic ripples.
-        this.#rippleEvent = this.scene.time.addEvent({
-            delay: 700,
-            loop: true,
-            callback: () => {
-                if (this.#bobber) {
-                    this.#spawnRipple(this.#bobber.x, this.#bobber.y + 4);
-                }
-            },
-        });
+        sfx.thud();
+        const sandy = cast.hit.kind === "land" || cast.hit.kind === "shore";
+        this.#water.dust(x, y, sandy ? 0xf5deb3 : 0xa1887f);
+        this.#prompt(missMessage(cast.hit));
+    }
 
-        // A fish shadow approaches the bobber.
-        this.#currentFish = new Fish(
-            this.scene,
-            this.#bobber!.x + Phaser.Math.Between(-60, 60),
-            this.#bobber!.y + Phaser.Math.Between(20, 40),
-            Phaser.Math.Between(0, 3)
+    #onCastFinished(cast: CastResult): void {
+        if (cast.inWater) {
+            this.#startWaiting(cast);
+            return;
+        }
+
+        // Missed the water: show the bait on the ground, then reel it back.
+        this.#later(timing.missPause, () => this.#reelBack());
+    }
+
+    #reelBack(message?: string): void {
+        this.#setPhase("reeling");
+        sfx.reel();
+
+        this.player.reelIn(
+            this.#guard(() => {
+                this.#cast = null;
+                // Keep the miss explanation on screen instead of the idle hint.
+                this.#toIdle(true);
+                if (message) this.#prompt(message);
+            })
         );
-        this.#currentFish.setAlpha(0.45);
-        this.#currentFish.setDepth(4);
-        this.#currentFish.playSwim();
+    }
 
-        const wait = Phaser.Math.Between(
-            FISHING_CONFIG.timing.waitMin,
-            FISHING_CONFIG.timing.waitMax
-        );
+    #reelInEarly(): void {
+        const fish = this.#fish;
+        this.#fish = null;
+        fish?.dive(300, () => fish.destroy());
 
-        this.scene.time.addEvent({
-            delay: wait,
-            callback: () => {
-                if (this.#phase !== "waiting") return;
-                this.#currentFish?.glideTo(
-                    this.#bobber!.x,
-                    this.#bobber!.y + 4,
-                    400,
-                    () => this.#bite()
-                );
-            },
+        this.#clearRound();
+        this.#reelBack(FISHING_TEXT.reeledIn);
+    }
+
+    // ─────────────────────────────────────────
+    // Waiting → bite
+    // ─────────────────────────────────────────
+
+    #startWaiting(cast: CastResult): void {
+        this.#setPhase("waiting");
+        this.#prompt(FISHING_TEXT.waiting);
+        this.#startRipples(cast.point);
+
+        const plan = planFishApproach(this.#surface, cast.point, this.#footprint);
+        const wait = Phaser.Math.Between(timing.waitMin, timing.waitMax);
+
+        this.#later(wait, () => {
+            if (plan) {
+                this.#approach(cast, plan);
+            } else {
+                this.#hiddenBite(cast);
+            }
         });
     }
 
-    #bite(): void {
+    /** A fish shadow swims (through open water only) to the float. */
+    #approach(cast: CastResult, plan: FishApproach): void {
+        const fish = new Fish(this.scene, plan.start.x, plan.start.y, randomFishVariant());
+        fish.setAlpha(0);
+        fish.playSwim();
+        fish.fadeTo(FISHING_CONFIG.fish.approachAlpha, 300);
+        this.#fish = fish;
+
+        fish.swimTo(
+            plan.biteAt,
+            FISHING_CONFIG.fish.swimSpeed,
+            this.#guard(() => {
+                const peck = planNibble(this.#surface, plan.biteAt, cast.point, this.#footprint);
+                fish.nibble(
+                    peck,
+                    timing.nibbles,
+                    () => this.#water.ripple(cast.point.x, cast.point.y, 6, 400),
+                    this.#guard(() => this.#bite(cast))
+                );
+            })
+        );
+    }
+
+    /** The float is somewhere too narrow for a visible fish: bubbles only. */
+    #hiddenBite(cast: CastResult): void {
+        const { x, y } = cast.point;
+        this.#water.bubbles(x, y, 3);
+        this.#later(700, () => {
+            this.#water.bubbles(x, y, 2);
+            this.#later(500, () => this.#bite(cast));
+        });
+    }
+
+    #bite(cast: CastResult): void {
         this.#setPhase("bite");
+        this.#stopRipples();
+        this.#prompt(null);
         sfx.bite();
 
-        if (this.#bobber) {
-            // Dip the bobber.
-            this.scene.tweens.add({
-                targets: this.#bobber,
-                y: this.#bobber.y + 4,
-                duration: 120,
-                yoyo: true,
-                repeat: 2,
-            });
-            this.#spawnSplash(this.#bobber.x, this.#bobber.y);
-            this.#showExclaim(this.#bobber.x, this.#bobber.y - 18);
-        }
+        this.player.playFishingBite();
+        this.#water.splash(cast.point.x, cast.point.y, 5, 10);
+        this.#feedback.exclaim(this.player.x, this.player.y - 24);
 
-        this.scene.time.addEvent({
-            delay: FISHING_CONFIG.timing.biteToQuestion,
-            callback: () => this.#showQuestion(),
-        });
+        this.#later(timing.biteToQuestion, () => this.#askQuestion());
     }
 
-    #showQuestion(): void {
-        this.#setPhase("answering");
-        this.player.setInputLocked(true);
-
+    #askQuestion(): void {
         const question = this.#session.currentQuestion;
         if (!question) {
             this.#complete();
             return;
         }
 
+        this.#setPhase("answering");
         this.emit({
             type: "question",
             questionNumber: this.#session.currentNumber,
@@ -348,270 +334,179 @@ export class FishingActivity {
         });
     }
 
-    #doCatch(): void {
+    // ─────────────────────────────────────────
+    // Outcome
+    // ─────────────────────────────────────────
+
+    #catchFish(): void {
+        const cast = this.#cast;
+        if (!cast) {
+            this.#afterResolve();
+            return;
+        }
+
         this.#setPhase("catching");
-        this.#stopRipples();
-        this.#clearBobber();
+        sfx.splash();
 
-        const fish = this.#currentFish;
-        if (!fish) {
-            this.#afterResolve();
-            return;
-        }
+        // A hidden fish jumps out right at the float (which is on water).
+        const fish = this.#fish ?? this.#emergeFish(cast.point);
+        this.#fish = fish;
 
-        fish.setAlpha(1);
-        fish.setDepth(9000);
+        this.#water.splash(fish.x, fish.y, 7, 14);
+        this.#water.ripple(fish.x, fish.y, 14, 800);
+        this.player.reelIn();
+
         fish.playSwim();
-
-        if (this.#bobber) {
-            this.#spawnSplash(this.#bobber.x, this.#bobber.y);
-        }
-
-        fish.leapToPlayer(this.player, FISHING_CONFIG.timing.catchDuration, () => {
-            this.#spawnSparkles(this.player.x, this.player.y - 12);
-            this.#popup("+1", this.player.x, this.player.y - 26, "#4ade80");
-            fish.destroy();
-            this.#currentFish = undefined;
-            this.#afterResolve();
-        });
-    }
-
-    #doEscape(): void {
-        this.#setPhase("escaped");
-        this.#stopRipples();
-        sfx.escape();
-
-        const fish = this.#currentFish;
-        if (!fish) {
-            this.#clearBobber();
-            this.#afterResolve();
-            return;
-        }
-
-        if (this.#bobber) {
-            this.#spawnSplash(this.#bobber.x, this.#bobber.y);
-        }
-        this.#clearBobber();
-
-        fish.setAlpha(1);
-        fish.setDepth(9000);
-        fish.playSwim();
-
-        fish.escapeAway(
-            fish.x + Phaser.Math.Between(-90, 90),
-            fish.y + 60,
-            FISHING_CONFIG.timing.escapeDuration,
-            () => {
-                this.#popup("It got away!", this.player.x, this.player.y - 26, "#f87171");
+        fish.leapTo(
+            { x: this.player.x, y: this.player.y - 18 },
+            timing.catchDuration,
+            this.#guard(() => {
+                this.#feedback.sparkles(this.player.x, this.player.y - 12);
+                this.#feedback.popup("+1", this.player.x, this.player.y - 28, "#4ade80");
                 fish.destroy();
-                this.#currentFish = undefined;
+                this.#fish = null;
                 this.#afterResolve();
-            }
+            })
         );
     }
 
-    #afterResolve(): void {
-        if (this.#session.isComplete) {
-            this.scene.time.addEvent({
-                delay: 400,
-                callback: () => this.#complete(),
-            });
+    #loseFish(): void {
+        const cast = this.#cast;
+        this.#setPhase("escaped");
+        sfx.escape();
+
+        if (cast) {
+            this.#water.splash(cast.point.x, cast.point.y, 4, 8);
+        }
+        this.player.reelIn();
+
+        const fish = this.#fish;
+        const finish = this.#guard(() => {
+            fish?.destroy();
+            this.#fish = null;
+            this.#feedback.popup(FISHING_TEXT.gotAway, this.player.x, this.player.y - 28, "#f87171");
+            this.#afterResolve();
+        });
+
+        if (!fish) {
+            if (cast) this.#water.bubbles(cast.point.x, cast.point.y, 4);
+            this.#later(timing.escapeDuration, finish);
             return;
         }
 
-        this.scene.time.addEvent({
-            delay: FISHING_CONFIG.timing.betweenChallenges,
-            callback: () => {
-                this.#setPhase("idle");
-                this.#promptIdle();
-            },
-        });
+        // Escapes under the water, along a path that stays in open water.
+        const away = this.#surface.randomReachablePoint(
+            { x: fish.x, y: fish.y },
+            this.#footprint,
+            40,
+            100
+        );
+
+        if (away) {
+            fish.dartAway(away, timing.escapeDuration, finish);
+        } else {
+            fish.dive(timing.escapeDuration, finish);
+        }
+    }
+
+    #emergeFish(point: Point): Fish {
+        const fish = new Fish(this.scene, point.x, point.y, randomFishVariant());
+        fish.setAlpha(1);
+        return fish;
+    }
+
+    #afterResolve(): void {
+        this.#cast = null;
+
+        if (this.#session.isComplete) {
+            this.#later(400, () => this.#complete());
+            return;
+        }
+
+        this.#later(timing.betweenChallenges, () => this.#toIdle());
     }
 
     #complete(): void {
         this.#setPhase("complete");
         sfx.complete();
-        this.player.setInputLocked(false);
+        this.player.setInputLocked(true);
         this.emit({ type: "complete", summary: this.#session.summary() });
     }
 
     // ─────────────────────────────────────────
-    // Visual helpers
+    // Helpers
     // ─────────────────────────────────────────
+
+    #toIdle(silent = false): void {
+        this.#emitHud();
+        this.#setPhase("idle");
+        if (!silent) {
+            this.#prompt(
+                FISHING_TEXT.idle(this.#session.currentNumber, this.#session.total)
+            );
+        }
+    }
 
     #setPhase(phase: FishingPhase): void {
         this.#phase = phase;
         this.emit({ type: "phase", phase });
     }
 
-    #emitHud(): void {
+    #prompt(message: string | null): void {
+        this.emit({ type: "prompt", message });
+    }
+
+    #emitHud(questionNumber: number = this.#session.currentNumber): void {
         this.emit({
             type: "hud",
             caught: this.#session.correctCount,
             answered: this.#session.answeredCount,
             total: this.#session.total,
-            questionNumber: this.#session.currentNumber,
+            questionNumber,
         });
     }
 
-    #drawLine(): void {
-        if (!this.#bobber) return;
-
-        const handX = this.player.x + 6;
-        const handY = this.player.y - 8;
-
-        // Rod (short thick segment toward the bobber).
-        const angle = Math.atan2(
-            this.#bobber.y - handY,
-            this.#bobber.x - handX
-        );
-        const rodLen = 14;
-        const tipX = handX + Math.cos(angle) * rodLen;
-        const tipY = handY + Math.sin(angle) * rodLen;
-
-        this.#lineGraphics.lineStyle(2, 0x8b5a2b, 1);
-        this.#lineGraphics.beginPath();
-        this.#lineGraphics.moveTo(handX, handY);
-        this.#lineGraphics.lineTo(tipX, tipY);
-        this.#lineGraphics.strokePath();
-
-        // Line (thin, slight sag) — sample a quadratic bezier.
-        const midX = (tipX + this.#bobber.x) / 2;
-        const midY = (tipY + this.#bobber.y) / 2 + 8;
-
-        this.#lineGraphics.lineStyle(1, 0xffffff, 0.6);
-        this.#lineGraphics.beginPath();
-        this.#lineGraphics.moveTo(tipX, tipY);
-        for (let i = 1; i <= 10; i++) {
-            const t = i / 10;
-            const x =
-                (1 - t) * (1 - t) * tipX +
-                2 * (1 - t) * t * midX +
-                t * t * this.#bobber.x;
-            const y =
-                (1 - t) * (1 - t) * tipY +
-                2 * (1 - t) * t * midY +
-                t * t * this.#bobber.y;
-            this.#lineGraphics.lineTo(x, y);
-        }
-        this.#lineGraphics.strokePath();
-    }
-
-    #spawnRipple(x: number, y: number): void {
-        const ripple = this.scene.add.circle(x, y, 2, 0xffffff, 0);
-        ripple.setStrokeStyle(1, 0xe0f2fe, 0.7);
-        ripple.setDepth(8400);
-        this.scene.tweens.add({
-            targets: ripple,
-            radius: 12,
-            alpha: 0,
-            duration: 700,
-            onComplete: () => ripple.destroy(),
-        });
-    }
-
-    #spawnSplash(x: number, y: number): void {
-        for (let i = 0; i < 6; i++) {
-            const drop = this.scene.add.sprite(
-                x,
-                y,
-                FISHING_TEXTURE_KEYS.SPLASH
-            );
-            drop.setDepth(9200);
-            const dx = Phaser.Math.Between(-14, 14);
-            const dy = -Phaser.Math.Between(8, 22);
-            this.scene.tweens.add({
-                targets: drop,
-                x: x + dx,
-                y: y + dy,
-                alpha: 0,
-                duration: 450,
-                ease: "Quad.out",
-                onComplete: () => drop.destroy(),
-            });
-        }
-    }
-
-    #spawnSparkles(x: number, y: number): void {
-        for (let i = 0; i < 6; i++) {
-            const spark = this.scene.add.sprite(
-                x + Phaser.Math.Between(-16, 16),
-                y + Phaser.Math.Between(-16, 8),
-                FISHING_TEXTURE_KEYS.SPARKLE
-            );
-            spark.setDepth(9600);
-            this.scene.tweens.add({
-                targets: spark,
-                y: spark.y - 12,
-                alpha: 0,
-                scale: 0.4,
-                duration: 600,
-                delay: i * 60,
-                onComplete: () => spark.destroy(),
-            });
-        }
-    }
-
-    #showExclaim(x: number, y: number): void {
-        const ex = this.scene.add.sprite(x, y, FISHING_TEXTURE_KEYS.EXCLAIM);
-        ex.setDepth(9500);
-        ex.setScale(0);
-        this.scene.tweens.add({
-            targets: ex,
-            scale: 1.4,
-            duration: 150,
-            ease: "Back.out",
-            onComplete: () => {
-                this.scene.time.addEvent({
-                    delay: 500,
-                    callback: () => {
-                        this.scene.tweens.add({
-                            targets: ex,
-                            alpha: 0,
-                            duration: 200,
-                            onComplete: () => ex.destroy(),
-                        });
-                    },
-                });
-            },
-        });
-    }
-
-    #popup(text: string, x: number, y: number, color: string): void {
-        const label = this.scene.add.text(x, y, text, {
-            fontFamily: '"Press Start 2P", monospace',
-            fontSize: "10px",
-            color,
-            stroke: "#000000",
-            strokeThickness: 3,
-        });
-        label.setOrigin(0.5);
-        label.setDepth(10000);
-        this.scene.tweens.add({
-            targets: label,
-            y: y - 22,
-            alpha: 0,
-            duration: 900,
-            onComplete: () => label.destroy(),
+    #startRipples(point: Point): void {
+        this.#stopRipples();
+        this.#rippleTimer = this.scene.time.addEvent({
+            delay: timing.rippleEvery,
+            loop: true,
+            callback: () => this.#water.ripple(point.x, point.y, 9, 900),
         });
     }
 
     #stopRipples(): void {
-        this.#rippleEvent?.remove(false);
-        this.#rippleEvent = undefined;
+        this.#rippleTimer?.remove(false);
+        this.#rippleTimer = null;
     }
 
-    #clearBobber(): void {
-        this.#bobberOut = false;
-        this.#bobber?.destroy();
-        this.#bobber = undefined;
-        this.#lineGraphics.clear();
+    /** Runs `callback` after `delay` ms unless the round was cancelled. */
+    #later(delay: number, callback: () => void): void {
+        const round = this.#round;
+        const timer = this.scene.time.delayedCall(delay, () => {
+            this.#timers.delete(timer);
+            if (round === this.#round) callback();
+        });
+        this.#timers.add(timer);
     }
 
-    #clearVisuals(): void {
+    /** Wraps a callback so it is ignored once the round was cancelled. */
+    #guard(callback: () => void): () => void {
+        const round = this.#round;
+        return () => {
+            if (round === this.#round) callback();
+        };
+    }
+
+    /** Cancels everything in flight for the current challenge. */
+    #clearRound(): void {
+        this.#round += 1;
+        this.#timers.forEach((timer) => timer.remove(false));
+        this.#timers.clear();
         this.#stopRipples();
-        this.#clearBobber();
-        this.#currentFish?.destroy();
-        this.#currentFish = undefined;
+        this.#fish?.destroy();
+        this.#fish = null;
+        this.#cast = null;
+        this.#revealPending = false;
     }
 }

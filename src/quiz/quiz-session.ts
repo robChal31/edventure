@@ -1,13 +1,15 @@
+import { gradeAnswer } from "./grading";
 import type {
     AnswerRecord,
+    AnswerValue,
+    PlayableQuiz,
     Question,
-    Quiz,
     QuizSummary,
 } from "./types";
 
 export type AnswerOutcome = {
     question: Question;
-    selectedIndex: number;
+    answer: AnswerValue;
     correct: boolean;
     isLast: boolean;
 };
@@ -16,16 +18,16 @@ export type AnswerOutcome = {
  * Tracks a single play-through of a quiz.
  *
  * The session is deliberately activity-agnostic: it owns question order,
- * one-attempt-per-question validation, scoring, and completion. An
- * activity (e.g. fishing) drives presentation/animation and reports the
- * student's chosen option via {@link submitAnswer}.
+ * one-attempt-per-question validation, grading, scoring, and completion.
+ * An activity (e.g. fishing) drives presentation/animation and reports the
+ * student's answer via {@link submitAnswer}.
  */
 export class QuizSession {
-    private quiz: Quiz;
+    private quiz: PlayableQuiz;
     private index = 0;
     private records: AnswerRecord[] = [];
 
-    constructor(quiz: Quiz) {
+    constructor(quiz: PlayableQuiz) {
         this.quiz = quiz;
     }
 
@@ -59,11 +61,11 @@ export class QuizSession {
     }
 
     /**
-     * Records an answer for the current question and advances.
+     * Grades and records an answer for the current question, then advances.
      * Each question may be answered only once; once the session is
      * complete further submissions are ignored.
      */
-    public submitAnswer(selectedIndex: number): AnswerOutcome | null {
+    public submitAnswer(answer: AnswerValue): AnswerOutcome | null {
         if (this.isComplete) {
             return null;
         }
@@ -73,18 +75,19 @@ export class QuizSession {
             return null;
         }
 
-        const correct = selectedIndex === question.correctIndex;
+        const correct = gradeAnswer(question, answer);
 
-        this.records.push({ question, selectedIndex, correct });
+        this.records.push({ question, answer, correct });
 
         const isLast = this.isComplete;
         this.index += 1;
 
-        return { question, selectedIndex, correct, isLast };
+        return { question, answer, correct, isLast };
     }
 
     public summary(): QuizSummary {
         return {
+            quizId: this.quiz.id,
             quizName: this.quiz.name,
             activityId: this.quiz.activityId,
             total: this.total,

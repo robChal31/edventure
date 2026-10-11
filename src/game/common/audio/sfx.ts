@@ -83,6 +83,17 @@ export const sfx = {
         noise(0.25, 0.06);
         tone(300, 90, 0.2, "sine", 0.04);
     },
+    /** The bait hit sand / wood instead of water. */
+    thud(): void {
+        noise(0.08, 0.05);
+        tone(170, 70, 0.12, "triangle", 0.06);
+    },
+    /** Reel ratchet clicks. */
+    reel(): void {
+        [0, 0.07, 0.14, 0.21].forEach((when) =>
+            tone(1100, 800, 0.03, "square", 0.02, when)
+        );
+    },
     bite(): void {
         tone(700, 900, 0.08, "square", 0.05);
         tone(900, 1200, 0.08, "square", 0.05, 0.09);

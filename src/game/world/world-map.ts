@@ -1,10 +1,21 @@
 import Phaser from "phaser";
+import { DEPTH_CONFIG } from "../config/depth-config";
 import { WORLD_CONFIG } from "../config/world-config";
-import { WorldMapDefinition } from "./world-map-definition";
+import {
+    getOverWaterLayerNames,
+    getWaterLayerNames,
+    WorldMapDefinition,
+} from "./world-map-definition";
+
+export type WorldTileLayer =
+    | Phaser.Tilemaps.TilemapLayer
+    | Phaser.Tilemaps.TilemapGPULayer;
 
 export class WorldMap {
     #map: Phaser.Tilemaps.Tilemap;
-    #waterLayer!: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer;
+    #layers = new Map<string, WorldTileLayer>();
+    #waterLayers: WorldTileLayer[] = [];
+    #overWaterLayers: WorldTileLayer[] = [];
 
     constructor(
         private scene: Phaser.Scene,
@@ -36,6 +47,9 @@ export class WorldMap {
             return;
         }
 
+        const waterNames = new Set(getWaterLayerNames(this.definition.layers));
+        const overWaterNames = new Set(getOverWaterLayerNames(this.definition.layers));
+
         this.#map.layers.forEach((layerData) => {
             const layer = this.#map.createLayer(
                 layerData.name,
@@ -54,25 +68,35 @@ export class WorldMap {
             }
 
             layer.setScale(WORLD_CONFIG.scale);
+            this.#layers.set(layerData.name, layer);
 
-            if (layerData.name === this.definition.layers.water ||
-                layerData.name === this.definition.layers.deep_water ||
-                layerData.name === this.definition.layers.shallow_water) {
-                this.#waterLayer = layer;
+            if (waterNames.has(layerData.name)) {
+                // Every water layer blocks walking (shallow AND deep water).
+                layer.setCollisionByExclusion([-1]);
+                this.#waterLayers.push(layer);
+            }
+
+            if (overWaterNames.has(layerData.name)) {
+                // Bridges render above the fish band, so a swimming fish can
+                // never be drawn on top of the planks.
+                layer.setDepth(DEPTH_CONFIG.OVER_WATER);
+                this.#overWaterLayers.push(layer);
             }
         });
 
-        if (this.#waterLayer) {
-            this.#waterLayer.setCollisionByExclusion([-1]);
-        }
+        waterNames.forEach((name) => {
+            if (!this.#layers.has(name)) {
+                console.warn(`Water layer "${name}" not found in map ${this.definition.key}`);
+            }
+        });
     }
 
     #initWorldBounds(): void {
         this.scene.physics.world.setBounds(
             0,
             0,
-            this.#map.widthInPixels * WORLD_CONFIG.scale,
-            this.#map.heightInPixels * WORLD_CONFIG.scale
+            this.widthInPixels,
+            this.heightInPixels
         );
     }
 
@@ -80,9 +104,39 @@ export class WorldMap {
         return this.#map;
     }
 
-    public get waterLayer():
-        Phaser.Tilemaps.TilemapLayer |
-        Phaser.Tilemaps.TilemapGPULayer {
-        return this.#waterLayer;
+    public get definitionKey(): string {
+        return this.definition.key;
+    }
+
+    /** Scaled world size. */
+    public get widthInPixels(): number {
+        return this.#map.widthInPixels * WORLD_CONFIG.scale;
+    }
+
+    public get heightInPixels(): number {
+        return this.#map.heightInPixels * WORLD_CONFIG.scale;
+    }
+
+    /** Scaled tile size. */
+    public get tileWidth(): number {
+        return this.#map.tileWidth * WORLD_CONFIG.scale;
+    }
+
+    public get tileHeight(): number {
+        return this.#map.tileHeight * WORLD_CONFIG.scale;
+    }
+
+    /** Every layer defined as water (water / shallow_water / deep_water). */
+    public get waterLayers(): readonly WorldTileLayer[] {
+        return this.#waterLayers;
+    }
+
+    /** Walkable layers drawn over water (bridges / piers). */
+    public get overWaterLayers(): readonly WorldTileLayer[] {
+        return this.#overWaterLayers;
+    }
+
+    public getLayer(name: string): WorldTileLayer | undefined {
+        return this.#layers.get(name);
     }
 }
