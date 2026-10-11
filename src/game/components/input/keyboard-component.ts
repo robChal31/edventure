@@ -5,6 +5,7 @@ export class KeyboardComponent extends InputComponent {
     #cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
     #attackKey: Phaser.Input.Keyboard.Key;
     #actionKey: Phaser.Input.Keyboard.Key;
+    #spaceKey: Phaser.Input.Keyboard.Key;
     #enterKey: Phaser.Input.Keyboard.Key;
     #testWearAxeAnimationKey: Phaser.Input.Keyboard.Key;
     #testAxeActionAnimationKey: Phaser.Input.Keyboard.Key;
@@ -13,6 +14,7 @@ export class KeyboardComponent extends InputComponent {
         this.#cursorKeys = keyboardPlugin.createCursorKeys();
         this.#attackKey = keyboardPlugin.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
         this.#actionKey = keyboardPlugin.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+        this.#spaceKey = keyboardPlugin.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.#enterKey = keyboardPlugin.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
         this.#testWearAxeAnimationKey = keyboardPlugin.addKey(Phaser.Input.Keyboard.KeyCodes.T);
         this.#testAxeActionAnimationKey = keyboardPlugin.addKey(Phaser.Input.Keyboard.KeyCodes.H);
@@ -56,6 +58,14 @@ export class KeyboardComponent extends InputComponent {
 
     get isActionKeyJustDown(): boolean {
         return Phaser.Input.Keyboard.JustDown(this.#actionKey);
+    }
+
+    /** Action (X) or Space — used as the generic "interact / cast" key. */
+    get isInteractKeyJustDown(): boolean {
+        return (
+            Phaser.Input.Keyboard.JustDown(this.#actionKey) ||
+            Phaser.Input.Keyboard.JustDown(this.#spaceKey)
+        );
     }
 
     get isEnterKeyJustDown(): boolean {

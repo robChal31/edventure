@@ -1,7 +1,6 @@
 import Phaser from "phaser";
 import { WORLD_CONFIG } from "../config/world-config";
 import { WorldMapDefinition } from "./world-map-definition";
-import { ASSET_KEYS, WATERFALL_ANIMATION_KEYS } from "../common/assets";
 
 export class MapAnimationLoader {
     constructor(
@@ -50,7 +49,9 @@ export class MapAnimationLoader {
                     );
 
                     sprite.setOrigin(0, 1);
-
+                    sprite.setDepth(
+                        (object.y + object.height) * WORLD_CONFIG.scale
+                    );
                     sprite.play({
                         key: animationDefinition.animationKey,
                         repeat: -1,

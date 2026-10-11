@@ -1,7 +1,5 @@
-import { CHARACTER_ANIMATIONS } from "./assets";
-import Phaser from "phaser";
 
-export type CharacterAnimation = keyof typeof CHARACTER_ANIMATIONS
+import Phaser from "phaser";
 
 export type Position = {
     x: number;
