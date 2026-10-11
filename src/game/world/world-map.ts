@@ -55,7 +55,9 @@ export class WorldMap {
 
             layer.setScale(WORLD_CONFIG.scale);
 
-            if (layerData.name === this.definition.layers.water) {
+            if (layerData.name === this.definition.layers.water ||
+                layerData.name === this.definition.layers.deep_water ||
+                layerData.name === this.definition.layers.shallow_water) {
                 this.#waterLayer = layer;
             }
         });

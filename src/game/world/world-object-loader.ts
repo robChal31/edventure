@@ -14,27 +14,37 @@ export class WorldObjectLoader {
     ): WorldObject[] {
         const objects: WorldObject[] = [];
 
-        this.definition.objectLayers?.forEach(
-            (layerName) => {
-                const objectLayer = map.getObjectLayer(layerName);
-                objectLayer?.objects.forEach((object) => {
-                    if (object.x == null || object.y == null) {
-                        return;
-                    }
-
-                    const worldObject =
-                        this.factory.create(
-                            layerName,
-                            object.x,
-                            object.y
-                        );
-
-                    if (worldObject) {
-                        objects.push(worldObject);
-                    }
-                });
-            }
+        const animationLayers = new Set(
+            this.definition.animations?.map(
+                (animation) => animation.layer
+            ) ?? []
         );
+
+        this.definition.objectLayers?.forEach((layerName) => {
+            if (animationLayers.has(layerName)) {
+                return;
+            }
+
+            const objectLayer = map.getObjectLayer(layerName);
+
+            objectLayer?.objects.forEach((object) => {
+                if (object.x == null || object.y == null) {
+                    return;
+                }
+
+                const worldObject = this.factory.create(
+                    layerName,
+                    object.x,
+                    object.y,
+                    object.gid,
+                    map
+                );
+
+                if (worldObject) {
+                    objects.push(worldObject);
+                }
+            });
+        });
 
         return objects;
     }

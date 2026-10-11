@@ -11,17 +11,6 @@
     ]
   },
   {
-    "path": "assets/images/hud",
-    "files": [
-      {
-        "type": "aseprite",
-        "key": "HUD_NUMBERS",
-        "textureURL": "heart_and_hud_numbers.png",
-        "atlasURL": "heart_and_hud_numbers.json"
-      }
-    ]
-  },
-  {
     "path": "assets/images/ui",
     "files": [
       {
@@ -43,207 +32,197 @@
     ]
   },
   {
-    "path": "assets/images/player",
+    "path": "assets/images/farm asset pack",
     "files": [
-      {
-        "type": "aseprite",
-        "key": "PLAYERTMP",
-        "textureURL": "main_green.png",
-        "atlasURL": "main_green.json"
-      },
-      {
-        "type": "spritesheet",
-        "key": "DAGGER",
-        "url": "dagger.png",
-        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
-      },
-      {
-        "type": "aseprite",
-        "key": "PLAYER",
-        "textureURL": "Idle-sheet.png",
-        "atlasURL": "Idle.json"
-      },
-      {
-        "type": "aseprite",
-        "key": "PLAYER_WALK",
-        "textureURL": "walk-sheet.png",
-        "atlasURL": "walk.json"
-      },
-      {
-        "type": "aseprite",
-        "key": "PLAYER_AXE",
-        "textureURL": "axe_sheet.png",
-        "atlasURL": "axe.json"
-      }
-    ]
-  },
-  {
-    "path": "assets/images/levels/common",
-    "files": [
-      {
-        "type": "image",
-        "key": "COLLISION",
-        "url": "collision.png"
-      },
-      {
-        "type": "atlas",
-        "key": "DUNGEON_OBJECTS",
-        "textureURL": "dungeon_objects.png",
-        "atlasURL": "dungeon_objects.json"
-      },
-      {
-        "type": "image",
-        "key": "POT",
-        "url": "pot.png"
-      },
-      {
-        "type": "spritesheet",
-        "key": "POT_BREAK",
-        "url": "pot_break.png",
-        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
-      }
-    ]
-  },
-  {
-    "path": "assets/images/object",
-    "files": [
-      {
-        "type": "spritesheet",
-        "key": "MAPLE_TREE",
-        "url": "maple_tree.png",
-        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
-      },
-      {
-        "type": "json",
-        "key": "MAPLE_TREE_DEFINITIONS",
-        "url": "maple_tree.json"
-      },
-      {
-        "type": "json",
-        "key": "MAHOGANY_TREE_DEFINITIONS",
-        "url": "mahogany_tree.json"
-      },
-      {
-        "type": "aseprite",
-        "key": "MAHOGANY_ANIMATION",
-        "textureURL": "mahogany_animation.png",
-        "atlasURL": "mahogany_animation.json"
-      }
-    ]
-  },
-  {
-    "path": "assets/images/enemies",
-    "files": [
-      {
-        "type": "aseprite",
-        "key": "SPIDER",
-        "textureURL": "spider.png",
-        "atlasURL": "spider.json"
-      },
-      {
-        "type": "aseprite",
-        "key": "WISP",
-        "textureURL": "wisp.png",
-        "atlasURL": "wisp.json"
-      },
-      {
-        "type": "spritesheet",
-        "key": "ENEMY_DEATH",
-        "url": "enemy_death.png",
-        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
-      },
-      {
-        "type": "aseprite",
-        "key": "DROW",
-        "textureURL": "drow.png",
-        "atlasURL": "drow.json"
-      }
-    ]
-  },
-  {
-    "path": "assets/images/levels/dungeon_1",
-    "files": [
-      {
-        "type": "image",
-        "key": "DUNGEON_1_BACKGROUND",
-        "url": "dungeon_1_background.png"
-      },
-      {
-        "type": "image",
-        "key": "DUNGEON_1_FOREGROUND",
-        "url": "dungeon_1_foreground.png"
-      },
-      {
-        "type": "tilemapTiledJSON",
-        "key": "DUNGEON_1_LEVEL",
-        "url": "dungeon_1.json"
-      }
-    ]
-  },
-  {
-    "path": "assets/images/levels/world",
-    "files": [
-      {
-        "type": "image",
-        "key": "WORLD_BACKGROUND",
-        "url": "world_background.png"
-      },
-      {
-        "type": "image",
-        "key": "WORLD_FOREGROUND",
-        "url": "world_foreground.png"
-      },
-
       {
         "type": "image",
         "key": "WORLD_SUMMER_GRASS",
-        "url": "tilesets/Tileset Grass Summer.png"
+        "url": "Tileset/Tileset Grass Summer.png"
       },
       {
         "type": "image",
         "key": "WORLD_SUMMER_GRASS_WATER",
-        "url": "tilesets/Tileset Grass Water Summer.png"
+        "url": "Tileset/Tileset Grass Water Summer.png"
       },
       {
         "type": "image",
         "key": "WORLD_WATER",
-        "url": "tilesets/Water Ground animations tiles.png"
+        "url": "Tileset/Water Ground animations tiles.png"
       },
       {
         "type": "image",
         "key": "WORLD_WATERFALL",
-        "url": "tilesets/Summer Waterfall.png"
+        "url": "Tileset/Summer Waterfall.png"
       },
       {
         "type": "image",
         "key": "WORLD_SUMMER_CLIFF",
-        "url": "tilesets/Tileset Grass Cliff Tileset Summer.png"
+        "url": "Tileset/Tileset Grass Cliff Tileset Summer.png"
       },
       {
         "type": "image",
-        "key": "WORLD_ALL_PROPS_SEASON",
-        "url": "tilesets/ALL props seasons.png"
+        "key": "ALL_PROPS_SEASON",
+        "url": "Tileset/ALL props seasons.png"
+      },
+      {
+        "type": "image",
+        "key": "WORLD_BEACH",
+        "url": "Tileset/Beach animations tiles.png"
+      },
+      {
+        "type": "image",
+        "key": "BEACH_BRIDGE",
+        "url": "Tileset/Bridge Beach Tileset.png"
       },
       {
         "type": "spritesheet",
-        "key": "WORLD_MAHOGANY_TREE",
-        "url": "tilesets/Mahogany Tree.png",
+        "key": "BOAT",
+        "url": "Objects/Exterior/Beach/Wood Boat.png",
+        "frameConfig": { "frameWidth": 176, "frameHeight": 112 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "TENT",
+        "url": "Objects/Exterior/Beach/Tent.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "FISHMAN_HOUSE",
+        "url": "Objects/Exterior/Houses/NPCS houses/Fishman/Fishman house.png",
+        "frameConfig": { "frameWidth": 80, "frameHeight": 112 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "FISH_BARREL",
+        "url": "Objects/Exterior/Beach/Fish Barrel.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "FISH_CRATE",
+        "url": "Objects/Exterior/Beach/Fish Crate.png",
         "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
       },
       {
-        "type": "image",
-        "key": "WORLD_TILESET1",
-        "url": "world_tileset1.png"
+        "type": "spritesheet",
+        "key": "CANOE",
+        "url": "Objects/Exterior/Beach/wood canoe.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
       },
+      {
+        "type": "spritesheet",
+        "key": "COCONUT_TREE",
+        "url": "Crops/Fruits Tree/Summer/Coconut tree.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "BEACH_CHAIR_WITH_UMBRELLA",
+        "url": "Objects/Exterior/Beach/Beach Chair with Umbrella.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "COCONUT_REE_HAMOK",
+        "url": "Objects/Exterior/Beach/Coconut Tree hamok.png",
+        "frameConfig": { "frameWidth": 80, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "WATER_STONE_RIPPLE",
+        "url": "Objects/Exterior/Beach/water stone ripple.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "WATER_STONE_RIPPLE2",
+        "url": "Objects/Exterior/Beach/water stone ripple2.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "WATER_STONE_RIPPLE3",
+        "url": "Objects/Exterior/Beach/water stone ripple3.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "SAND_STONES",
+        "url": "Objects/Exterior/Beach/sand stones.png",
+        "frameConfig": { "frameWidth": 40, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "SAND_STONES2",
+        "url": "Objects/Exterior/Beach/sand stones2.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "BEACH_PLATES",
+        "url": "Objects/Exterior/Beach/Beach Plates.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "WOODEN_BENCH",
+        "url": "Objects/Exterior/Beach/Wooden Bench.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "FISH_CAUGHT_ON_POLE_PROP",
+        "url": "Objects/Exterior/Beach/Fish caught on pole prop.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "STREET_LAMP",
+        "url": "Objects/Exterior/Street Lamp.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "MAHOGANY_TREE",
+        "url": "Objects/Tree/Common/Shadow/Mahogany Tree.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "MAPLE_TREE",
+        "url": "Objects/Tree/Common/Shadow/Maple Tree.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      }
+    ]
+  },
+  {
+    "path": "assets/images/levels",
+    "files": [
       {
         "type": "tilemapTiledJSON",
         "key": "WORLD_MAP",
-        "url": "worldtile.json"
+        "url": "world/system_map.json"
       },
       {
         "type": "tilemapTiledJSON",
-        "key": "WORLD_MAP2",
-        "url": "system_map.json"
+        "key": "BEACH_MAP",
+        "url": "beach/beach_map.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/data/object",
+    "files": [
+      {
+        "type": "json",
+        "key": "MAPLE_TREE_DEFINITIONS",
+        "url": "tree/maple_tree.json"
+      },
+      {
+        "type": "json",
+        "key": "MAHOGANY_TREE_DEFINITIONS",
+        "url": "tree/mahogany_tree.json"
       }
     ]
   },
@@ -273,35 +252,84 @@
     ]
   },
   {
-    "path": "assets/images/object/item",
+    "path": "assets/animations/object",
     "files": [
       {
         "type": "aseprite",
         "key": "WOOD_LOG_ANIMATION",
-        "textureURL": "wood_log_sheet.png",
-        "atlasURL": "wood_log.json"
-      }
-    ]
-  },
-  {
-    "path": "assets/images/object/water_props",
-    "files": [
+        "textureURL": "wood_log/wood_log_sheet.png",
+        "atlasURL": "wood_log/wood_log.json"
+      },
       {
         "type": "aseprite",
         "key": "WATER_PROPS_SUMMER_ANIMATION",
-        "textureURL": "water_props_summerr_sheet.png",
-        "atlasURL": "water_props_summer.json"
+        "textureURL": "water_props/water_props_summer_sheet.png",
+        "atlasURL": "water_props/water_props_summer.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "WATERFALL_ANIMATION",
+        "textureURL": "terain/summer_waterfal_sheet.png",
+        "atlasURL": "terain/summer_waterfall.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "MAHOGANY_ANIMATION",
+        "textureURL": "mahogany_tree/mahogany_animation.png",
+        "atlasURL": "mahogany_tree/mahogany_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "BOAT_ANIMATION",
+        "textureURL": "boat/boat_animation_sheet.png",
+        "atlasURL": "boat/boat_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "CANOE_ANIMATION",
+        "textureURL": "canoe/canoe_animation_sheet.png",
+        "atlasURL": "canoe/canoe_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "WATER_STONE_RIPPLE_ANIMATION",
+        "textureURL": "water_stone/water_stone_ripple_animation_sheet.png",
+        "atlasURL": "water_stone/water_stone_ripple_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "WATER_STONE_RIPPLE2_ANIMATION",
+        "textureURL": "water_stone/water_stone_ripple2_animation_sheet.png",
+        "atlasURL": "water_stone/water_stone_ripple2_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "WATER_STONE_RIPPLE3_ANIMATION",
+        "textureURL": "water_stone/water_stone_ripple3_animation_sheet.png",
+        "atlasURL": "water_stone/water_stone_ripple3_animation.json"
       }
     ]
   },
   {
-    "path": "assets/images/levels/world/terain",
+    "path": "assets/animations/player",
     "files": [
       {
         "type": "aseprite",
-        "key": "WATERFALL_ANIMATION",
-        "textureURL": "summer_waterfal_sheet.png",
-        "atlasURL": "summer_waterfall.json"
+        "key": "PLAYER",
+        "textureURL": "idle/Idle-sheet.png",
+        "atlasURL": "idle/Idle.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_WALK",
+        "textureURL": "walk/walk-sheet.png",
+        "atlasURL": "walk/walk.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_AXE",
+        "textureURL": "axe/axe_sheet.png",
+        "atlasURL": "axe/axe.json"
       }
     ]
   }

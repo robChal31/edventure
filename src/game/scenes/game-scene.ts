@@ -18,6 +18,7 @@ import { MapAnimationLoader } from "../world/map-animation-loader";
 import type { ActivityController, GameOptions } from "../game-options";
 import { FishingActivity } from "../activities/fishing/fishing-activity";
 import { FISHING_CONFIG } from "../activities/fishing/fishing-config";
+import { BEACH_MAP } from "../world/maps/beach-map";
 
 export class GameScene extends Phaser.Scene {
     #controls!: VirtualInputComponent;
@@ -64,11 +65,13 @@ export class GameScene extends Phaser.Scene {
         this.#initObjects();
         this.#initCamera();
         this.#initPlayer();
+        this.#initDebugPlayer();
         this.#initSystems();
         this.#collisionSystem.setup();
 
         // Keep the existing collision debug overlay only in free-roam
         // (no quiz) mode; the fishing activity renders a clean view.
+        this.#initDebug();
         if (!this.#options?.quiz) {
             this.#initDebug();
         }
@@ -97,7 +100,8 @@ export class GameScene extends Phaser.Scene {
     #initWorld(): void {
         this.#worldMap = new WorldMap(
             this,
-            VILLAGE_MAP
+            // VILLAGE_MAP
+            BEACH_MAP
         );
     }
 
@@ -114,13 +118,12 @@ export class GameScene extends Phaser.Scene {
                 this.#worldObjectRegistry.interactables
             );
 
-        this.#collisionSystem =
-            new CollisionSystem(
-                this,
-                this.#player,
-                this.#worldMap,
-                this.#worldObjectRegistry.collidables
-            );
+        this.#collisionSystem = new CollisionSystem(
+            this,
+            this.#player,
+            this.#worldMap,
+            this.#worldObjectRegistry.objects
+        );
     }
     // ─────────────────────────────────────────
     // CAMERA
@@ -212,7 +215,8 @@ export class GameScene extends Phaser.Scene {
 
         this.#worldObjectLoader =
             new WorldObjectLoader(
-                VILLAGE_MAP,
+                // VILLAGE_MAP,
+                BEACH_MAP,
                 this.#worldObjectFactory
             );
 
@@ -233,7 +237,8 @@ export class GameScene extends Phaser.Scene {
         this.#mapAnimationLoader =
             new MapAnimationLoader(
                 this,
-                VILLAGE_MAP
+                // VILLAGE_MAP
+                BEACH_MAP
             );
 
         this.#mapAnimationLoader.load(
@@ -242,6 +247,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     #initDebug(): void {
+        this.#collisionSystem.initDebug();
+
         this.#worldMap.waterLayer.renderDebug(
             this.add.graphics(),
             {
@@ -250,6 +257,27 @@ export class GameScene extends Phaser.Scene {
                 faceColor: new Phaser.Display.Color(168, 85, 247, 255),
             }
         );
+    }
+
+    // Di GameScene, setelah #initPlayer()
+    #initDebugPlayer(): void {
+        const body = this.#player.body as Phaser.Physics.Arcade.Body;
+        const graphics = this.add.graphics();
+        graphics.setDepth(99999);
+
+        graphics.lineStyle(2, 0xff0000, 1);
+
+        // Render di setiap frame (kalau player gerak, body ikut)
+        this.events.on(Phaser.Scenes.Events.UPDATE, () => {
+            graphics.clear();
+            graphics.lineStyle(2, 0xff0000, 1);
+            graphics.strokeRect(
+                body.x,
+                body.y,
+                body.width,
+                body.height
+            );
+        });
     }
 
     // ─────────────────────────────────────────
@@ -301,14 +329,23 @@ export class GameScene extends Phaser.Scene {
     // UPDATE
     // ─────────────────────────────────────────
     public update(): void {
-        this.#player.setDepth(9999);
-        this.#worldObjectRegistry.objects.forEach(
-            ({ depthSortable }) => {
-                depthSortable?.setDepth(
-                    depthSortable.y
-                );
-            }
-        );
+        // Player: depth = body bottom (kaki)
+        const playerBody = this.#player.body as Phaser.Physics.Arcade.Body;
+        if (playerBody) {
+            this.#player.setDepth(playerBody.bottom);
+        }
+
+        // Objects: depth = body bottom (kaki)
+        this.#worldObjectRegistry.objects.forEach(({ depthSortable, collidable }) => {
+            if (!depthSortable) return;
+
+            const body = collidable?.collisionBody;
+            const depthRef = body
+                ? body.y + body.height
+                : depthSortable.y;  // fallback kalau ga ada body
+
+            depthSortable.setDepth(depthRef);
+        });
 
         this.#objectVisibilitySystem.update();
         this.#activity?.update();

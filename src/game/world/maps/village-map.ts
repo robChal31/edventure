@@ -2,7 +2,7 @@ import { ASSET_KEYS, WATER_PROPS_SUMMER_ANIMATION_KEYS, WATERFALL_ANIMATION_KEYS
 import { WorldMapDefinition } from "../world-map-definition";
 
 export const VILLAGE_MAP: WorldMapDefinition = {
-    key: ASSET_KEYS.WORLD_MAP2,
+    key: ASSET_KEYS.WORLD_MAP,
 
     tilesets: [
         {
@@ -27,11 +27,11 @@ export const VILLAGE_MAP: WorldMapDefinition = {
         },
         {
             name: "all_props_seasons",
-            assetKey: ASSET_KEYS.WORLD_ALL_PROPS_SEASON,
+            assetKey: ASSET_KEYS.ALL_PROPS_SEASON,
         },
         {
             name: "mahogany_tree",
-            assetKey: ASSET_KEYS.WORLD_MAHOGANY_TREE,
+            assetKey: ASSET_KEYS.MAHOGANY_TREE,
         },
     ],
 

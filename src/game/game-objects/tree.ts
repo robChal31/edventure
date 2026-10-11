@@ -245,7 +245,7 @@ export class Tree
                 const tile = this.scene.add.image(
                     colIndex * tileSize,
                     -rowIndex * tileSize + visualOffsetY - 4,
-                    ASSET_KEYS.WORLD_MAHOGANY_TREE,
+                    ASSET_KEYS.MAHOGANY_TREE,
                     frame
                 );
 
