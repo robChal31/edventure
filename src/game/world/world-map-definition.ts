@@ -8,6 +8,8 @@ export type WorldMapTileset = {
 export type WorldMapLayers = {
     ground: string;
     water?: string;
+    deep_water?: string;
+    shallow_water?: string;
     waterfall_stream?: string;
     collision?: string;
 };

@@ -22,7 +22,7 @@ export default function HomeScreen({ onCreate, onPlay }: HomeScreenProps) {
     );
 
     return (
-        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-sky-900 via-slate-900 to-slate-950 text-slate-100">
+        <div className="flex-1 overflow-y-auto bg-linear-to-b from-sky-900 via-slate-900 to-slate-950 text-slate-100">
             <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col items-center px-4 py-10">
                 <div className="mb-2 text-5xl" aria-hidden>
                     🎣
