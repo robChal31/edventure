@@ -23,6 +23,8 @@ type QuestionCardProps = {
     onAnswer: (answer: AnswerValue) => void;
     /** "overlay" floats over the game; "inline" is used for teacher previews. */
     layout?: "overlay" | "inline";
+    /** Heading shown in the card's top bar, from the activity's copy. */
+    cue?: string;
 };
 
 /**
@@ -36,6 +38,7 @@ export default function QuestionCard({
     reveal,
     onAnswer,
     layout = "overlay",
+    cue = "❓ QUESTION",
 }: QuestionCardProps) {
     const titleId = useId();
     const isOverlay = layout === "overlay";
@@ -57,7 +60,7 @@ export default function QuestionCard({
 
             <header className="lw-waves flex items-center justify-between gap-2 px-4 py-2.5">
                 <span className="font-pixel text-[10px] text-sky-50 drop-shadow">
-                    <span className="lw-wiggle mr-1">🐟</span> FISH ON THE LINE!
+                    <span className="lw-wiggle mr-1">{cue}</span>
                 </span>
                 <span className="rounded bg-slate-950/50 px-2 py-1 font-pixel text-[10px] text-amber-200">
                     Q {questionNumber}/{total}

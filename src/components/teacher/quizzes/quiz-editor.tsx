@@ -19,6 +19,7 @@ import { saveQuiz, validateQuizDraft, type QuizDraft } from "@/lms/repositories/
 import Modal from "@/components/ui/modal";
 import { ErrorList, Field, inputClass } from "@/components/ui/panels";
 import PixelButton from "@/components/ui/pixel-button";
+import { ActivityGuideDetails } from "@/components/ui/activity-guide";
 import ClassificationFields from "../classification/classification-fields";
 import QuestionEditor from "../questions/question-editor";
 import AssignmentPicker from "./assignment-picker";
@@ -189,7 +190,7 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                         </p>
 
                         <ActivityPicker value={draft.activityId} onChange={(activityId) => patch({ activityId })} />
-                        <p className="-mt-2 text-[11px] text-slate-500">{activity.tagline}</p>
+                        <ActivityGuideDetails activity={activity} />
 
                         <Toggle
                             checked={draft.published}

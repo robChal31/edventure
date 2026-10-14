@@ -104,7 +104,7 @@
   "size": { "w": 768, "h": 64 },
   "scale": "1",
   "frameTags": [
-   { "name": "captured_no_fish", "from": 0, "to": 3, "direction": "forward", "color": "#000000ff" },
+   { "name": "captured_no_fish_down", "from": 0, "to": 3, "direction": "forward", "color": "#000000ff" },
    { "name": "captured_no_fish_back", "from": 4, "to": 7, "direction": "forward", "color": "#000000ff" },
    { "name": "captured_no_fish_side", "from": 8, "to": 11, "direction": "forward", "color": "#000000ff" }
   ],

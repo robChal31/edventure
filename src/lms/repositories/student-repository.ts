@@ -7,12 +7,13 @@ import { classStore } from "./organisation-repository";
 import { removeStudentFromAssignments } from "./quiz-repository";
 
 export const STUDENT_AVATARS = [
-    "🐠", "🐙", "🦀", "🐬", "🐳", "🦭", "🐢", "🦈", "🐡", "🦑", "🐚", "🦞",
+    "🦊", "🐼", "🐯", "🐨", "🦉", "🐸", "🐧", "🦁", "🐵", "🐰", "🐻", "🦄",
+    "🐶", "🐱", "🐹", "🦋", "🐝", "🐞", "🌟", "🚀", "🎈", "🌈", "🍀", "⭐",
 ] as const;
 
 const CODE_WORDS = [
-    "TUNA", "CRAB", "SEAL", "CLAM", "SQUID", "ORCA", "SHARK", "KOI",
-    "EEL", "RAY", "PRAWN", "CORAL", "WAVE", "PEARL", "SHELL", "REEF",
+    "LUNA", "NOVA", "MAPLE", "RIVER", "CEDAR", "COMET", "ROBIN", "TIGER",
+    "PANDA", "KOALA", "MANGO", "BERRY", "ORBIT", "PIXEL", "SUNNY", "FOREST",
 ];
 
 function sanitizeStudent(raw: unknown): Student | null {
@@ -58,7 +59,7 @@ export function generateStudentCode(taken: ReadonlySet<string>): string {
         if (!taken.has(code)) return code;
     }
     // Practically unreachable; fall back to something long and random.
-    return `FISH${Date.now().toString(36).toUpperCase()}`;
+    return `CODE${Date.now().toString(36).toUpperCase()}`;
 }
 
 function takenCodes(exceptId?: string): Set<string> {

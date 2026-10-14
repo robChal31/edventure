@@ -54,7 +54,7 @@ export default function QuestionPicker({ questions, selectedIds, onChange, onCre
             <section>
                 <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        In this quiz ({selected.length}) — one fish per question
+                        In this quiz ({selected.length})
                     </h3>
                     {selected.length > 0 && (
                         <button

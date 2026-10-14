@@ -398,6 +398,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         const key = fishingAnimationKey(state, facing);
 
+        // A missing animation must never leave the player stuck in fishing
+        // mode (no completion event would ever fire): skip straight ahead.
+        if (!this.scene.anims.exists(key)) {
+            console.warn(`Fishing animation missing: ${key}`);
+            this.#cancelFishingAnimation = undefined;
+            this.scene.time.delayedCall(0, () => handlers.onComplete?.());
+            return;
+        }
+
         const onUpdate = (
             animation: Phaser.Animations.Animation,
             frame: Phaser.Animations.AnimationFrame
