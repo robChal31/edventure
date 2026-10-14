@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Student } from "@/lms/types";
-import { useAttempts, useHydrated, useStudents } from "@/lms/hooks";
+import { canManageRoster, isSuperAdmin, visibleClasses, visibleStudents } from "@/lms/access";
+import { useAttempts, useClasses, useHydrated, useSchools, useSignedInStaff, useStudents } from "@/lms/hooks";
 import {
     deleteStudent,
     emptyStudentDraft,
@@ -11,6 +12,7 @@ import {
     type StudentDraft,
 } from "@/lms/repositories/student-repository";
 import { attemptStats, formatRelative } from "@/lms/services/reports";
+import { schoolName } from "@/lms/repositories/organisation-repository";
 import { ScorePill } from "@/components/ui/badges";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { EmptyState, inputClass, PageHeader, Skeleton } from "@/components/ui/panels";
@@ -20,8 +22,15 @@ import StudentEditor from "./student-editor";
 
 export default function StudentManager() {
     const hydrated = useHydrated();
-    const students = useStudents();
+    const actor = useSignedInStaff();
+    const allStudents = useStudents();
     const attempts = useAttempts();
+    const schools = useSchools();
+    const allClasses = useClasses();
+
+    const students = useMemo(() => visibleStudents(actor, allStudents), [actor, allStudents]);
+    const classes = useMemo(() => visibleClasses(actor, allClasses), [actor, allClasses]);
+    const canEdit = canManageRoster(actor);
 
     const [search, setSearch] = useState("");
     const [classFilter, setClassFilter] = useState("");
@@ -30,16 +39,16 @@ export default function StudentManager() {
     const [deleting, setDeleting] = useState<Student | null>(null);
     const [copied, setCopied] = useState<string | null>(null);
 
-    const classNames = useMemo(
-        () => Array.from(new Set(students.map((s) => s.className).filter(Boolean))).sort(),
-        [students]
-    );
-
     const filtered = students
-        .filter((s) => !classFilter || s.className === classFilter)
+        .filter((s) => !classFilter || s.classId === classFilter)
         .filter((s) => !search.trim() || s.name.toLowerCase().includes(search.trim().toLowerCase()))
         .slice()
         .sort((a, b) => a.className.localeCompare(b.className) || a.name.localeCompare(b.name));
+
+    const defaultTarget = {
+        schoolId: isSuperAdmin(actor) ? (schools[0]?.id ?? null) : (actor?.schoolId ?? null),
+        classId: null as string | null,
+    };
 
     const copyCode = async (student: Student) => {
         try {
@@ -59,14 +68,16 @@ export default function StudentManager() {
                 title="Students"
                 description="Each student logs in at /student with their code. Results show up in their report."
                 actions={
-                    <>
-                        <PixelButton tone="slate" onClick={() => setBulkOpen(true)}>
-                            ⇪ Add a class
-                        </PixelButton>
-                        <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft())}>
-                            + Add student
-                        </PixelButton>
-                    </>
+                    canEdit ? (
+                        <>
+                            <PixelButton tone="slate" onClick={() => setBulkOpen(true)}>
+                                ⇪ Paste a class list
+                            </PixelButton>
+                            <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft(defaultTarget.schoolId, null))}>
+                                + Add student
+                            </PixelButton>
+                        </>
+                    ) : null
                 }
             />
 
@@ -85,9 +96,9 @@ export default function StudentManager() {
                     aria-label="Filter by class"
                 >
                     <option value="">All classes</option>
-                    {classNames.map((name) => (
-                        <option key={name} value={name}>
-                            Class {name}
+                    {classes.map((klass) => (
+                        <option key={klass.id} value={klass.id}>
+                            Class {klass.name}
                         </option>
                     ))}
                 </select>
@@ -100,12 +111,16 @@ export default function StudentManager() {
                     icon="🧒"
                     title="NO STUDENTS YET"
                     action={
-                        <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft())}>
-                            + Add your first student
-                        </PixelButton>
+                        canEdit ? (
+                            <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft(defaultTarget.schoolId, null))}>
+                                + Add your first student
+                            </PixelButton>
+                        ) : undefined
                     }
                 >
-                    Add students one by one or paste a whole class list.
+                    {canEdit
+                        ? "Add students one by one or paste a whole class list."
+                        : "No students are in your classes yet. Your school admin adds them."}
                 </EmptyState>
             ) : (
                 <div className="overflow-x-auto rounded-xl border-2 border-slate-800">
@@ -135,7 +150,12 @@ export default function StudentManager() {
                                                 {student.name}
                                             </Link>
                                         </td>
-                                        <td className="px-4 py-2.5 text-slate-300">{student.className || "—"}</td>
+                                        <td className="px-4 py-2.5 text-slate-300">
+                                            {student.className || "—"}
+                                            {isSuperAdmin(actor) && (
+                                                <span className="block text-[11px] text-slate-500">{schoolName(student.schoolId)}</span>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-2.5">
                                             <div className="flex items-center gap-1.5">
                                                 <code className="rounded bg-slate-800 px-2 py-1 font-pixel text-[10px] tracking-widest text-amber-300">
@@ -144,9 +164,11 @@ export default function StudentManager() {
                                                 <button type="button" onClick={() => copyCode(student)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title="Copy code">
                                                     {copied === student.id ? "✔" : "⧉"}
                                                 </button>
-                                                <button type="button" onClick={() => regenerateStudentCode(student.id)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title="New code">
-                                                    🎲
-                                                </button>
+                                                {canEdit && (
+                                                    <button type="button" onClick={() => regenerateStudentCode(student.id)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title="New code">
+                                                        🎲
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-4 py-2.5 tabular-nums text-slate-300">{quizzesDone}</td>
@@ -159,6 +181,7 @@ export default function StudentManager() {
                                                 <Link href={`/teacher/students/${student.id}`} className="rounded px-2 py-1 text-xs font-semibold text-sky-300 hover:bg-slate-800">
                                                     Report
                                                 </Link>
+                                                {canEdit && (<>
                                                 <button
                                                     type="button"
                                                     onClick={() => setEditing({ ...student })}
@@ -173,6 +196,7 @@ export default function StudentManager() {
                                                 >
                                                     Delete
                                                 </button>
+                                                </>)}
                                             </div>
                                         </td>
                                     </tr>
@@ -183,8 +207,8 @@ export default function StudentManager() {
                 </div>
             )}
 
-            <StudentEditor draft={editing} classNames={classNames} onClose={() => setEditing(null)} />
-            <BulkAddStudents open={bulkOpen} onClose={() => setBulkOpen(false)} />
+            <StudentEditor draft={editing} classes={classes} schools={schools} actorIsSuper={isSuperAdmin(actor)} onClose={() => setEditing(null)} />
+            <BulkAddStudents open={bulkOpen} onClose={() => setBulkOpen(false)} classes={classes} schools={schools} actorIsSuper={isSuperAdmin(actor)} />
 
             <ConfirmDialog
                 open={deleting !== null}

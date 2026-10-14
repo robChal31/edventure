@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { QUESTION_TYPE_ORDER, QUESTION_TYPES } from "@/quiz/question-types";
+import { GRADES, CURRICULA, type CurriculumId } from "@/quiz/taxonomy";
 import type { Question, QuestionType } from "@/quiz/types";
-import { QuestionTypeBadge, SubjectTag } from "@/components/ui/badges";
+import { ChipTag, QuestionTypeBadge } from "@/components/ui/badges";
 import { inputClass } from "@/components/ui/panels";
 
 type Props = {
@@ -17,17 +18,26 @@ type Props = {
 export default function QuestionPicker({ questions, selectedIds, onChange, onCreateNew }: Props) {
     const [search, setSearch] = useState("");
     const [type, setType] = useState<QuestionType | "all">("all");
+    const [grade, setGrade] = useState("");
+    const [subject, setSubject] = useState("");
 
     const byId = useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
     const selected = selectedIds.map((id) => byId.get(id)).filter((q): q is Question => Boolean(q));
     const selectedSet = new Set(selectedIds);
+
+    const subjects = Array.from(new Set(questions.map((q) => q.subject).filter(Boolean) as string[])).sort();
 
     const available = questions.filter((q) => {
         const needle = search.trim().toLowerCase();
         return (
             !selectedSet.has(q.id) &&
             (type === "all" || q.type === type) &&
-            (!needle || q.text.toLowerCase().includes(needle) || q.subject?.toLowerCase().includes(needle))
+            (!grade || q.grade === Number(grade)) &&
+            (!subject || q.subject === subject) &&
+            (!needle ||
+                q.text.toLowerCase().includes(needle) ||
+                (q.topic ?? "").toLowerCase().includes(needle) ||
+                (q.subject ?? "").toLowerCase().includes(needle))
         );
     });
 
@@ -103,14 +113,27 @@ export default function QuestionPicker({ questions, selectedIds, onChange, onCre
                         ✎ Write a new question
                     </button>
                 </div>
-                <div className="mb-2 flex flex-col gap-2 sm:flex-row">
+                <div className="mb-2 grid gap-2 sm:grid-cols-2">
                     <input
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="🔎 Search the bank…"
+                        placeholder="🔎 Search text or topic…"
                         className={inputClass}
                         aria-label="Search the question bank"
                     />
+                    <div className="grid grid-cols-3 gap-2">
+                        <select value={grade} onChange={(e) => setGrade(e.target.value)} className={inputClass} aria-label="Filter by grade">
+                            <option value="">Any grade</option>
+                            {GRADES.map((g) => (
+                                <option key={g} value={g}>Grade {g}</option>
+                            ))}
+                        </select>
+                        <select value={subject} onChange={(e) => setSubject(e.target.value)} className={inputClass} aria-label="Filter by subject">
+                            <option value="">Any subject</option>
+                            {subjects.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
                     <select
                         value={type}
                         onChange={(event) => setType(event.target.value as QuestionType | "all")}
@@ -124,6 +147,7 @@ export default function QuestionPicker({ questions, selectedIds, onChange, onCre
                             </option>
                         ))}
                     </select>
+                    </div>
                 </div>
                 <ul className="flex max-h-72 flex-col gap-1.5 overflow-y-auto pr-1">
                     {available.length === 0 && (
@@ -134,7 +158,10 @@ export default function QuestionPicker({ questions, selectedIds, onChange, onCre
                             <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     <QuestionTypeBadge type={question.type} compact />
-                                    <SubjectTag subject={question.subject} />
+                                    {question.grade !== undefined && <ChipTag tone="amber">G{question.grade}</ChipTag>}
+                                    {question.subject && <ChipTag tone="sky">{question.subject}</ChipTag>}
+                                    {question.curriculum && <ChipTag tone="violet">{CURRICULA[question.curriculum as CurriculumId].label}</ChipTag>}
+                                    {question.schoolId === null && <ChipTag tone="emerald">🌍 Global</ChipTag>}
                                 </div>
                                 <div className="mt-1 truncate text-sm text-slate-200">{question.text}</div>
                             </div>

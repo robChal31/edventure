@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useAttempts, useHydrated, useQuestions, useQuizzes, useSignedInStudent } from "@/lms/hooks";
+import { useAttempts, useHydrated, useLmsReady, useQuestions, useQuizzes, useSignedInStudent } from "@/lms/hooks";
 import { recordAttempt } from "@/lms/repositories/attempt-repository";
 import { questionStore } from "@/lms/repositories/question-repository";
 import { quizStore } from "@/lms/repositories/quiz-repository";
@@ -21,7 +21,10 @@ import StudentBadge from "./hub/student-badge";
  */
 export default function StudentPlay() {
     const router = useRouter();
-    const hydrated = useHydrated();
+    // Wait for the one-time data upgrade before reading any LMS data.
+    const mounted = useHydrated();
+    const lmsReady = useLmsReady();
+    const hydrated = mounted && lmsReady;
     const student = useSignedInStudent();
     const quizzes = useQuizzes();
     const questions = useQuestions();
@@ -37,7 +40,7 @@ export default function StudentPlay() {
         if (!student) return [];
         const progress = progressByQuiz(attempts.filter((a) => a.studentId === student.id));
 
-        return questsForStudent(student.id, quizzes, questions).map((quiz) => {
+        return questsForStudent(student, quizzes, questions).map((quiz) => {
             const resolved = resolveQuizQuestions(quiz, questions);
             const types = Array.from(new Set(resolved.map((q) => q.type))) as QuestionType[];
             const mine = progress.get(quiz.id);

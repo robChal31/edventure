@@ -213,7 +213,7 @@ export default function GameScreen({
             {/* Loading veil until the first map is on screen. */}
             {!mapId && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950">
-                    <div className="lw-bob text-4xl" aria-hidden>🎣</div>
+                    <div className="lw-bob text-4xl" aria-hidden>🧭</div>
                     <p className="font-pixel text-[10px] text-sky-300">LOADING WORLD…</p>
                 </div>
             )}
@@ -236,7 +236,7 @@ export default function GameScreen({
             {inActivity && !travelling && (
                 <>
                     <FishingHud
-                        roomName={activeQuiz?.name ?? "Fishing"}
+                        roomName={activeQuiz?.name ?? "Quest"}
                         questionNumber={hud.questionNumber}
                         total={hud.total}
                         caught={hud.caught}

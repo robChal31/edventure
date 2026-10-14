@@ -11,7 +11,7 @@ const pixelFont = localFont({
 export const metadata: Metadata = {
     title: "Learning World",
     description:
-        "Teachers create quizzes. Students play them through interactive game activities — starting with Fishing.",
+        "Schools build quizzes from a shared question bank. Students play them through interactive activity maps.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

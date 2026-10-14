@@ -69,7 +69,7 @@ export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true }:
                         disabled={locked || !text.trim()}
                         className="pixel-btn ml-auto rounded-xl bg-amber-400 px-5 py-3 font-pixel text-xs text-amber-950 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        🎣 REEL IT IN
+                        ✔ SUBMIT
                     </button>
                 </div>
             )}

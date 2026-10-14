@@ -3,21 +3,33 @@
 import { useMemo, useState } from "react";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import {
+    authoringSchoolId,
+    canEditOwned,
+    canAuthorContent,
+    visibleQuestions,
+    visibleQuizzes,
+} from "@/lms/access";
+import {
     draftFromQuestion,
     emptyDraft,
     QUESTION_TYPE_ORDER,
     QUESTION_TYPES,
     type QuestionDraft,
 } from "@/quiz/question-types";
+import { CURRICULA, CURRICULUM_ORDER, DIFFICULTIES, GRADES, classificationSummary, type CurriculumId, type Difficulty } from "@/quiz/taxonomy";
 import type { Question, QuestionType } from "@/quiz/types";
-import { useHydrated, useQuestions, useQuizzes } from "@/lms/hooks";
+import { useHydrated, useQuestions, useQuizzes, useSignedInStaff } from "@/lms/hooks";
 import {
+    copyQuestionTo,
     deleteQuestion,
     duplicateQuestion,
+    isUnlabelled,
     listSubjects,
+    listTopics,
 } from "@/lms/repositories/question-repository";
 import { countQuizzesUsingQuestion } from "@/lms/repositories/quiz-repository";
-import { QuestionTypeBadge, SubjectTag } from "@/components/ui/badges";
+import { schoolName } from "@/lms/repositories/organisation-repository";
+import { ChipTag, QuestionTypeBadge } from "@/components/ui/badges";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import Modal from "@/components/ui/modal";
 import { EmptyState, inputClass, PageHeader, Skeleton } from "@/components/ui/panels";
@@ -26,58 +38,103 @@ import QuestionEditor from "./question-editor";
 import QuestionPreview from "./question-preview";
 
 type TypeFilter = QuestionType | "all";
+type OwnerFilter = "all" | "global" | "school";
 
 export default function QuestionBank() {
     const hydrated = useHydrated();
-    const questions = useQuestions();
-    const quizzes = useQuizzes();
+    const actor = useSignedInStaff();
+    const allQuestions = useQuestions();
+    const allQuizzes = useQuizzes();
+
+    const questions = useMemo(() => visibleQuestions(actor, allQuestions), [actor, allQuestions]);
+    const quizzes = useMemo(() => visibleQuizzes(actor, allQuizzes), [actor, allQuizzes]);
+    const subjects = useMemo(() => listSubjects(questions), [questions]);
+    const topics = useMemo(() => listTopics(questions), [questions]);
 
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+    const [grade, setGrade] = useState("");
     const [subject, setSubject] = useState("");
+    const [curriculum, setCurriculum] = useState<CurriculumId | "">("");
+    const [difficulty, setDifficulty] = useState<Difficulty | "">("");
+    const [owner, setOwner] = useState<OwnerFilter>("all");
+    const [onlyUnlabelled, setOnlyUnlabelled] = useState(false);
+
     const [editing, setEditing] = useState<QuestionDraft | null>(null);
     const [previewing, setPreviewing] = useState<Question | null>(null);
     const [deleting, setDeleting] = useState<Question | null>(null);
-
-    const subjects = useMemo(() => listSubjects(questions), [questions]);
 
     const filtered = useMemo(() => {
         const needle = search.trim().toLowerCase();
         return questions
             .filter((q) => typeFilter === "all" || q.type === typeFilter)
+            .filter((q) => !grade || q.grade === Number(grade))
             .filter((q) => !subject || q.subject === subject)
+            .filter((q) => !curriculum || q.curriculum === curriculum)
+            .filter((q) => !difficulty || q.difficulty === difficulty)
+            .filter((q) => owner === "all" || (owner === "global" ? q.schoolId === null : q.schoolId !== null))
+            .filter((q) => !onlyUnlabelled || isUnlabelled(q))
             .filter(
                 (q) =>
                     !needle ||
                     q.text.toLowerCase().includes(needle) ||
+                    (q.topic ?? "").toLowerCase().includes(needle) ||
+                    (q.tags ?? []).some((tag) => tag.includes(needle)) ||
                     describeCorrectAnswer(q).toLowerCase().includes(needle)
             )
             .slice()
             .reverse(); // newest first
-    }, [questions, typeFilter, subject, search]);
+    }, [questions, typeFilter, grade, subject, curriculum, difficulty, owner, onlyUnlabelled, search]);
 
     const countFor = (type: TypeFilter) =>
         type === "all" ? questions.length : questions.filter((q) => q.type === type).length;
 
+    const unlabelledCount = questions.filter(isUnlabelled).length;
     const deletingUsage = deleting ? countQuizzesUsingQuestion(quizzes, deleting.id) : 0;
+    const authorSchool = authoringSchoolId(actor);
+    const canAuthor = canAuthorContent(actor);
+    const ownerName = (q: Question) => (q.schoolId === null ? "Global bank" : schoolName(q.schoolId));
+
+    const newQuestion = () => {
+        const draft = emptyDraft();
+        setEditing({ ...draft, schoolId: authorSchool });
+    };
 
     return (
         <>
             <PageHeader
                 title="Question bank"
-                description="Write questions once, reuse them in any quiz. Three types: multiple choice, true/false and short answer."
+                description="Questions are labelled by grade, subject, topic, curriculum and difficulty, so they are easy to find and report on. The global bank is shared by everyone."
                 actions={
-                    <PixelButton tone="sky" onClick={() => setEditing(emptyDraft())}>
-                        + New question
-                    </PixelButton>
+                    canAuthor ? (
+                        <PixelButton tone="sky" onClick={newQuestion}>
+                            + New question
+                        </PixelButton>
+                    ) : null
                 }
             />
 
-            <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
+            {unlabelledCount > 0 && (
+                <button
+                    type="button"
+                    onClick={() => setOnlyUnlabelled((v) => !v)}
+                    aria-pressed={onlyUnlabelled}
+                    className={`mb-4 w-full rounded-lg border-2 px-4 py-2 text-left text-sm transition ${
+                        onlyUnlabelled
+                            ? "border-amber-400 bg-amber-400/15 text-amber-100"
+                            : "border-amber-700/60 bg-amber-950/30 text-amber-200 hover:border-amber-600"
+                    }`}
+                >
+                    ⚠ {unlabelledCount} question{unlabelledCount === 1 ? " is" : "s are"} missing labels (grade, subject, topic or curriculum).{" "}
+                    <span className="underline">{onlyUnlabelled ? "Show all" : "Show them"}</span>
+                </button>
+            )}
+
+            <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center">
                 <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder="🔎 Search questions or answers…"
+                    placeholder="🔎 Search text, topic, tag or answer…"
                     className={`${inputClass} lg:max-w-sm`}
                     aria-label="Search questions"
                 />
@@ -89,9 +146,7 @@ export default function QuestionBank() {
                             onClick={() => setTypeFilter(type)}
                             aria-pressed={typeFilter === type}
                             className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                                typeFilter === type
-                                    ? "bg-amber-400 text-amber-950"
-                                    : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                                typeFilter === type ? "bg-amber-400 text-amber-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                             }`}
                         >
                             {type === "all" ? "All" : `${QUESTION_TYPES[type].icon} ${QUESTION_TYPES[type].shortLabel}`}{" "}
@@ -99,19 +154,51 @@ export default function QuestionBank() {
                         </button>
                     ))}
                 </div>
-                <select
-                    value={subject}
-                    onChange={(event) => setSubject(event.target.value)}
-                    className={`${inputClass} lg:ml-auto lg:w-48`}
-                    aria-label="Filter by subject"
-                >
-                    <option value="">All subjects</option>
-                    {subjects.map((s) => (
-                        <option key={s} value={s}>
-                            {s}
-                        </option>
+            </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+                <FilterSelect label="Grade" value={grade} onChange={setGrade}>
+                    {GRADES.map((g) => (
+                        <option key={g} value={g}>Grade {g}</option>
                     ))}
-                </select>
+                </FilterSelect>
+                <FilterSelect label="Subject" value={subject} onChange={setSubject}>
+                    {subjects.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                    ))}
+                </FilterSelect>
+                <FilterSelect label="Curriculum" value={curriculum} onChange={(v) => setCurriculum(v as CurriculumId | "")}>
+                    {CURRICULUM_ORDER.map((c) => (
+                        <option key={c} value={c}>{CURRICULA[c].label}</option>
+                    ))}
+                </FilterSelect>
+                <FilterSelect label="Difficulty" value={difficulty} onChange={(v) => setDifficulty(v as Difficulty | "")}>
+                    {(Object.keys(DIFFICULTIES) as Difficulty[]).map((d) => (
+                        <option key={d} value={d}>{DIFFICULTIES[d].label}</option>
+                    ))}
+                </FilterSelect>
+                <FilterSelect label="Source" value={owner} onChange={(v) => setOwner(v as OwnerFilter)}>
+                    <option value="global">Global bank</option>
+                    <option value="school">{actor?.role === "super_admin" ? "Schools" : "My school"}</option>
+                </FilterSelect>
+                <div className="flex items-end">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setGrade("");
+                            setSubject("");
+                            setCurriculum("");
+                            setDifficulty("");
+                            setOwner("all");
+                            setOnlyUnlabelled(false);
+                            setSearch("");
+                            setTypeFilter("all");
+                        }}
+                        className="w-full rounded-lg px-3 py-2 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white"
+                    >
+                        Clear filters
+                    </button>
+                </div>
             </div>
 
             {!hydrated ? (
@@ -121,9 +208,11 @@ export default function QuestionBank() {
                     icon="❓"
                     title="NO QUESTIONS YET"
                     action={
-                        <PixelButton tone="sky" onClick={() => setEditing(emptyDraft())}>
-                            + Write your first question
-                        </PixelButton>
+                        canAuthor ? (
+                            <PixelButton tone="sky" onClick={newQuestion}>
+                                + Write your first question
+                            </PixelButton>
+                        ) : undefined
                     }
                 >
                     Questions you write here can be added to any quiz.
@@ -136,15 +225,23 @@ export default function QuestionBank() {
                 <ul className="flex flex-col gap-2">
                     {filtered.map((question) => {
                         const usage = countQuizzesUsingQuestion(quizzes, question.id);
+                        const editable = canEditOwned(actor, question.schoolId);
+                        const isGlobal = question.schoolId === null;
                         return (
                             <li
                                 key={question.id}
                                 className="pixel-panel flex flex-col gap-3 rounded-xl bg-slate-900 p-4 sm:flex-row sm:items-center"
                             >
                                 <div className="min-w-0 flex-1">
-                                    <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-1.5">
                                         <QuestionTypeBadge type={question.type} />
-                                        <SubjectTag subject={question.subject} />
+                                        {question.grade !== undefined && <ChipTag tone="amber">Grade {question.grade}</ChipTag>}
+                                        {question.subject && <ChipTag tone="sky">{question.subject}</ChipTag>}
+                                        {question.topic && <ChipTag>{question.topic}</ChipTag>}
+                                        {question.curriculum && <ChipTag tone="violet">{CURRICULA[question.curriculum].label}</ChipTag>}
+                                        {question.difficulty && <ChipTag>{DIFFICULTIES[question.difficulty].icon} {DIFFICULTIES[question.difficulty].label}</ChipTag>}
+                                        {isUnlabelled(question) && <ChipTag tone="rose">Needs labels</ChipTag>}
+                                        <ChipTag tone={isGlobal ? "emerald" : "slate"}>{isGlobal ? "🌍 Global" : `🏫 ${ownerName(question)}`}</ChipTag>
                                         <span className="text-[11px] text-slate-500">
                                             {usage === 0 ? "Not in a quiz" : `In ${usage} quiz${usage === 1 ? "" : "zes"}`}
                                         </span>
@@ -158,9 +255,7 @@ export default function QuestionBank() {
                                             </>
                                         )}
                                         {question.type === "true_false" && (
-                                            <>
-                                                ✔ <span className="text-emerald-300">{describeCorrectAnswer(question)}</span>
-                                            </>
+                                            <>✔ <span className="text-emerald-300">{describeCorrectAnswer(question)}</span></>
                                         )}
                                         {question.type === "short_answer" && (
                                             <>
@@ -168,21 +263,38 @@ export default function QuestionBank() {
                                                 {question.caseSensitive && " · strict"}
                                             </>
                                         )}
+                                        {question.tags?.length ? <span className="ml-2 text-slate-500">#{question.tags.join(" #")}</span> : null}
                                     </p>
                                 </div>
                                 <div className="flex shrink-0 flex-wrap gap-1.5">
                                     <PixelButton tone="violet" size="sm" onClick={() => setPreviewing(question)}>
                                         👁 Try
                                     </PixelButton>
-                                    <PixelButton tone="sky" size="sm" onClick={() => setEditing(draftFromQuestion(question))}>
-                                        ✎ Edit
-                                    </PixelButton>
-                                    <PixelButton tone="slate" size="sm" onClick={() => duplicateQuestion(question.id)} title="Duplicate">
-                                        ⧉
-                                    </PixelButton>
-                                    <PixelButton tone="rose" size="sm" onClick={() => setDeleting(question)} title="Delete">
-                                        🗑
-                                    </PixelButton>
+                                    {editable ? (
+                                        <>
+                                            <PixelButton tone="sky" size="sm" onClick={() => setEditing(draftFromQuestion(question))}>
+                                                ✎ Edit
+                                            </PixelButton>
+                                            <PixelButton tone="slate" size="sm" onClick={() => duplicateQuestion(question.id)} title="Duplicate">
+                                                ⧉
+                                            </PixelButton>
+                                            <PixelButton tone="rose" size="sm" onClick={() => setDeleting(question)} title="Delete">
+                                                🗑
+                                            </PixelButton>
+                                        </>
+                                    ) : (
+                                        canAuthor &&
+                                        authorSchool && (
+                                            <PixelButton
+                                                tone="emerald"
+                                                size="sm"
+                                                onClick={() => copyQuestionTo(question.id, authorSchool)}
+                                                title="Make a copy in your school's bank to edit"
+                                            >
+                                                ⧉ Copy to my school
+                                            </PixelButton>
+                                        )
+                                    )}
                                 </div>
                             </li>
                         );
@@ -190,13 +302,24 @@ export default function QuestionBank() {
                 </ul>
             )}
 
-            <QuestionEditor draft={editing} subjects={subjects} onClose={() => setEditing(null)} />
+            <QuestionEditor
+                draft={editing}
+                subjects={subjects}
+                topics={topics}
+                ownerLabel={editing ? (editing.schoolId === null ? "Global bank" : schoolName(editing.schoolId)) : undefined}
+                onClose={() => setEditing(null)}
+            />
 
             <Modal open={previewing !== null} title="Student view" onClose={() => setPreviewing(null)} size="lg">
                 {previewing && (
-                    <div className="rounded-2xl bg-[radial-gradient(circle_at_30%_20%,#075985,#0f172a_70%)] p-3 sm:p-5">
-                        <QuestionPreview key={previewing.id} question={previewing} />
-                    </div>
+                    <>
+                        <p className="mb-3 text-xs text-slate-400">
+                            {classificationSummary(previewing)}
+                        </p>
+                        <div className="rounded-2xl bg-[radial-gradient(circle_at_30%_20%,#075985,#0f172a_70%)] p-3 sm:p-5">
+                            <QuestionPreview key={previewing.id} question={previewing} />
+                        </div>
+                    </>
                 )}
             </Modal>
 
@@ -223,5 +346,27 @@ export default function QuestionBank() {
                 }}
             />
         </>
+    );
+}
+
+function FilterSelect({
+    label,
+    value,
+    onChange,
+    children,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <label className="flex flex-col gap-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+            <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass} aria-label={`Filter by ${label.toLowerCase()}`}>
+                <option value="">All</option>
+                {children}
+            </select>
+        </label>
     );
 }
