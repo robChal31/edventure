@@ -58,3 +58,31 @@ export function SubjectTag({ subject }: { subject?: string }) {
         </span>
     );
 }
+
+/** Small label chips for question/quiz classification. */
+export function ChipTag({
+    children,
+    tone = "slate",
+    title,
+}: {
+    children: React.ReactNode;
+    tone?: "slate" | "sky" | "emerald" | "amber" | "violet" | "rose";
+    title?: string;
+}) {
+    const tones = {
+        slate: "bg-slate-800 text-slate-300 ring-slate-700",
+        sky: "bg-sky-500/15 text-sky-300 ring-sky-500/40",
+        emerald: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/40",
+        amber: "bg-amber-500/15 text-amber-300 ring-amber-500/40",
+        violet: "bg-violet-500/15 text-violet-300 ring-violet-500/40",
+        rose: "bg-rose-500/15 text-rose-300 ring-rose-500/40",
+    };
+    return (
+        <span
+            title={title}
+            className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ${tones[tone]}`}
+        >
+            {children}
+        </span>
+    );
+}

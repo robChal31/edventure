@@ -10,20 +10,24 @@ import {
 
 const NOW = "2026-01-01T00:00:00.000Z";
 
+/** A draft that passes every label rule (grade, subject, topic, curriculum). */
+const LABELLED = { grade: 4, subject: "Mathematics", topic: "Fractions", curriculum: "merdeka" as const };
+
 test("validation catches missing text, options and answers", () => {
     const mc = emptyDraft("multiple_choice");
     assert.ok(validateDraft(mc).length >= 2); // no text, no options
 
-    const sa = { ...emptyDraft("short_answer"), text: "What is 6 × 2?" };
+    const sa = { ...emptyDraft("short_answer"), ...LABELLED, text: "What is 6 × 2?" };
     assert.deepEqual(validateDraft(sa), ["Add at least one accepted answer."]);
 
-    const tf = { ...emptyDraft("true_false"), text: "Fish can fly." };
+    const tf = { ...emptyDraft("true_false"), ...LABELLED, text: "Fish can fly." };
     assert.deepEqual(validateDraft(tf), []);
 });
 
 test("multiple choice: empty options are dropped and the correct one is kept", () => {
     const draft = {
         ...emptyDraft("multiple_choice"),
+        ...LABELLED,
         text: "Pick C",
         options: ["A", "", "C", "  "],
         correctIndex: 2,

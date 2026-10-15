@@ -1,9 +1,13 @@
 // game-objects/player/player.ts
-import { PLAYER_ANIMATION_KEYS } from "@/game/common/assets";
+import { PLAYER_ANIMATION_KEYS, type FishingStateKey } from "@/game/common/assets";
 import { Facing, PlayerDirection, Position } from "@/game/common/types";
 import { KeyboardComponent } from "@/game/components/input/keyboard-component";
 import Phaser from "phaser";
-import { FISHING_ANIMATIONS, FISHING_SHEET } from "./player-fishing-animations";
+import {
+    FISHING_SHEET,
+    fishingAnimationKey,
+    fishingFlipX,
+} from "./player-fishing-animations";
 
 /**
  * Feet-sized physics body, defined in 32×32 frame space. Frames of other
@@ -258,6 +262,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // ─────────────────────────────────────────
     // FISHING
+    //
+    // The fishing states (cast, idle, hooked, roll, captured) are played from
+    // the sheets in animations/player/fishing; see player-fishing-animations.ts.
     // ─────────────────────────────────────────
 
     public get isFishing(): boolean {
@@ -278,10 +285,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     /**
      * Throws the line toward the current facing.
      *
-     * @param landsInWater true → the full throw ending with the float in the
-     *   water; false → the throw stops before the splash frames (the bait hit
-     *   sand, a bridge, ...).
-     * @param onLanded the bobber touches down (splash frame / end of throw).
+     * @param landsInWater true → the full cast ending with the float in the
+     *   water; false → the cast stops before the splash (the bait hit sand,
+     *   a bridge, ...).
+     * @param onLanded the bait touches down (splash frame / end of throw).
      * @param onComplete the throw animation finished.
      */
     public castLine(
@@ -294,10 +301,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.#isFishing = true;
         this.#fishingFacing = facing;
         (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
-        // Left/Right have dedicated artwork in the fishing sheet.
-        this.setFlipX(false);
 
-        const animations = FISHING_ANIMATIONS[facing];
         let landed = false;
         const land = () => {
             if (landed) return;
@@ -306,7 +310,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         };
 
         if (landsInWater) {
-            this.#playFishingAnimation(animations.cast, {
+            this.#playFishingAnimation("cast", facing, {
                 onFrame: (index) => {
                     if (index >= FISHING_SHEET.splashFrame) land();
                 },
@@ -316,7 +320,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 },
             });
         } else {
-            this.#playFishingAnimation(animations.miss, {
+            this.#playFishingAnimation("castMiss", facing, {
                 onComplete: () => {
                     land();
                     onComplete?.();
@@ -327,12 +331,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         return facing;
     }
 
-    /** Replays the splash on the float: a fish is biting. */
-    public playFishingBite(onComplete?: () => void): void {
+    /** The float rests on the water while the fish is not biting yet. */
+    public playFishingIdle(): void {
         if (!this.#isFishing) return;
-        this.#playFishingAnimation(FISHING_ANIMATIONS[this.#fishingFacing].bite, {
-            onComplete,
-        });
+        this.#playFishingAnimation("idle", this.#fishingFacing, {}, true);
+    }
+
+    /** A fish bites: the float bobs with the hook until the question ends. */
+    public playFishingBite(): void {
+        if (!this.#isFishing) return;
+        this.#playFishingAnimation("hooked", this.#fishingFacing, {}, true);
+    }
+
+    /**
+     * The result of the question: the caught fish (or an empty hook) is
+     * shown, then the line is reeled in.
+     */
+    public showCatch(success: boolean, onComplete?: () => void): void {
+        if (!this.#isFishing) {
+            onComplete?.();
+            return;
+        }
+
+        this.#playFishingAnimation(
+            success ? "capturedFish" : "capturedNoFish",
+            this.#fishingFacing,
+            { onComplete }
+        );
     }
 
     /** Reels the line in, then returns to normal walking. */
@@ -342,7 +367,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             return;
         }
 
-        this.#playFishingAnimation(FISHING_ANIMATIONS[this.#fishingFacing].reel, {
+        this.#playFishingAnimation("roll", this.#fishingFacing, {
             onComplete: () => {
                 this.stopFishing();
                 onComplete?.();
@@ -361,10 +386,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.#playIdle();
     }
 
-    #playFishingAnimation(key: string, handlers: FishingAnimationHandlers): void {
+    #playFishingAnimation(
+        state: FishingStateKey,
+        facing: Facing,
+        handlers: FishingAnimationHandlers,
+        loop = false
+    ): void {
         // Drop listeners of an interrupted animation so they can never fire
         // later (e.g. the next time the same animation completes).
         this.#cancelFishingAnimation?.();
+
+        const key = fishingAnimationKey(state, facing);
+
+        // A missing animation must never leave the player stuck in fishing
+        // mode (no completion event would ever fire): skip straight ahead.
+        if (!this.scene.anims.exists(key)) {
+            console.warn(`Fishing animation missing: ${key}`);
+            this.#cancelFishingAnimation = undefined;
+            this.scene.time.delayedCall(0, () => handlers.onComplete?.());
+            return;
+        }
 
         const onUpdate = (
             animation: Phaser.Animations.Animation,
@@ -392,7 +433,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, onComplete);
         this.#cancelFishingAnimation = cleanup;
 
-        this.play(key);
+        this.setFlipX(fishingFlipX(facing));
+        this.play({ key, repeat: loop ? -1 : 0 });
     }
 
     #face(facing: Facing): void {

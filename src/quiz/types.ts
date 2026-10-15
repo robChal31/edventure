@@ -6,6 +6,13 @@
  * (fishing is only the first one) and by the teacher LMS.
  */
 
+import type {
+    CognitiveLevel,
+    CurriculumId,
+    Difficulty,
+} from "./taxonomy";
+
+/** Activities (games/maps) a quiz can be played in. See `./activities.ts`. */
 export type ActivityId = "fishing";
 
 // ─────────────────────────────────────────
@@ -14,13 +21,35 @@ export type ActivityId = "fishing";
 
 export type QuestionType = "multiple_choice" | "true_false" | "short_answer";
 
-type QuestionBase = {
+/**
+ * Labels that describe what a question is about. Used for filtering,
+ * searching and reporting. See `src/quiz/taxonomy.ts` for the value lists.
+ */
+export type Classification = {
+    /** Grade the question is written for (1–12). */
+    grade?: number;
+    subject?: string;
+    /** Free text, e.g. "Fractions" or "Food chains". */
+    topic?: string;
+    curriculum?: CurriculumId;
+    difficulty?: Difficulty;
+    cognitiveLevel?: CognitiveLevel;
+    /** Lowercase search tags. */
+    tags?: string[];
+};
+
+type QuestionBase = Classification & {
     id: string;
     /** The prompt shown to the student. */
     text: string;
-    subject?: string;
     /** Optional "why" shown to the student after they answer. */
     explanation?: string;
+    /**
+     * Owner: `null` = the global bank (super admin, premade content),
+     * a school id = that school's own question. `undefined` only for
+     * data created before schools existed (migrated on load).
+     */
+    schoolId?: string | null;
     createdAt?: string;
     updatedAt?: string;
 };

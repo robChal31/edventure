@@ -1,6 +1,6 @@
 import type { PlayableQuiz, Question } from "@/quiz/types";
-import { isQuizAssignedTo } from "../repositories/quiz-repository";
-import type { Quiz } from "../types";
+import { isQuizAssignedTo } from "../access";
+import type { Quiz, Student } from "../types";
 
 /** The quiz's questions in authored order, skipping deleted ones. */
 export function resolveQuizQuestions(
@@ -39,14 +39,14 @@ export function toPlayableQuiz(
 
 /** Published quizzes assigned to the student that have playable questions. */
 export function questsForStudent(
-    studentId: string,
+    student: Pick<Student, "id" | "classId" | "schoolId">,
     quizzes: readonly Quiz[],
     questions: readonly Question[]
 ): Quiz[] {
     return quizzes.filter(
         (quiz) =>
             quiz.published &&
-            isQuizAssignedTo(quiz, studentId) &&
+            isQuizAssignedTo(quiz, student) &&
             resolveQuizQuestions(quiz, questions).length > 0
     );
 }

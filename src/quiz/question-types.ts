@@ -1,4 +1,17 @@
+import {
+    COGNITIVE_LEVELS,
+    DIFFICULTIES,
+    GRADES,
+    isCognitiveLevel,
+    isCurriculumId,
+    isDifficulty,
+    normalizeTags,
+    type CognitiveLevel,
+    type CurriculumId,
+    type Difficulty,
+} from "./taxonomy";
 import type {
+    Classification,
     MultipleChoiceQuestion,
     Question,
     QuestionType,
@@ -58,13 +71,23 @@ export type QuestionDraft = {
     id?: string;
     type: QuestionType;
     text: string;
-    subject: string;
     explanation: string;
     options: string[];
     correctIndex: number;
     correctAnswer: boolean;
     acceptedAnswers: string[];
     caseSensitive: boolean;
+    /** Classification labels (see taxonomy.ts). */
+    grade: number | null;
+    subject: string;
+    topic: string;
+    curriculum: CurriculumId | "";
+    difficulty: Difficulty;
+    cognitiveLevel: CognitiveLevel;
+    /** Comma separated in the form. */
+    tagsText: string;
+    /** Owner; kept when editing so a question never changes school. */
+    schoolId?: string | null;
     createdAt?: string;
 };
 
@@ -72,13 +95,19 @@ export function emptyDraft(type: QuestionType = "multiple_choice"): QuestionDraf
     return {
         type,
         text: "",
-        subject: "",
         explanation: "",
         options: ["", "", "", ""],
         correctIndex: 0,
         correctAnswer: true,
         acceptedAnswers: [""],
         caseSensitive: false,
+        grade: null,
+        subject: "",
+        topic: "",
+        curriculum: "",
+        difficulty: "medium",
+        cognitiveLevel: "understand",
+        tagsText: "",
     };
 }
 
@@ -87,9 +116,16 @@ export function draftFromQuestion(question: Question): QuestionDraft {
         ...emptyDraft(question.type),
         id: question.id,
         text: question.text,
-        subject: question.subject ?? "",
         explanation: question.explanation ?? "",
         createdAt: question.createdAt,
+        schoolId: question.schoolId,
+        grade: question.grade ?? null,
+        subject: question.subject ?? "",
+        topic: question.topic ?? "",
+        curriculum: question.curriculum ?? "",
+        difficulty: question.difficulty ?? "medium",
+        cognitiveLevel: question.cognitiveLevel ?? "understand",
+        tagsText: (question.tags ?? []).join(", "),
     };
 
     switch (question.type) {
@@ -115,6 +151,20 @@ export function validateDraft(draft: QuestionDraft): string[] {
 
     if (!draft.text.trim()) {
         errors.push("Write the question text.");
+    }
+
+    // Labels: a question must say what it is for, so it can be found later.
+    if (draft.grade === null) {
+        errors.push("Choose the grade this question is for.");
+    }
+    if (!draft.subject.trim()) {
+        errors.push("Choose a subject.");
+    }
+    if (!draft.topic.trim()) {
+        errors.push("Name the topic (e.g. Fractions).");
+    }
+    if (!draft.curriculum) {
+        errors.push("Choose the curriculum it follows.");
     }
 
     switch (draft.type) {
@@ -153,10 +203,11 @@ export function questionFromDraft(
     const base = {
         id,
         text: draft.text.trim(),
-        subject: draft.subject.trim() || undefined,
         explanation: draft.explanation.trim() || undefined,
         createdAt: draft.createdAt ?? now,
         updatedAt: now,
+        schoolId: draft.schoolId,
+        ...classificationFromDraft(draft),
     };
 
     switch (draft.type) {
@@ -203,6 +254,57 @@ export function questionFromDraft(
     }
 }
 
+/** The classification labels of a draft, cleaned up. */
+export function classificationFromDraft(
+    draft: Pick<
+        QuestionDraft,
+        "grade" | "subject" | "topic" | "curriculum" | "difficulty" | "cognitiveLevel" | "tagsText"
+    >
+): Classification {
+    return {
+        grade: draft.grade ?? undefined,
+        subject: draft.subject.trim() || undefined,
+        topic: draft.topic.trim() || undefined,
+        curriculum: isCurriculumId(draft.curriculum) ? draft.curriculum : undefined,
+        difficulty: draft.difficulty,
+        cognitiveLevel: draft.cognitiveLevel,
+        tags: normalizeTags(draft.tagsText),
+    };
+}
+
+/** Reads the classification fields of any stored record (question or quiz). */
+export function sanitizeClassification(value: Record<string, unknown>): Classification {
+    const grade =
+        typeof value.grade === "number" &&
+        (GRADES as readonly number[]).includes(value.grade)
+            ? value.grade
+            : undefined;
+
+    return {
+        grade,
+        subject: typeof value.subject === "string" && value.subject.trim() ? value.subject : undefined,
+        topic: typeof value.topic === "string" && value.topic.trim() ? value.topic : undefined,
+        curriculum: isCurriculumId(value.curriculum) ? value.curriculum : undefined,
+        difficulty: isDifficulty(value.difficulty) ? value.difficulty : undefined,
+        cognitiveLevel: isCognitiveLevel(value.cognitiveLevel)
+            ? value.cognitiveLevel
+            : undefined,
+        tags: Array.isArray(value.tags)
+            ? normalizeTags(value.tags.filter((t): t is string => typeof t === "string"))
+            : undefined,
+    };
+}
+
+export const DIFFICULTY_ORDER = Object.keys(DIFFICULTIES) as Difficulty[];
+export const COGNITIVE_ORDER = Object.keys(COGNITIVE_LEVELS) as CognitiveLevel[];
+
+/** `null` = global, string = school, absent = legacy (migrated on load). */
+export function readSchoolId(value: Record<string, unknown>): string | null | undefined {
+    if (value.schoolId === null) return null;
+    if (typeof value.schoolId === "string" && value.schoolId) return value.schoolId;
+    return undefined;
+}
+
 /**
  * Accepts unknown stored data and returns a valid question or null.
  * Legacy questions (before question types existed) were multiple choice
@@ -219,11 +321,12 @@ export function sanitizeQuestion(raw: unknown): Question | null {
     const base = {
         id: value.id,
         text: value.text,
-        subject: typeof value.subject === "string" ? value.subject : undefined,
         explanation:
             typeof value.explanation === "string" ? value.explanation : undefined,
         createdAt: typeof value.createdAt === "string" ? value.createdAt : undefined,
         updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : undefined,
+        schoolId: readSchoolId(value),
+        ...sanitizeClassification(value),
     };
 
     const type = value.type ?? "multiple_choice";

@@ -259,6 +259,7 @@ export class FishingActivity implements Activity {
         this.#setPhase("waiting");
         this.#prompt(FISHING_TEXT.waiting);
         this.#startRipples(cast.point);
+        this.player.playFishingIdle();
 
         const plan = planFishApproach(this.#surface, cast.point, this.#footprint);
         const wait = Phaser.Math.Between(timing.waitMin, timing.waitMax);
@@ -354,7 +355,7 @@ export class FishingActivity implements Activity {
 
         this.#water.splash(fish.x, fish.y, 7, 14);
         this.#water.ripple(fish.x, fish.y, 14, 800);
-        this.player.reelIn();
+        this.#showCatch(true);
 
         fish.playSwim();
         fish.leapTo(
@@ -378,7 +379,7 @@ export class FishingActivity implements Activity {
         if (cast) {
             this.#water.splash(cast.point.x, cast.point.y, 4, 8);
         }
-        this.player.reelIn();
+        this.#showCatch(false);
 
         const fish = this.#fish;
         const finish = this.#guard(() => {
@@ -407,6 +408,11 @@ export class FishingActivity implements Activity {
         } else {
             fish.dive(timing.escapeDuration, finish);
         }
+    }
+
+    /** Shows the result on the player (fish or empty hook), then reels in. */
+    #showCatch(success: boolean): void {
+        this.player.showCatch(success, () => this.player.reelIn());
     }
 
     #emergeFish(point: Point): Fish {

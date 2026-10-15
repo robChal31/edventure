@@ -3,15 +3,17 @@ import { seedStudents } from "../seed";
 import { createLocalCollection } from "../storage/local-collection";
 import type { Student } from "../types";
 import { deleteAttemptsForStudent } from "./attempt-repository";
+import { classStore } from "./organisation-repository";
 import { removeStudentFromAssignments } from "./quiz-repository";
 
 export const STUDENT_AVATARS = [
-    "🐠", "🐙", "🦀", "🐬", "🐳", "🦭", "🐢", "🦈", "🐡", "🦑", "🐚", "🦞",
+    "🦊", "🐼", "🐯", "🐨", "🦉", "🐸", "🐧", "🦁", "🐵", "🐰", "🐻", "🦄",
+    "🐶", "🐱", "🐹", "🦋", "🐝", "🐞", "🌟", "🚀", "🎈", "🌈", "🍀", "⭐",
 ] as const;
 
 const CODE_WORDS = [
-    "TUNA", "CRAB", "SEAL", "CLAM", "SQUID", "ORCA", "SHARK", "KOI",
-    "EEL", "RAY", "PRAWN", "CORAL", "WAVE", "PEARL", "SHELL", "REEF",
+    "LUNA", "NOVA", "MAPLE", "RIVER", "CEDAR", "COMET", "ROBIN", "TIGER",
+    "PANDA", "KOALA", "MANGO", "BERRY", "ORBIT", "PIXEL", "SUNNY", "FOREST",
 ];
 
 function sanitizeStudent(raw: unknown): Student | null {
@@ -29,6 +31,8 @@ function sanitizeStudent(raw: unknown): Student | null {
     return {
         id: value.id,
         name: value.name,
+        schoolId: typeof value.schoolId === "string" ? value.schoolId : null,
+        classId: typeof value.classId === "string" ? value.classId : null,
         className: typeof value.className === "string" ? value.className : "",
         code: normalizeCode(value.code),
         avatar: typeof value.avatar === "string" ? value.avatar : STUDENT_AVATARS[0],
@@ -55,7 +59,7 @@ export function generateStudentCode(taken: ReadonlySet<string>): string {
         if (!taken.has(code)) return code;
     }
     // Practically unreachable; fall back to something long and random.
-    return `FISH${Date.now().toString(36).toUpperCase()}`;
+    return `CODE${Date.now().toString(36).toUpperCase()}`;
 }
 
 function takenCodes(exceptId?: string): Set<string> {
@@ -70,16 +74,18 @@ function takenCodes(exceptId?: string): Set<string> {
 export type StudentDraft = {
     id?: string;
     name: string;
-    className: string;
+    schoolId: string | null;
+    classId: string | null;
     avatar: string;
     code: string;
     createdAt?: string;
 };
 
-export function emptyStudentDraft(): StudentDraft {
+export function emptyStudentDraft(schoolId: string | null = null, classId: string | null = null): StudentDraft {
     return {
         name: "",
-        className: "",
+        schoolId,
+        classId,
         avatar: STUDENT_AVATARS[Math.floor(Math.random() * STUDENT_AVATARS.length)],
         code: generateStudentCode(takenCodes()),
     };
@@ -91,6 +97,9 @@ export function validateStudentDraft(draft: StudentDraft): string[] {
         errors.push("Enter the student's name.");
     }
     const code = normalizeCode(draft.code);
+    if (!draft.schoolId) {
+        errors.push("Choose the school for this student.");
+    }
     if (code.length < 4) {
         errors.push("Login codes need at least 4 letters or numbers.");
     } else if (takenCodes(draft.id).has(code)) {
@@ -99,11 +108,19 @@ export function validateStudentDraft(draft: StudentDraft): string[] {
     return errors;
 }
 
+/** The display name of a class id ("" when unassigned). */
+export function classNameOf(classId: string | null): string {
+    if (!classId) return "";
+    return classStore.get(classId)?.name ?? "";
+}
+
 export function saveStudent(draft: StudentDraft): Student {
     return studentStore.upsert({
         id: draft.id ?? createId("student"),
         name: draft.name.trim(),
-        className: draft.className.trim(),
+        schoolId: draft.schoolId,
+        classId: draft.classId,
+        className: classNameOf(draft.classId),
         avatar: draft.avatar,
         code: normalizeCode(draft.code),
         createdAt: draft.createdAt ?? nowIso(),
@@ -111,7 +128,10 @@ export function saveStudent(draft: StudentDraft): Student {
 }
 
 /** Adds many students at once (one name per line in the teacher UI). */
-export function addStudents(names: readonly string[], className: string): Student[] {
+export function addStudents(
+    names: readonly string[],
+    target: { schoolId: string | null; classId: string | null }
+): Student[] {
     const taken = takenCodes();
     const created = names
         .map((name) => name.trim())
@@ -122,7 +142,9 @@ export function addStudents(names: readonly string[], className: string): Studen
             return {
                 id: createId("student"),
                 name,
-                className: className.trim(),
+                schoolId: target.schoolId,
+                classId: target.classId,
+                className: classNameOf(target.classId),
                 avatar: STUDENT_AVATARS[index % STUDENT_AVATARS.length],
                 code,
                 createdAt: nowIso(),

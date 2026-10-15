@@ -1,6 +1,6 @@
 import { describeAnswer } from "@/quiz/grading";
 import type { Question, QuestionType } from "@/quiz/types";
-import { isQuizAssignedTo } from "../repositories/quiz-repository";
+import { isQuizAssignedTo } from "../access";
 import type { Quiz, QuizAttempt, Student } from "../types";
 
 /**
@@ -187,7 +187,7 @@ export function studentRowsForQuiz(
     return students
         .filter(
             (student) =>
-                isQuizAssignedTo(quiz, student.id) ||
+                isQuizAssignedTo(quiz, student) ||
                 quizAttempts.some((attempt) => attempt.studentId === student.id)
         )
         .map((student) => {
@@ -212,7 +212,7 @@ export function completionForQuiz(
     students: readonly Student[],
     attempts: readonly QuizAttempt[]
 ): { assigned: number; completed: number } {
-    const assigned = students.filter((student) => isQuizAssignedTo(quiz, student.id));
+    const assigned = students.filter((student) => isQuizAssignedTo(quiz, student));
     const completedIds = new Set(
         attempts.filter((a) => a.quizId === quiz.id).map((a) => a.studentId)
     );

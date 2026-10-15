@@ -23,10 +23,10 @@ export default function ResultsScreen({ summary, primary, secondary, note }: Res
 
     const verdict =
         pct >= 80
-            ? "Outstanding angler! 🏆"
+            ? "Outstanding work! 🏆"
             : pct >= 50
-              ? "Nice fishing! 🎣"
-              : "The fish were tricky today! 🌊";
+              ? "Well done! 🌟"
+              : "Not this time — have another go! 💪";
 
     return (
         <div className="lw-fade-in absolute inset-0 z-30 flex items-center justify-center bg-slate-950/80 p-4">

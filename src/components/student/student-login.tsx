@@ -3,13 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useHydrated, useSignedInStudent, useStudents } from "@/lms/hooks";
+import { useHydrated, useLmsReady, useSignedInStudent, useStudents } from "@/lms/hooks";
 import { findStudentByCode } from "@/lms/repositories/student-repository";
 import { signInStudent, signOutStudent } from "@/lms/session/student-session";
 
 export default function StudentLogin() {
     const router = useRouter();
-    const hydrated = useHydrated();
+    // Wait for the one-time data upgrade before reading any LMS data.
+    const mounted = useHydrated();
+    const lmsReady = useLmsReady();
+    const hydrated = mounted && lmsReady;
     const students = useStudents();
     const signedIn = useSignedInStudent();
     const [code, setCode] = useState("");
@@ -31,7 +34,7 @@ export default function StudentLogin() {
         <div className="flex min-h-full flex-1 items-center justify-center bg-linear-to-b from-sky-900 via-slate-900 to-slate-950 px-4 py-10">
             <div className="lw-pop-in pixel-panel w-full max-w-md rounded-2xl border-4 border-sky-900 bg-slate-900/95 p-6 sm:p-8">
                 <div className="text-center">
-                    <div className="lw-bob text-5xl" aria-hidden>🐠</div>
+                    <div className="lw-bob text-5xl" aria-hidden>🧭</div>
                     <h1 className="mt-3 font-pixel text-lg text-amber-300">STUDENT LOGIN</h1>
                     <p className="mt-2 text-sm text-sky-200">Type the secret code your teacher gave you.</p>
                 </div>
@@ -90,7 +93,7 @@ export default function StudentLogin() {
                         disabled={!code.trim()}
                         className="pixel-btn mt-4 w-full rounded-xl bg-amber-400 px-6 py-4 font-pixel text-sm text-amber-950 disabled:opacity-50"
                     >
-                        🎣 LET&apos;S GO!
+                        ▶ LET&apos;S GO!
                     </button>
                 </form>
 

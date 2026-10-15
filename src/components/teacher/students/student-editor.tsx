@@ -9,31 +9,47 @@ import {
     validateStudentDraft,
     type StudentDraft,
 } from "@/lms/repositories/student-repository";
+import type { School, SchoolClass } from "@/lms/types";
 import Modal from "@/components/ui/modal";
 import { ErrorList, Field, inputClass } from "@/components/ui/panels";
 import PixelButton from "@/components/ui/pixel-button";
 
 type Props = {
     draft: StudentDraft | null;
-    classNames: string[];
+    classes: readonly SchoolClass[];
+    schools: readonly School[];
+    actorIsSuper: boolean;
     onClose: () => void;
 };
 
-export default function StudentEditor({ draft, classNames, onClose }: Props) {
+export default function StudentEditor({ draft, classes, schools, actorIsSuper, onClose }: Props) {
     return (
         <Modal open={draft !== null} title={draft?.id ? "Edit student" : "Add student"} onClose={onClose}>
-            {draft && <Form key={draft.id ?? "new"} initial={draft} classNames={classNames} onClose={onClose} />}
+            {draft && (
+                <Form
+                    key={draft.id ?? "new"}
+                    initial={draft}
+                    classes={classes}
+                    schools={schools}
+                    actorIsSuper={actorIsSuper}
+                    onClose={onClose}
+                />
+            )}
         </Modal>
     );
 }
 
 function Form({
     initial,
-    classNames,
+    classes,
+    schools,
+    actorIsSuper,
     onClose,
 }: {
     initial: StudentDraft;
-    classNames: string[];
+    classes: readonly SchoolClass[];
+    schools: readonly School[];
+    actorIsSuper: boolean;
     onClose: () => void;
 }) {
     const [draft, setDraft] = useState(initial);
@@ -64,6 +80,10 @@ function Form({
         patch({ code: generateStudentCode(taken) });
     };
 
+    const schoolClasses = classes
+        .filter((klass) => klass.schoolId === draft.schoolId)
+        .sort((a, b) => a.grade - b.grade || a.name.localeCompare(b.name));
+
     return (
         <form
             className="flex flex-col gap-4"
@@ -82,19 +102,35 @@ function Form({
                         autoFocus
                     />
                 </Field>
+                {actorIsSuper ? (
+                    <Field label="School">
+                        <select
+                            value={draft.schoolId ?? ""}
+                            onChange={(event) => patch({ schoolId: event.target.value || null, classId: null })}
+                            className={inputClass}
+                        >
+                            <option value="">Choose a school…</option>
+                            {schools.map((school) => (
+                                <option key={school.id} value={school.id}>
+                                    {school.name}
+                                </option>
+                            ))}
+                        </select>
+                    </Field>
+                ) : null}
                 <Field label="Class">
-                    <input
-                        value={draft.className}
-                        onChange={(event) => patch({ className: event.target.value })}
-                        placeholder="e.g. 4A"
-                        list="student-class-names"
+                    <select
+                        value={draft.classId ?? ""}
+                        onChange={(event) => patch({ classId: event.target.value || null })}
                         className={inputClass}
-                    />
-                    <datalist id="student-class-names">
-                        {classNames.map((name) => (
-                            <option key={name} value={name} />
+                    >
+                        <option value="">No class yet</option>
+                        {schoolClasses.map((klass) => (
+                            <option key={klass.id} value={klass.id}>
+                                {klass.name} · Grade {klass.grade}
+                            </option>
                         ))}
-                    </datalist>
+                    </select>
                 </Field>
             </div>
 

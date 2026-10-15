@@ -333,9 +333,39 @@
       },
       {
         "type": "aseprite",
-        "key": "PLAYER_FISHING",
-        "textureURL": "fishing/fishing.png",
-        "atlasURL": "fishing/fishing.json"
+        "key": "PLAYER_FISHING_CASTING",
+        "textureURL": "fishing/casting_animation_sheet.png",
+        "atlasURL": "fishing/casting_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FISHING_IDLE",
+        "textureURL": "fishing/fishing_idle_animation_sheet.png",
+        "atlasURL": "fishing/fishing_idle_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FISHING_HOOKED",
+        "textureURL": "fishing/fishing_hooked_animation_sheet.png",
+        "atlasURL": "fishing/fishing_hooked_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FISHING_ROLL",
+        "textureURL": "fishing/fishing_roll_animation_sheet.png",
+        "atlasURL": "fishing/fishing_roll_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FISHING_CAPTURED_FISH",
+        "textureURL": "fishing/captured_fish_animation_sheet.png",
+        "atlasURL": "fishing/captured_fish_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FISHING_CAPTURED_NO_FISH",
+        "textureURL": "fishing/captured_no_fish_animation_sheet.png",
+        "atlasURL": "fishing/captured_no_fish_animation.json"
       }
     ]
   }

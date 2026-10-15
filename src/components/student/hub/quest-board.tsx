@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getActivity } from "@/quiz/activities";
+import { ActivityGuideDetails } from "@/components/ui/activity-guide";
 import { QUESTION_TYPES } from "@/quiz/question-types";
 import type { PlayableQuiz, QuestionType } from "@/quiz/types";
 import type { HubControls } from "../game-screen";
@@ -27,7 +28,7 @@ type QuestBoardProps = {
 
 /**
  * The village quest board: lists the quizzes assigned to the student.
- * Picking one travels to the activity's map (the beach for fishing).
+ * Picking one travels to the activity's map (e.g. the beach for fishing).
  */
 export default function QuestBoard({ controls, quests, buildQuiz, autoOpen = false }: QuestBoardProps) {
     const [open, setOpen] = useState(autoOpen && quests.length > 0);
@@ -163,6 +164,9 @@ function QuestCard({
                     {quest.description && (
                         <p className="mt-1 text-sm text-amber-900/80">{quest.description}</p>
                     )}
+                    <div className="mt-2">
+                        <ActivityGuideDetails activity={activity} />
+                    </div>
                     <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
                         <span className="rounded bg-sky-200 px-2 py-0.5 text-sky-900">
                             {activity.icon} {activity.label} · {activity.location}
@@ -188,7 +192,7 @@ function QuestCard({
                     disabled={disabled}
                     className="pixel-btn self-center rounded-lg bg-emerald-500 px-4 py-3 font-pixel text-[10px] text-emerald-950 disabled:opacity-50"
                 >
-                    {isNew ? "GO FISH ▶" : "PLAY ▶"}
+                    {isNew ? activity.copy.startLabel : "PLAY ▶"}
                 </button>
             </div>
         </li>

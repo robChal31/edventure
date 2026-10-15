@@ -18,9 +18,9 @@ const tf: Question = { id: "q-tf", type: "true_false", text: "Whales are fish.",
 const sa: Question = { id: "q-sa", type: "short_answer", text: "6 × 2?", acceptedAnswers: ["12"] };
 
 const students: Student[] = [
-    { id: "s1", name: "Ani", className: "4A", code: "TUNA11", avatar: "🐠", createdAt: "" },
-    { id: "s2", name: "Budi", className: "4A", code: "CRAB22", avatar: "🦀", createdAt: "" },
-    { id: "s3", name: "Citra", className: "4B", code: "SEAL33", avatar: "🦭", createdAt: "" },
+    { id: "s1", name: "Ani", schoolId: "sch-1", classId: "cls-4a", className: "4A", code: "TUNA11", avatar: "🐠", createdAt: "" },
+    { id: "s2", name: "Budi", schoolId: "sch-1", classId: "cls-4a", className: "4A", code: "CRAB22", avatar: "🦀", createdAt: "" },
+    { id: "s3", name: "Citra", schoolId: "sch-1", classId: "cls-4b", className: "4B", code: "SEAL33", avatar: "🦭", createdAt: "" },
 ];
 
 function quiz(partial: Partial<Quiz>): Quiz {
@@ -121,8 +121,8 @@ test("quests: only published, assigned quizzes with questions", () => {
         quiz({ id: "other", assignment: { mode: "students", studentIds: ["s2"] } }),
         quiz({ id: "empty", questionIds: ["deleted-question"] }),
     ];
-    assert.deepEqual(questsForStudent("s1", quizzes, questions).map((q) => q.id), ["pub"]);
-    assert.deepEqual(questsForStudent("s2", quizzes, questions).map((q) => q.id), ["pub", "other"]);
+    assert.deepEqual(questsForStudent(students.find((st) => st.id === "s1")!, quizzes, questions).map((q) => q.id), ["pub"]);
+    assert.deepEqual(questsForStudent(students.find((st) => st.id === "s2")!, quizzes, questions).map((q) => q.id), ["pub", "other"]);
 });
 
 test("playable quiz: missing questions skipped, shuffle uses the given random", () => {

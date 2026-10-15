@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
     QUESTION_TYPE_ORDER,
     QUESTION_TYPES,
@@ -11,6 +11,7 @@ import {
 import type { Question } from "@/quiz/types";
 import { saveQuestion } from "@/lms/repositories/question-repository";
 import Modal from "@/components/ui/modal";
+import ClassificationFields from "../classification/classification-fields";
 import PixelButton from "@/components/ui/pixel-button";
 import { ErrorList, Field, inputClass } from "@/components/ui/panels";
 import MultipleChoiceFields from "./answer-fields/multiple-choice-fields";
@@ -22,11 +23,14 @@ type QuestionEditorProps = {
     /** Initial draft (empty for new questions); null closes the editor. */
     draft: QuestionDraft | null;
     subjects: string[];
+    topics?: string[];
+    /** Who the question belongs to, shown in the header. */
+    ownerLabel?: string;
     onClose: () => void;
     onSaved?: (question: Question) => void;
 };
 
-export default function QuestionEditor({ draft, subjects, onClose, onSaved }: QuestionEditorProps) {
+export default function QuestionEditor({ draft, subjects, topics = [], ownerLabel, onClose, onSaved }: QuestionEditorProps) {
     return (
         <Modal
             open={draft !== null}
@@ -39,6 +43,8 @@ export default function QuestionEditor({ draft, subjects, onClose, onSaved }: Qu
                     key={draft.id ?? "new"}
                     initial={draft}
                     subjects={subjects}
+                    topics={topics}
+                    ownerLabel={ownerLabel}
                     onClose={onClose}
                     onSaved={onSaved}
                 />
@@ -72,18 +78,21 @@ function previewQuestion(draft: QuestionDraft): Question {
 function EditorForm({
     initial,
     subjects,
+    topics,
+    ownerLabel,
     onClose,
     onSaved,
 }: {
     initial: QuestionDraft;
     subjects: string[];
+    topics: string[];
+    ownerLabel?: string;
     onClose: () => void;
     onSaved?: (question: Question) => void;
 }) {
     const [draft, setDraft] = useState<QuestionDraft>(initial);
     const [errors, setErrors] = useState<string[]>([]);
     const [previewVersion, setPreviewVersion] = useState(0);
-    const subjectListId = useId();
 
     const patch = (changes: Partial<QuestionDraft>) => {
         setDraft((current) => ({ ...current, ...changes }));
@@ -164,30 +173,21 @@ function EditorForm({
                 {draft.type === "true_false" && <TrueFalseFields draft={draft} onChange={patch} />}
                 {draft.type === "short_answer" && <ShortAnswerFields draft={draft} onChange={patch} />}
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Subject" hint="Used to filter the bank.">
-                        <input
-                            value={draft.subject}
-                            onChange={(event) => patch({ subject: event.target.value })}
-                            list={subjectListId}
-                            placeholder="e.g. Math"
-                            className={inputClass}
-                        />
-                        <datalist id={subjectListId}>
-                            {subjects.map((subject) => (
-                                <option key={subject} value={subject} />
-                            ))}
-                        </datalist>
-                    </Field>
-                    <Field label="Explanation (optional)" hint="Shown after the student answers.">
-                        <input
-                            value={draft.explanation}
-                            onChange={(event) => patch({ explanation: event.target.value })}
-                            placeholder="Why is this the answer?"
-                            className={inputClass}
-                        />
-                    </Field>
-                </div>
+                <ClassificationFields
+                    value={draft}
+                    onChange={patch}
+                    knownSubjects={subjects}
+                    knownTopics={topics}
+                />
+
+                <Field label="Explanation (optional)" hint="Shown after the student answers.">
+                    <input
+                        value={draft.explanation}
+                        onChange={(event) => patch({ explanation: event.target.value })}
+                        placeholder="Why is this the answer?"
+                        className={inputClass}
+                    />
+                </Field>
 
                 <ErrorList errors={errors} />
 
@@ -202,6 +202,9 @@ function EditorForm({
             </form>
 
             <div className="flex flex-col gap-2">
+                {ownerLabel && (
+                    <span className="text-xs text-slate-500">Saved to: {ownerLabel}</span>
+                )}
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Student view — try it!
                 </span>

@@ -9,9 +9,11 @@ import type {
     GameOptions,
     MapId,
 } from "@/game/game-options";
+import { getActivity } from "@/quiz/activities";
 import type { ActivityId, AnswerValue, PlayableQuiz, Question, QuizSummary } from "@/quiz/types";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
-import FishingHud from "./fishing-hud";
+import { ActivityGuideDialog } from "@/components/ui/activity-guide";
+import ActivityHud from "./activity-hud";
 import QuestionCard, { type AnswerReveal } from "./questions/question-card";
 import ResultsScreen from "./results-screen";
 import TouchControls from "./touch-controls";
@@ -41,13 +43,6 @@ type GameScreenProps = {
 type HudState = { caught: number; answered: number; total: number; questionNumber: number };
 type CurrentQuestion = { question: Question; questionNumber: number; total: number };
 
-const STATUS: Partial<Record<FishingPhase, string>> = {
-    casting: "Casting…",
-    waiting: "Waiting for a bite…",
-    bite: "Something's biting!",
-    reeling: "Reeling in…",
-};
-
 export default function GameScreen({
     initialQuiz,
     renderHub,
@@ -71,6 +66,7 @@ export default function GameScreen({
     const [activeQuiz, setActiveQuiz] = useState<PlayableQuiz | null>(initialQuiz ?? null);
     const [hubOverlayOpen, setHubOverlayOpen] = useState(false);
     const [confirmLeave, setConfirmLeave] = useState(false);
+    const [guideOpen, setGuideOpen] = useState(false);
 
     const promptTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const startedAt = useRef<string>(new Date().toISOString());
@@ -101,6 +97,8 @@ export default function GameScreen({
                     setTravelling(false);
                     if (event.activityId) {
                         startedAt.current = new Date().toISOString();
+                        // First time on a map: explain how to play it.
+                        setGuideOpen(true);
                     } else {
                         setActiveQuiz(null);
                     }
@@ -165,7 +163,8 @@ export default function GameScreen({
     }, []);
 
     // HTML overlays need the keyboard; Phaser must not swallow keys then.
-    const overlayOpen = Boolean(current) || Boolean(summary) || hubOverlayOpen || confirmLeave;
+    const overlayOpen =
+        Boolean(current) || Boolean(summary) || hubOverlayOpen || confirmLeave || guideOpen;
     useEffect(() => {
         controller?.setKeyboardEnabled(!overlayOpen);
     }, [controller, overlayOpen]);
@@ -204,7 +203,8 @@ export default function GameScreen({
     const isHub = Boolean(mapId) && !activityId;
     const inActivity = Boolean(activityId);
     const hasHub = Boolean(renderHub);
-    const statusLine = inActivity ? STATUS[phase] : undefined;
+    const activity = getActivity(activityId ?? activeQuiz?.activityId ?? "fishing");
+    const statusLine = inActivity ? activity.copy.status[phase] : undefined;
 
     return (
         <div className="relative h-full w-full overflow-hidden bg-slate-950">
@@ -213,7 +213,7 @@ export default function GameScreen({
             {/* Loading veil until the first map is on screen. */}
             {!mapId && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950">
-                    <div className="lw-bob text-4xl" aria-hidden>🎣</div>
+                    <div className="lw-bob text-4xl" aria-hidden>🧭</div>
                     <p className="font-pixel text-[10px] text-sky-300">LOADING WORLD…</p>
                 </div>
             )}
@@ -235,16 +235,27 @@ export default function GameScreen({
             {/* Activity (beach) */}
             {inActivity && !travelling && (
                 <>
-                    <FishingHud
-                        roomName={activeQuiz?.name ?? "Fishing"}
+                    <ActivityHud
+                        roomName={activeQuiz?.name ?? activity.label}
                         questionNumber={hud.questionNumber}
                         total={hud.total}
                         caught={hud.caught}
                         answered={hud.answered}
+                        scoreIcon={activity.copy.scoreIcon}
+                        scoreLabel={activity.copy.scoreLabel}
                     />
 
                     {!summary && (
-                        <div className="absolute right-2 top-[4.5rem] sm:right-3 sm:top-20">
+                        <div className="absolute right-2 top-[4.5rem] flex flex-col items-end gap-1.5 sm:right-3 sm:top-20">
+                            <button
+                                type="button"
+                                tabIndex={-1}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => setGuideOpen(true)}
+                                className="pixel-btn rounded-lg bg-sky-700/90 px-3 py-2 font-pixel text-[9px] text-sky-50"
+                            >
+                                ❔ HOW TO
+                            </button>
                             <button
                                 type="button"
                                 tabIndex={-1}
@@ -278,6 +289,7 @@ export default function GameScreen({
             {inActivity && current && !summary && (
                 <QuestionCard
                     key={`${current.questionNumber}-${current.question.id}`}
+                    cue={activity.copy.questionCue}
                     question={current.question}
                     questionNumber={current.questionNumber}
                     total={current.total}
@@ -292,7 +304,10 @@ export default function GameScreen({
                     action={
                         inActivity
                             ? {
-                                  label: phase === "waiting" ? "↩ REEL IN" : "🎣 CAST",
+                                  label:
+                                      phase === "waiting"
+                                          ? activity.copy.waitingActionLabel
+                                          : activity.copy.actionLabel,
                                   enabled: phase === "idle" || phase === "waiting",
                                   onPress: () => controller?.cast(),
                               }
@@ -312,15 +327,17 @@ export default function GameScreen({
                     }
                     secondary={
                         hasHub
-                            ? { label: "🎣 FISH AGAIN", onClick: restartQuiz }
+                            ? { label: activity.copy.playAgainLabel, onClick: restartQuiz }
                             : { label: exit.label, onClick: exit.onExit }
                     }
                 />
             )}
 
+            <ActivityGuideDialog activity={activity} open={guideOpen} onClose={() => setGuideOpen(false)} />
+
             <ConfirmDialog
                 open={confirmLeave}
-                title="Leave the beach?"
+                title={`Leave the ${activity.location.toLowerCase()}?`}
                 message="Your answers for this quest won't be saved. You can come back any time from the Quest Board."
                 confirmLabel="Leave"
                 danger

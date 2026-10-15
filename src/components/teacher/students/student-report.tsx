@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { QUESTION_TYPE_ORDER, QUESTION_TYPES } from "@/quiz/question-types";
-import { useAttempts, useHydrated, useQuestions, useQuizzes, useStudents } from "@/lms/hooks";
-import { isQuizAssignedTo } from "@/lms/repositories/quiz-repository";
+import { useAttempts, useHydrated, useQuestions, useQuizzes, useSignedInStaff, useStudents } from "@/lms/hooks";
+import { isQuizAssignedTo, visibleStudents } from "@/lms/access";
 import {
     accuracyByType,
     attemptStats,
@@ -25,7 +25,8 @@ export default function StudentReport({ studentId }: { studentId: string }) {
     const questions = useQuestions();
     const allAttempts = useAttempts();
 
-    const student = students.find((s) => s.id === studentId);
+    const actor = useSignedInStaff();
+    const student = visibleStudents(actor, students).find((s) => s.id === studentId);
     const attempts = useMemo(
         () => sortByNewest(allAttempts.filter((a) => a.studentId === studentId)),
         [allAttempts, studentId]
@@ -54,7 +55,7 @@ export default function StudentReport({ studentId }: { studentId: string }) {
     const stats = attemptStats(attempts);
     const accuracy = accuracyByType(attempts);
     const progress = progressByQuiz(attempts);
-    const assigned = questsForStudent(student.id, quizzes, questions);
+    const assigned = questsForStudent(student, quizzes, questions);
     const notStarted = assigned.filter((quiz) => !progress.has(quiz.id));
 
     return (
@@ -133,7 +134,7 @@ export default function StudentReport({ studentId }: { studentId: string }) {
                                 <div className="min-w-0">
                                     <div className="truncate font-semibold text-slate-300">{quiz.name}</div>
                                     <div className="text-xs text-slate-500">
-                                        {isQuizAssignedTo(quiz, student.id) ? "Assigned · not started" : "Not started"}
+                                        {isQuizAssignedTo(quiz, student) ? "Assigned · not started" : "Not started"}
                                     </div>
                                 </div>
                                 <span className="rounded-md bg-slate-800 px-2 py-0.5 text-[11px] text-slate-400">To do</span>
