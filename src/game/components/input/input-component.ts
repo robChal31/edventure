@@ -7,6 +7,7 @@ export class InputComponent {
     #attackKey: boolean;
     #selectKey: boolean;
     #enterKey: boolean;
+    #fishingKey: boolean;
     //for test change player equipment
     #testWearAxeAnimationKey: boolean;
     #testAxeActionAnimationKey: boolean;
@@ -20,6 +21,7 @@ export class InputComponent {
         this.#attackKey = false;
         this.#selectKey = false;
         this.#enterKey = false;
+        this.#fishingKey = false;
         this.#testWearAxeAnimationKey = false;
         this.#testAxeActionAnimationKey = false;
     }
@@ -112,6 +114,14 @@ export class InputComponent {
         this.#enterKey = value;
     }
 
+    get isFishingKeyJustDown(): boolean {
+        return this.#fishingKey;
+    }
+
+    set isFishingKeyJustDown(value: boolean) {
+        this.#fishingKey = value;
+    }
+
     public reset(): void {
         this.#up = false;
         this.#down = false;
@@ -121,6 +131,7 @@ export class InputComponent {
         this.#attackKey = false;
         this.#selectKey = false;
         this.#enterKey = false;
+        this.#fishingKey = false;
         this.#testWearAxeAnimationKey = false;
         this.#testAxeActionAnimationKey = false;
     }

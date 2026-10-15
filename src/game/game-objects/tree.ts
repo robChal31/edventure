@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { DEBUG_CONFIG } from "../config/debug-config";
 
 import { FootprintConfig } from "../common/types";
 import {
@@ -245,7 +246,7 @@ export class Tree
                 const tile = this.scene.add.image(
                     colIndex * tileSize,
                     -rowIndex * tileSize + visualOffsetY - 4,
-                    ASSET_KEYS.WORLD_MAHOGANY_TREE,
+                    ASSET_KEYS.MAHOGANY_TREE,
                     frame
                 );
 
@@ -331,6 +332,10 @@ export class Tree
     // -------------------------------------------------------------------------
 
     #createInteractionDebug(): void {
+        if (!DEBUG_CONFIG.interaction) {
+            return;
+        }
+
         const bounds = this.getInteractionBounds();
 
         this.#interactionDebug = this.scene.add.rectangle(

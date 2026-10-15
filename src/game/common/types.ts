@@ -1,7 +1,5 @@
-import { CHARACTER_ANIMATIONS } from "./assets";
-import Phaser from "phaser";
 
-export type CharacterAnimation = keyof typeof CHARACTER_ANIMATIONS
+import Phaser from "phaser";
 
 export type Position = {
     x: number;
@@ -10,6 +8,8 @@ export type Position = {
 
 export type GameObject = Phaser.GameObjects.Sprite | Phaser.GameObjects.Image
 export type PlayerDirection = "up" | "down" | "side";
+/** Four-way facing ("side" + flipX resolved to left/right). */
+export type Facing = "up" | "down" | "left" | "right";
 export type CollisionConfig = {
     x: number;
     y: number;

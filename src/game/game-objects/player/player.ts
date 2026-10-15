@@ -1,8 +1,26 @@
 // game-objects/player/player.ts
-import { PLAYER_ANIMATION_KEYS } from "@/game/common/assets";
-import { PlayerDirection, Position } from "@/game/common/types";
+import { PLAYER_ANIMATION_KEYS, type FishingStateKey } from "@/game/common/assets";
+import { Facing, PlayerDirection, Position } from "@/game/common/types";
 import { KeyboardComponent } from "@/game/components/input/keyboard-component";
 import Phaser from "phaser";
+import {
+    FISHING_SHEET,
+    fishingAnimationKey,
+    fishingFlipX,
+} from "./player-fishing-animations";
+
+/**
+ * Feet-sized physics body, defined in 32×32 frame space. Frames of other
+ * sizes (the 64×64 fishing sheet) get the offset re-centred every frame so
+ * the body never moves when the animation changes.
+ */
+const PLAYER_BODY = {
+    width: 12,
+    height: 8,
+    offsetX: 10,
+    offsetY: 16,
+    baseFrameSize: 32,
+} as const;
 
 export type PlayerConfig = {
     scene: Phaser.Scene
@@ -10,15 +28,30 @@ export type PlayerConfig = {
     assetKey: string
     frame?: number
     controls: KeyboardComponent
+    /** Initial facing (defaults to down). */
+    facing?: Facing
     onAxeAction?: () => void;
+    /** Fired when the fishing key (F or Space) is just pressed. */
+    onFishingAction?: () => void;
 }
+
+type FishingAnimationHandlers = {
+    /** Called on every frame change with the 0-based frame index. */
+    onFrame?: (frameIndex: number) => void;
+    onComplete?: () => void;
+};
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     #controls!: KeyboardComponent
     #direction: PlayerDirection = "down";
     #isWearingAxe = false;
     #isAxeActionPlaying = false;
+    #isFishing = false;
+    #fishingFacing: Facing = "down";
+    #cancelFishingAnimation?: () => void;
+    #inputLocked = false;
     #onAxeAction?: () => void;
+    #onFishingAction?: () => void;
 
     constructor(config: PlayerConfig) {
         const { scene, position, assetKey, frame } = config;
@@ -29,25 +62,49 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
         const body = this.body as Phaser.Physics.Arcade.Body;
-        body.setSize(12, 8);
-        body.setOffset(10, 16);
+        body.setSize(PLAYER_BODY.width, PLAYER_BODY.height);
+        body.setOffset(PLAYER_BODY.offsetX, PLAYER_BODY.offsetY);
 
         this.#controls = config.controls
         this.#onAxeAction = config.onAxeAction
+        this.#onFishingAction = config.onFishingAction
 
-        this.play({ key: PLAYER_ANIMATION_KEYS.IDLE_DOWN, repeat: -1 });
+        this.#face(config.facing ?? "down");
+        this.#playIdle();
+
         config.scene.events.on(Phaser.Scenes.Events.UPDATE, this.update, this);
         config.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             config.scene.events.off(Phaser.Scenes.Events.UPDATE, this.update, this);
+            this.#cancelFishingAnimation?.();
         })
     }
 
+    protected preUpdate(time: number, delta: number): void {
+        super.preUpdate(time, delta);
+        this.#syncBodyToFrame();
+    }
+
     update(): void {
-        if (this.#isAxeActionPlaying) {
+        // The fishing key goes to the activity first: depending on its phase
+        // it casts, reels in early, or does nothing.
+        if (
+            this.#controls.isFishingKeyJustDown &&
+            !this.#isAxeActionPlaying &&
+            !this.#inputLocked
+        ) {
+            this.#onFishingAction?.();
+        }
+
+        if (this.#isAxeActionPlaying || this.#isFishing) {
             return;
         }
 
         this.#updateMovement();
+
+        if (this.#inputLocked) {
+            this.#playIdle();
+            return;
+        }
 
         if (this.#controls.isTestWearAxeAnimationDown) {
             this.#isWearingAxe = !this.#isWearingAxe;
@@ -195,8 +252,221 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         );
     }
 
+    public setInputLocked(locked: boolean): void {
+        this.#inputLocked = locked;
+        if (locked) {
+            const body = this.body as Phaser.Physics.Arcade.Body;
+            body.setVelocity(0);
+        }
+    }
+
+    // ─────────────────────────────────────────
+    // FISHING
+    //
+    // The fishing states (cast, idle, hooked, roll, captured) are played from
+    // the sheets in animations/player/fishing; see player-fishing-animations.ts.
+    // ─────────────────────────────────────────
+
+    public get isFishing(): boolean {
+        return this.#isFishing;
+    }
+
+    /** Four-way facing; "side" is resolved with flipX. */
+    public get facing(): Facing {
+        if (this.#isFishing) {
+            return this.#fishingFacing;
+        }
+        if (this.#direction === "side") {
+            return this.flipX ? "left" : "right";
+        }
+        return this.#direction;
+    }
+
+    /**
+     * Throws the line toward the current facing.
+     *
+     * @param landsInWater true → the full cast ending with the float in the
+     *   water; false → the cast stops before the splash (the bait hit sand,
+     *   a bridge, ...).
+     * @param onLanded the bait touches down (splash frame / end of throw).
+     * @param onComplete the throw animation finished.
+     */
+    public castLine(
+        landsInWater: boolean,
+        onLanded?: () => void,
+        onComplete?: () => void
+    ): Facing {
+        const facing = this.facing;
+
+        this.#isFishing = true;
+        this.#fishingFacing = facing;
+        (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+
+        let landed = false;
+        const land = () => {
+            if (landed) return;
+            landed = true;
+            onLanded?.();
+        };
+
+        if (landsInWater) {
+            this.#playFishingAnimation("cast", facing, {
+                onFrame: (index) => {
+                    if (index >= FISHING_SHEET.splashFrame) land();
+                },
+                onComplete: () => {
+                    land();
+                    onComplete?.();
+                },
+            });
+        } else {
+            this.#playFishingAnimation("castMiss", facing, {
+                onComplete: () => {
+                    land();
+                    onComplete?.();
+                },
+            });
+        }
+
+        return facing;
+    }
+
+    /** The float rests on the water while the fish is not biting yet. */
+    public playFishingIdle(): void {
+        if (!this.#isFishing) return;
+        this.#playFishingAnimation("idle", this.#fishingFacing, {}, true);
+    }
+
+    /** A fish bites: the float bobs with the hook until the question ends. */
+    public playFishingBite(): void {
+        if (!this.#isFishing) return;
+        this.#playFishingAnimation("hooked", this.#fishingFacing, {}, true);
+    }
+
+    /**
+     * The result of the question: the caught fish (or an empty hook) is
+     * shown, then the line is reeled in.
+     */
+    public showCatch(success: boolean, onComplete?: () => void): void {
+        if (!this.#isFishing) {
+            onComplete?.();
+            return;
+        }
+
+        this.#playFishingAnimation(
+            success ? "capturedFish" : "capturedNoFish",
+            this.#fishingFacing,
+            { onComplete }
+        );
+    }
+
+    /** Reels the line in, then returns to normal walking. */
+    public reelIn(onComplete?: () => void): void {
+        if (!this.#isFishing) {
+            onComplete?.();
+            return;
+        }
+
+        this.#playFishingAnimation("roll", this.#fishingFacing, {
+            onComplete: () => {
+                this.stopFishing();
+                onComplete?.();
+            },
+        });
+    }
+
+    /** Leaves fishing mode immediately (no animation). */
+    public stopFishing(): void {
+        this.#cancelFishingAnimation?.();
+
+        if (!this.#isFishing) return;
+
+        this.#isFishing = false;
+        this.#face(this.#fishingFacing);
+        this.#playIdle();
+    }
+
+    #playFishingAnimation(
+        state: FishingStateKey,
+        facing: Facing,
+        handlers: FishingAnimationHandlers,
+        loop = false
+    ): void {
+        // Drop listeners of an interrupted animation so they can never fire
+        // later (e.g. the next time the same animation completes).
+        this.#cancelFishingAnimation?.();
+
+        const key = fishingAnimationKey(state, facing);
+
+        // A missing animation must never leave the player stuck in fishing
+        // mode (no completion event would ever fire): skip straight ahead.
+        if (!this.scene.anims.exists(key)) {
+            console.warn(`Fishing animation missing: ${key}`);
+            this.#cancelFishingAnimation = undefined;
+            this.scene.time.delayedCall(0, () => handlers.onComplete?.());
+            return;
+        }
+
+        const onUpdate = (
+            animation: Phaser.Animations.Animation,
+            frame: Phaser.Animations.AnimationFrame
+        ) => {
+            // AnimationFrame.index is 1-based.
+            if (animation.key === key) handlers.onFrame?.(frame.index - 1);
+        };
+
+        const onComplete = (animation: Phaser.Animations.Animation) => {
+            if (animation.key !== key) return;
+            cleanup();
+            handlers.onComplete?.();
+        };
+
+        const cleanup = () => {
+            this.off(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+            this.off(Phaser.Animations.Events.ANIMATION_COMPLETE, onComplete);
+            if (this.#cancelFishingAnimation === cleanup) {
+                this.#cancelFishingAnimation = undefined;
+            }
+        };
+
+        this.on(Phaser.Animations.Events.ANIMATION_UPDATE, onUpdate);
+        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, onComplete);
+        this.#cancelFishingAnimation = cleanup;
+
+        this.setFlipX(fishingFlipX(facing));
+        this.play({ key, repeat: loop ? -1 : 0 });
+    }
+
+    #face(facing: Facing): void {
+        if (facing === "left" || facing === "right") {
+            this.#direction = "side";
+            this.setFlipX(facing === "left");
+        } else {
+            this.#direction = facing;
+            this.setFlipX(false);
+        }
+    }
+
+    /** Keeps the feet body in place whatever the current frame size is. */
+    #syncBodyToFrame(): void {
+        const body = this.body as Phaser.Physics.Arcade.Body | null;
+        if (!body) return;
+
+        const offsetX = PLAYER_BODY.offsetX + (this.width - PLAYER_BODY.baseFrameSize) / 2;
+        const offsetY = PLAYER_BODY.offsetY + (this.height - PLAYER_BODY.baseFrameSize) / 2;
+
+        if (body.offset.x !== offsetX || body.offset.y !== offsetY) {
+            body.setOffset(offsetX, offsetY);
+        }
+    }
+
     #updateMovement(): void {
         const body = this.body as Phaser.Physics.Arcade.Body;
+
+        if (this.#inputLocked) {
+            body.setVelocity(0);
+            return;
+        }
 
         const speed = 100;
 

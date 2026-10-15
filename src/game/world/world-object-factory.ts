@@ -1,6 +1,9 @@
 import Phaser from "phaser";
 import { ASSET_KEYS } from "../common/assets";
-import { TreeAnimationKey, TreeDefinitions } from "../common/types/object";
+import {
+    TreeAnimationKey,
+    TreeDefinitions,
+} from "../common/types/object";
 import { WORLD_CONFIG } from "../config/world-config";
 import { Tree } from "../game-objects/tree";
 import { WorldObject } from "./world-object";
@@ -13,55 +16,34 @@ export class WorldObjectFactory {
     public create(
         type: string,
         x: number,
-        y: number
+        y: number,
+        gid?: number,
+        map?: Phaser.Tilemaps.Tilemap
     ): WorldObject | null {
         switch (type) {
             case "mahogany_tree_small":
-                return this.#createTree(
-                    x,
-                    y,
-                    "mahogany_tree_small",
-                    type
-                );
-
             case "mahogany_tree_medium":
-                return this.#createTree(
-                    x,
-                    y,
-                    "mahogany_tree_medium",
-                    type
-                );
-
             case "mahogany_tree_large":
-                return this.#createTree(
-                    x,
-                    y,
-                    "mahogany_tree_large",
-                    type
-                );
-
             case "no_leaf_mahogany":
-                return this.#createTree(
-                    x,
-                    y,
-                    "no_leaf_mahogany",
-                    type
-            )
-
             case "dark_green_mahogany_tree_large":
                 return this.#createTree(
                     x,
                     y,
-                    "dark_green_mahogany_tree_large",
-                    type
+                    type as keyof TreeDefinitions,
+                    type as TreeAnimationKey
                 );
 
             default:
-                // console.warn(
-                //     `Unknown world object type: ${type}`
-                // );
-
-                return null;
+                if (gid == null || !map) {
+                    return null;
+                }
+                return this.#createStaticObject(
+                    type,
+                    x,
+                    y,
+                    gid,
+                    map
+                );
         }
     }
 
@@ -76,26 +58,24 @@ export class WorldObjectFactory {
                 "MAHOGANY_TREE_DEFINITIONS"
             );
 
-        const treeDefinition =
-            definitions[variant];
+        const treeDefinition = definitions[variant];
 
         if (!treeDefinition) {
             console.error(
                 `Tree definition not found: ${variant}`
             );
-
             return null;
         }
 
         const tree = new Tree(
             this.scene,
-            ASSET_KEYS.WORLD_MAHOGANY_TREE,
+            ASSET_KEYS.MAHOGANY_TREE,
             x * WORLD_CONFIG.scale,
             y * WORLD_CONFIG.scale,
             WORLD_CONFIG.scale,
             treeDefinition,
             animationKey,
-            definitions.chopped_tree,
+            definitions.chopped_tree
         );
 
         return {
@@ -104,6 +84,53 @@ export class WorldObjectFactory {
             collidable: tree,
             visible: tree,
             depthSortable: tree,
+        };
+    }
+
+    #createStaticObject(
+        layerName: string,
+        x: number,
+        y: number,
+        rawGid: number,
+        map: Phaser.Tilemaps.Tilemap
+    ): WorldObject | null {
+        const gid = rawGid & 0x1fffffff;
+        const tileset = map.tilesets.find(
+            (tileset) =>
+                gid >= tileset.firstgid &&
+                gid < tileset.firstgid + tileset.total
+        );
+
+        if (!tileset) {
+            console.warn(`Tileset not found for GID: ${gid}`);
+            return null;
+        }
+
+        const asset = ASSET_KEYS[
+            tileset.name.toUpperCase() as keyof typeof ASSET_KEYS
+        ];
+
+        if (!asset || !this.scene.textures.exists(asset)) {
+            console.warn(`Texture not found for tileset: ${tileset.name}`);
+            return null;
+        }
+
+        const image = this.scene.add.image(
+            x * WORLD_CONFIG.scale,
+            y * WORLD_CONFIG.scale,
+            asset,
+            gid - tileset.firstgid
+        );
+
+        image.setOrigin(0, 1);
+        image.setScale(WORLD_CONFIG.scale);
+        // The Tiled object layer name, e.g. "fishman_house".
+        image.setName(layerName);
+
+        return {
+            gameObject: image,
+            visible: image,
+            depthSortable: image,
         };
     }
 }
