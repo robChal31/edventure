@@ -12,7 +12,7 @@ export type TreeDefinitions = {
     mahogany_tree_small: TreeDefinition;
     mahogany_tree_medium: TreeDefinition;
     mahogany_tree_large: TreeDefinition;
-    chopped_tree: TreeDefinition;
+    chopped_mahogany_tree: TreeDefinition;
     no_leaf_mahogany: TreeDefinition;
     dark_green_mahogany_tree_large: TreeDefinition;
 };

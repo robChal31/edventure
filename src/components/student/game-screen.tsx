@@ -246,7 +246,7 @@ export default function GameScreen({
                     />
 
                     {!summary && (
-                        <div className="absolute right-2 top-[4.5rem] flex flex-col items-end gap-1.5 sm:right-3 sm:top-20">
+                        <div className="absolute right-2 top-18 flex flex-col items-end gap-1.5 sm:right-3 sm:top-20">
                             <button
                                 type="button"
                                 tabIndex={-1}

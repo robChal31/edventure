@@ -26,6 +26,8 @@ export class WorldObjectFactory {
             case "mahogany_tree_large":
             case "no_leaf_mahogany":
             case "dark_green_mahogany_tree_large":
+            case "orange_mahogany_tree_large":
+            case "chopped_mahogany_tree":
                 return this.#createTree(
                     x,
                     y,
@@ -75,7 +77,7 @@ export class WorldObjectFactory {
             WORLD_CONFIG.scale,
             treeDefinition,
             animationKey,
-            definitions.chopped_tree
+            definitions.chopped_mahogany_tree
         );
 
         return {

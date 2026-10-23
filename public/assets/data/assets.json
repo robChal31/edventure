@@ -76,12 +76,6 @@
       },
       {
         "type": "spritesheet",
-        "key": "BOAT",
-        "url": "Objects/Exterior/Beach/Wood Boat.png",
-        "frameConfig": { "frameWidth": 176, "frameHeight": 112 }
-      },
-      {
-        "type": "spritesheet",
         "key": "TENT",
         "url": "Objects/Exterior/Beach/Tent.png",
         "frameConfig": { "frameWidth": 48, "frameHeight": 48 }
@@ -106,12 +100,6 @@
       },
       {
         "type": "spritesheet",
-        "key": "CANOE",
-        "url": "Objects/Exterior/Beach/wood canoe.png",
-        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
-      },
-      {
-        "type": "spritesheet",
         "key": "COCONUT_TREE",
         "url": "Crops/Fruits Tree/Summer/Coconut tree.png",
         "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
@@ -127,24 +115,6 @@
         "key": "COCONUT_REE_HAMOK",
         "url": "Objects/Exterior/Beach/Coconut Tree hamok.png",
         "frameConfig": { "frameWidth": 80, "frameHeight": 48 }
-      },
-      {
-        "type": "spritesheet",
-        "key": "WATER_STONE_RIPPLE",
-        "url": "Objects/Exterior/Beach/water stone ripple.png",
-        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
-      },
-      {
-        "type": "spritesheet",
-        "key": "WATER_STONE_RIPPLE2",
-        "url": "Objects/Exterior/Beach/water stone ripple2.png",
-        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
-      },
-      {
-        "type": "spritesheet",
-        "key": "WATER_STONE_RIPPLE3",
-        "url": "Objects/Exterior/Beach/water stone ripple3.png",
-        "frameConfig": { "frameWidth": 48, "frameHeight": 32 }
       },
       {
         "type": "spritesheet",
@@ -190,9 +160,184 @@
       },
       {
         "type": "spritesheet",
-        "key": "MAPLE_TREE",
-        "url": "Objects/Tree/Common/Shadow/Maple Tree.png",
+        "key": "SCHOOL",
+        "url": "Objects/Exterior/Houses/NPCS houses/School.png",
+        "frameConfig": { "frameWidth": 224, "frameHeight": 160 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "BRIDGE",
+        "url": "Objects/Exterior/Deep Forest/Bridge.png",
         "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
+        "type": "image",
+        "key": "FENCE",
+        "url": "Objects/Exterior/Fence and Bridge/Fence Wood.png"
+      },
+      {
+        "type": "image",
+        "key": "ROAD",
+        "url": "Objects/Exterior/Road.png"
+      },
+      {
+        "type": "image",
+        "key": "PATH",
+        "url": "Tileset/Path tiles.png"
+      },
+      {
+        "type": "spritesheet",
+        "key": "SANDBOX",
+        "url": "Objects/Exterior/sandbox.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "WATER_BOX",
+        "url": "Objects/Exterior/water box.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 80 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "VILLAGE_SIGNS",
+        "url": "Objects/Exterior/Village Signs.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "PLAYGROUND_SLIDE",
+        "url": "Objects/Exterior/Playground Slide.png",
+        "frameConfig": { "frameWidth": 80, "frameHeight": 64 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "SWING",
+        "url": "Objects/Exterior/Swing.png",
+        "frameConfig": { "frameWidth": 64, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "SEESAW",
+        "url": "Objects/Exterior/Seesaw.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 16 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "NOTICE_BOARDS",
+        "url": "Objects/Exterior/Notice Boards.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "MAILBOX",
+        "url": "Objects/Exterior/Mailbox.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "STREET_LAMP_2",
+        "url": "Objects/Exterior/Street Lamp 2.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "BUSHES",
+        "url": "Objects/Tree/Deep Forest/bushes.png",
+        "frameConfig": { "frameWidth": 48, "frameHeight": 32 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "COTTON_CANDY_CART",
+        "url": "Objects/Exterior/Cotton candy cart.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "WELL",
+        "url": "Objects/Exterior/Well.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "ICE_CREAM_CART",
+        "url": "Objects/Exterior/ice cream cart.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 48 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "HOUSE1",
+        "url": "Objects/Exterior/Houses/3.png",
+        "frameConfig": { "frameWidth": 128, "frameHeight": 112 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "BLACKSMITH2",
+        "url": "Objects/Exterior/Houses/NPCS houses/Blacksmith/Blacksmith2.png",
+        "frameConfig": { "frameWidth": 80, "frameHeight": 96 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "HOUSE2",
+        "url": "Objects/Exterior/Houses/2.png",
+        "frameConfig": { "frameWidth": 80, "frameHeight": 96 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "DELUXE_BARN",
+        "url": "Objects/Exterior/Houses/Farm Buildings/Barn/Deluxe Barn.png",
+        "frameConfig": { "frameWidth": 144, "frameHeight": 128 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "DELUXE_MILL",
+        "url": "Objects/Exterior/Houses/Farm Buildings/Mill/Deluxe Mill.png",
+        "frameConfig": { "frameWidth": 80, "frameHeight": 112 }
+      },
+      {
+        "type": "spritesheet",
+        "key": "STONES_SUMMER",
+        "url": "Objects/Props/Summer/Stones Summer.png",
+        "frameConfig": { "frameWidth": 32, "frameHeight": 16 }
+      },
+      {
+        "type": "image",
+        "key": "SOIL_AND_WET_SOIL",
+        "url": "Tileset/Tilled Soil and wet soil.png"
+      },
+      {
+        "type": "image",
+        "key": "WHEAT",
+        "url": "Crops/Summer/Wheat.png"
+      },
+      {
+        "type": "image",
+        "key": "TOMATO",
+        "url": "Crops/Summer/Tomato.png"
+      },
+      {
+        "type": "image",
+        "key": "GREEN_BEANS",
+        "url": "Crops/Summer/Green Beans.png"
+      },
+      {
+        "type": "image",
+        "key": "CUCUMBER",
+        "url": "Crops/Summer/Cucumber.png"
+      },
+      {
+        "type": "image",
+        "key": "BELL_PEPPER",
+        "url": "Crops/Summer/Bell Pepper.png"
+      },
+      {
+        "type": "image",
+        "key": "EXTRA_VILLAGE_TILESETS",
+        "url": "Tileset/Extra Village Tilesets.png"
+      },
+      {
+        "type": "image",
+        "key": "HAY_BALES",
+        "url": "Objects/Exterior/Hay Bales.png"
       }
     ]
   },
@@ -307,6 +452,12 @@
         "key": "WATER_STONE_RIPPLE3_ANIMATION",
         "textureURL": "water_stone/water_stone_ripple3_animation_sheet.png",
         "atlasURL": "water_stone/water_stone_ripple3_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "WATER_FOUNTAIN_ANIMATION",
+        "textureURL": "water_fountain/water_fountain_animation_sheet.png",
+        "atlasURL": "water_fountain/water_fountain_animation.json"
       }
     ]
   },

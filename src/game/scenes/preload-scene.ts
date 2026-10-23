@@ -35,5 +35,6 @@ export class PreloadScene extends Phaser.Scene {
         this.anims.createFromAseprite(ASSET_KEYS.WATER_STONE_RIPPLE_ANIMATION);
         this.anims.createFromAseprite(ASSET_KEYS.WATER_STONE_RIPPLE2_ANIMATION);
         this.anims.createFromAseprite(ASSET_KEYS.WATER_STONE_RIPPLE3_ANIMATION);
+        this.anims.createFromAseprite(ASSET_KEYS.WATER_FOUNTAIN_ANIMATION);
     }
 }

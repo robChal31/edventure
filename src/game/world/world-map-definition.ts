@@ -38,6 +38,7 @@ export type WorldObjectType =
 export type WorldMapAnimationDefinition = {
     layer: string;
     animationKey: string;
+    collidable?: boolean;
 };
 
 /** Where the player appears, in map pixels (before WORLD_CONFIG.scale). */

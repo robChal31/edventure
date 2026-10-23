@@ -201,7 +201,8 @@ export class GameScene extends Phaser.Scene {
             this,
             this.#player,
             this.#worldMap,
-            this.#worldObjectRegistry.objects
+            this.#worldObjectRegistry.objects,
+            this.#mapSprites
         );
     }
     // ─────────────────────────────────────────

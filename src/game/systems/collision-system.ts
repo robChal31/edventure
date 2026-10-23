@@ -11,13 +11,17 @@ export class CollisionSystem {
         private scene: Phaser.Scene,
         private player: Player,
         private worldMap: WorldMap,
-        private objects: readonly WorldObject[]
+        private objects: readonly WorldObject[],
+        private animationSprites: readonly Phaser.GameObjects.Sprite[] = []
     ) {}
 
     public setup(): void {
         this.#setupWorldCollision();
         this.#setupWaterCollision();
+        this.#setupFenceCollision(); 
+        this.#setupHigherGroundEdgeCollision(); 
         this.#setupObjectCollision();
+        this.#setupAnimationCollision(); 
     }
 
     #setupWorldCollision(): void {
@@ -30,6 +34,71 @@ export class CollisionSystem {
             this.scene.physics.add.collider(
                 this.player,
                 waterLayer
+            );
+        });
+    }
+
+    #setupFenceCollision(): void {
+        const fenceLayer = this.worldMap.map.getLayer("fence")
+            ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
+
+        if (!fenceLayer) {
+            console.warn("Fence layer not found");
+            return;
+        }
+
+        // Semua tile yang bukan -1 (empty) collidable
+        fenceLayer.setCollisionByExclusion([-1]);
+
+        this.scene.physics.add.collider(
+            this.player,
+            fenceLayer
+        );
+    }
+
+    #setupHigherGroundEdgeCollision(): void {
+        const higherGroundEdge = this.worldMap.map.getLayer("higher_ground_edge")
+            ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
+            console.log("higherGroundEdge", higherGroundEdge);
+
+        const groundCliffEdge = this.worldMap.map.getLayer("ground_cliff")
+            ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
+
+        if (!higherGroundEdge) {
+            console.warn("Higher ground edge layer not found");
+            return;
+        }
+
+        if (!groundCliffEdge) {
+            console.warn("Ground cliff edge layer not found");
+            return;
+        }
+
+        // Semua tile yang bukan -1 (empty) collidable
+        higherGroundEdge.setCollisionByExclusion([-1]);
+
+        groundCliffEdge.setCollisionByExclusion([-1]);
+
+        this.scene.physics.add.collider(
+            this.player,
+            higherGroundEdge
+        );
+
+        this.scene.physics.add.collider(
+            this.player,
+            groundCliffEdge
+        );
+    }
+
+    #setupAnimationCollision(): void {
+        this.animationSprites.forEach((sprite) => {
+            if (!sprite.getData("collidable")) return;
+
+            const collisionBody = this.#createCollisionBody(sprite);
+
+            this.scene.physics.add.collider(
+                this.player,
+                collisionBody
             );
         });
     }
@@ -62,7 +131,7 @@ export class CollisionSystem {
     }
 
     #createCollisionBody(
-        image: Phaser.GameObjects.Image
+        image: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite 
     ): Phaser.GameObjects.Rectangle {
         const opaqueBounds = getOpaqueBounds(
             image.texture,
@@ -137,5 +206,17 @@ export class CollisionSystem {
                 body.height
             );
         });
+
+        // ⬇️ Debug render buat fence
+        const fenceLayer = this.worldMap.map.getLayer("fence")
+            ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
+
+        if (fenceLayer) {
+            fenceLayer.renderDebug(graphics, {
+                tileColor: null,
+                collidingTileColor: new Phaser.Display.Color(255, 165, 0, 80),  // orange
+                faceColor: new Phaser.Display.Color(255, 165, 0, 255),
+            });
+        }
     }
 }

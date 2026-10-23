@@ -51,6 +51,7 @@ export class MapAnimationLoader {
                     sprite.setOrigin(0, 1);
                     // The Tiled object layer name, e.g. "boat".
                     sprite.setName(animationDefinition.layer);
+                    sprite.setData("collidable", animationDefinition.collidable ?? false);
                     sprite.setDepth(
                         (object.y + object.height) * WORLD_CONFIG.scale
                     );
