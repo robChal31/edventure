@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import PhaserGame from "@/game/PhaserGame";
 import type {
     ActivityController,
-    FishingPhase,
+    ActivityPhase,
+    ActivityHudState,
     GameEvent,
     GameOptions,
     MapId,
@@ -40,7 +41,6 @@ type GameScreenProps = {
     resultsNote?: string;
 };
 
-type HudState = { caught: number; answered: number; total: number; questionNumber: number };
 type CurrentQuestion = { question: Question; questionNumber: number; total: number };
 
 export default function GameScreen({
@@ -57,8 +57,8 @@ export default function GameScreen({
     const [mapId, setMapId] = useState<MapId | null>(null);
     const [activityId, setActivityId] = useState<ActivityId | null>(null);
     const [travelling, setTravelling] = useState(false);
-    const [phase, setPhase] = useState<FishingPhase>("idle");
-    const [hud, setHud] = useState<HudState>({ caught: 0, answered: 0, total: 0, questionNumber: 1 });
+    const [phase, setPhase] = useState<ActivityPhase>("idle");
+    const [hud, setHud] = useState<ActivityHudState>({ caught: 0, answered: 0, total: 0, questionNumber: 1 });
     const [current, setCurrent] = useState<CurrentQuestion | null>(null);
     const [reveal, setReveal] = useState<AnswerReveal | null>(null);
     const [prompt, setPrompt] = useState<string | null>(null);
@@ -121,6 +121,10 @@ export default function GameScreen({
                         answered: event.answered,
                         total: event.total,
                         questionNumber: event.questionNumber,
+                        misses: event.misses,
+                        round: event.round,
+                        rounds: event.rounds,
+                        mode: event.mode,
                     });
                     break;
                 case "question":
@@ -136,6 +140,7 @@ export default function GameScreen({
                         correct: event.correct,
                         answer: event.answer,
                         correctAnswer: event.correctAnswer,
+                        retryable: event.retryable,
                     });
                     break;
                 case "prompt":
@@ -232,7 +237,7 @@ export default function GameScreen({
                 </>
             )}
 
-            {/* Activity (beach) */}
+            {/* Any registered activity map */}
             {inActivity && !travelling && (
                 <>
                     <ActivityHud
@@ -243,6 +248,10 @@ export default function GameScreen({
                         answered={hud.answered}
                         scoreIcon={activity.copy.scoreIcon}
                         scoreLabel={activity.copy.scoreLabel}
+                        misses={hud.misses}
+                        round={hud.round}
+                        rounds={hud.rounds}
+                        mode={hud.mode}
                     />
 
                     {!summary && (
@@ -290,6 +299,7 @@ export default function GameScreen({
                 <QuestionCard
                     key={`${current.questionNumber}-${current.question.id}`}
                     cue={activity.copy.questionCue}
+                    shortAnswerHint={activity.copy.shortAnswerHint}
                     question={current.question}
                     questionNumber={current.questionNumber}
                     total={current.total}

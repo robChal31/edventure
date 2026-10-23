@@ -1,6 +1,7 @@
 import { WorldMapDefinition } from "../world-map-definition";
 import { BEACH_MAP } from "./beach-map";
 import { VILLAGE_MAP } from "./village-map";
+import { FARM_MAP } from "./farm-map";
 
 /**
  * Every map the game can load, by id. Maps themselves are authored in
@@ -9,6 +10,7 @@ import { VILLAGE_MAP } from "./village-map";
 export const WORLD_MAPS = {
     village: VILLAGE_MAP,
     beach: BEACH_MAP,
+    farm: FARM_MAP,
 } as const satisfies Record<string, WorldMapDefinition>;
 
 export type MapId = keyof typeof WORLD_MAPS;

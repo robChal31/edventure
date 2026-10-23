@@ -4,6 +4,7 @@ import type {
     PlayableQuiz,
     Question,
     QuizSummary,
+    QuizMode,
 } from "@/quiz/types";
 import type { MapId } from "./world/maps/map-registry";
 
@@ -25,6 +26,28 @@ export type FishingPhase =
     | "escaped"
     | "complete";
 
+export type CatchingBugsPhase =
+    | "idle"
+    | "netting"
+    | "answering"
+    | "catching"
+    | "escaped"
+    | "round-transition"
+    | "complete";
+
+export type ActivityPhase = FishingPhase | CatchingBugsPhase;
+
+export type ActivityHudState = {
+    caught: number;
+    answered: number;
+    total: number;
+    questionNumber: number;
+    misses?: number;
+    round?: number;
+    rounds?: number;
+    mode?: QuizMode;
+};
+
 export type GameEvent =
     | { type: "game:ready" }
     /** A map finished loading (first boot or after travelling). */
@@ -36,7 +59,7 @@ export type GameEvent =
       }
     /** The camera started fading out to travel to another map. */
     | { type: "travel:start"; to: MapId }
-    | { type: "phase"; phase: FishingPhase }
+    | { type: "phase"; phase: ActivityPhase }
     | {
           type: "question";
           questionNumber: number;
@@ -54,9 +77,11 @@ export type GameEvent =
           answered: number;
           total: number;
           feedback: string;
+          /** Wrong practice catch: the same target/question can be tried again. */
+          retryable?: boolean;
       }
     | { type: "prompt"; message: string | null }
-    | { type: "hud"; caught: number; answered: number; total: number; questionNumber: number }
+    | ({ type: "hud" } & ActivityHudState)
     | { type: "complete"; summary: QuizSummary };
 
 export type VirtualDirection = "up" | "down" | "left" | "right";

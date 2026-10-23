@@ -13,6 +13,8 @@ export type AnswerReveal = {
     answer: AnswerValue;
     /** Display text of the right answer. */
     correctAnswer: string;
+    /** A wrong practice catch leaves the target available for another attempt. */
+    retryable?: boolean;
 };
 
 type QuestionCardProps = {
@@ -25,6 +27,7 @@ type QuestionCardProps = {
     layout?: "overlay" | "inline";
     /** Heading shown in the card's top bar, from the activity's copy. */
     cue?: string;
+    shortAnswerHint?: string;
 };
 
 /**
@@ -39,6 +42,7 @@ export default function QuestionCard({
     onAnswer,
     layout = "overlay",
     cue = "❓ QUESTION",
+    shortAnswerHint,
 }: QuestionCardProps) {
     const titleId = useId();
     const isOverlay = layout === "overlay";
@@ -98,7 +102,7 @@ export default function QuestionCard({
                         />
                     )}
                     {question.type === "short_answer" && (
-                        <ShortAnswerInput reveal={reveal} onAnswer={onAnswer} autoFocus={isOverlay} />
+                        <ShortAnswerInput reveal={reveal} onAnswer={onAnswer} autoFocus={isOverlay} submitHint={shortAnswerHint} />
                     )}
                 </div>
             </div>
@@ -150,6 +154,11 @@ function RevealBanner({
                     </span>
                 )}
             </div>
+            {reveal.retryable && (
+                <p className="mt-2 text-sm text-amber-200">
+                    Mode latihan: cricket lepas, miss +1. Dekati dan tangkap lagi untuk mencoba soal yang sama.
+                </p>
+            )}
             {explanation && (
                 <p className="mt-2 text-sm text-slate-300">
                     <span aria-hidden>💡 </span>

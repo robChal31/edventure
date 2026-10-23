@@ -10,6 +10,8 @@ export type ActivityCopy = {
     waitingActionLabel: string;
     /** Heading of the question card. */
     questionCue: string;
+    /** Optional activity-specific hint for a typed answer. */
+    shortAnswerHint?: string;
     /** Results-screen button to play the quest again. */
     playAgainLabel: string;
     /** Score line icon and label in the HUD, e.g. "🐟 2/5 caught". */
@@ -85,6 +87,50 @@ export const ACTIVITIES: ActivityDefinition[] = [
                 ["T / F", "True or false"],
                 ["Enter", "Submit a short answer"],
                 ["Q", "Quest board (in the village)"],
+            ],
+        },
+    },
+    {
+        id: "catching_bugs",
+        label: "Catching Bugs",
+        icon: "🦗",
+        location: "Farm",
+        tagline: "Dekati cricket di ladang, ayunkan net, lalu jawab soal untuk menangkapnya.",
+        available: true,
+        copy: {
+            startLabel: "KE LADANG ▶",
+            actionLabel: "TANGKAP",
+            waitingActionLabel: "TANGKAP",
+            questionCue: "🦗 CRICKET DALAM JANGKAUAN!",
+            shortAnswerHint: "TEKAN ENTER UNTUK MENJAWAB",
+            playAgainLabel: "TANGKAP LAGI",
+            scoreIcon: "🦗",
+            scoreLabel: "tertangkap",
+            status: {
+                netting: "Mengayunkan net…",
+                catching: "Cricket tertangkap!",
+                escaped: "Cricket lepas…",
+                "round-transition": "Bersiap untuk ronde berikutnya…",
+            },
+        },
+        guide: {
+            goal: "Satu cricket = satu soal, dari mapel apa pun. Selesaikan semua soal di ladang tanpa sistem nyawa barn.",
+            steps: [
+                "Masuk ke ladang dalam pagar. Cricket bergerak bebas di area ini, bukan menuju barn.",
+                "Dekati cricket sampai muncul tanda F, lalu tekan F / Spasi atau tombol TANGKAP untuk mengayunkan net.",
+                "Soal milik cricket itu akan muncul. Jawaban benar menangkapnya; jawaban salah membuatnya lepas dan menambah miss.",
+                "Mode latihan: cricket yang lepas tetap di ladang. Dekati dan tangkap lagi untuk mencoba soal yang sama. Skor memakai hasil akhir, miss menghitung setiap jawaban salah.",
+                "Mode asesmen: satu percobaan per soal. Cricket yang lepas dihitung miss dan soal tersebut selesai.",
+                "Total cricket mengikuti jumlah soal, maksimal 5 aktif per ronde. Ronde terakhir menyesuaikan sisa soal; ukuran farm tidak berubah.",
+                "Cricket terus bergerak saat kamu membaca soal, tetapi tidak ada penalti waktu atau cricket yang kabur otomatis.",
+            ],
+            controls: [
+                ["Tombol panah / D-pad", "Berjalan mendekati cricket"],
+                ["F / Spasi / TANGKAP", "Tangkap cricket terdekat"],
+                ["1–6 atau A–F", "Pilih jawaban"],
+                ["T / F", "Benar / salah"],
+                ["Enter", "Kirim jawaban singkat"],
+                ["Q", "Quest board (di desa)"],
             ],
         },
     },

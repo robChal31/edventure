@@ -1,7 +1,7 @@
 import { ACTIVITIES } from "@/quiz/activities";
 import { isCurriculumId } from "@/quiz/taxonomy";
 import { sanitizeClassification, classificationFromDraft, readSchoolId } from "@/quiz/question-types";
-import type { ActivityId, Question } from "@/quiz/types";
+import type { ActivityId, Question, QuizMode } from "@/quiz/types";
 import type { CognitiveLevel, CurriculumId, Difficulty } from "@/quiz/taxonomy";
 import { isQuizAssignedTo } from "../access";
 import { createId, nowIso } from "../ids";
@@ -48,6 +48,7 @@ function sanitizeQuiz(raw: unknown): Quiz | null {
         name: value.name,
         description: typeof value.description === "string" ? value.description : "",
         activityId,
+        ...(value.mode === "practice" || value.mode === "assessment" ? { mode: value.mode } : {}),
         questionIds: Array.isArray(value.questionIds)
             ? value.questionIds.filter((id): id is string => typeof id === "string")
             : [],
@@ -71,6 +72,7 @@ export type QuizDraft = {
     name: string;
     description: string;
     activityId: ActivityId;
+    mode: QuizMode;
     questionIds: string[];
     shuffleQuestions: boolean;
     published: boolean;
@@ -92,6 +94,7 @@ export function emptyQuizDraft(schoolId: string | null = null): QuizDraft {
         name: "",
         description: "",
         activityId: "fishing",
+        mode: "assessment",
         questionIds: [],
         shuffleQuestions: false,
         published: true,
@@ -113,6 +116,7 @@ export function draftFromQuiz(quiz: Quiz): QuizDraft {
         name: quiz.name,
         description: quiz.description,
         activityId: quiz.activityId,
+        mode: quiz.mode ?? "assessment",
         questionIds: [...quiz.questionIds],
         shuffleQuestions: quiz.shuffleQuestions,
         published: quiz.published,
@@ -174,6 +178,7 @@ export function saveQuiz(draft: QuizDraft): Quiz {
         name: draft.name.trim(),
         description: draft.description.trim(),
         activityId: draft.activityId,
+        ...(draft.activityId === "catching_bugs" ? { mode: draft.mode } : {}),
         questionIds: Array.from(new Set(draft.questionIds)),
         shuffleQuestions: draft.shuffleQuestions,
         published: draft.published,

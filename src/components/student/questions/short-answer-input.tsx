@@ -8,11 +8,12 @@ type Props = {
     reveal: AnswerReveal | null;
     onAnswer: (answer: AnswerValue) => void;
     autoFocus?: boolean;
+    submitHint?: string;
 };
 
 const MAX_LENGTH = 80;
 
-export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true }: Props) {
+export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true, submitHint = "PRESS ENTER TO REEL IT IN" }: Props) {
     const [text, setText] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const locked = submitted || reveal !== null;
@@ -62,7 +63,7 @@ export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true }:
             {!reveal && (
                 <div className="mt-3 flex items-center justify-between gap-3">
                     <span className="hidden font-pixel text-[9px] text-slate-500 sm:block">
-                        PRESS ENTER TO REEL IT IN
+                        {submitHint}
                     </span>
                     <button
                         type="submit"

@@ -157,6 +157,21 @@ export function seedQuizzes(): Quiz[] {
     const samples: Quiz[] = [
         {
             ...GLOBAL_QUIZ_DEFAULTS,
+            id: "quiz-sample-catching-bugs",
+            name: "Cricket di Ladang",
+            description: "Contoh latihan lintas mapel: tangkap cricket, jawab soal, dan coba lagi kalau lepas. Tujuh soal dalam dua ronde.",
+            activityId: "catching_bugs",
+            mode: "practice",
+            questionIds: ["bank-1", "bank-tf-1", "bank-sa-2", "bank-sa-4", "bank-sa-5", "bank-tf-3", "bank-2"],
+            assignment: { mode: "everyone" },
+            grade: 4,
+            curriculum: "general",
+            difficulty: "easy",
+            cognitiveLevel: "understand",
+            tags: ["demo", "lintas-mapel"],
+        },
+        {
+            ...GLOBAL_QUIZ_DEFAULTS,
             id: "quiz-sample-ocean",
             name: "Ocean Explorers",
             description: "A mixed warm-up: multiple choice, true/false and short answers about the sea.",

@@ -49,6 +49,7 @@ export default function StudentPlay() {
                 name: quiz.name,
                 description: quiz.description,
                 activityId: quiz.activityId,
+                mode: quiz.mode,
                 questionCount: resolved.length,
                 questionTypes: types,
                 attempts: mine?.count ?? 0,

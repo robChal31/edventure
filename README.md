@@ -40,7 +40,46 @@ means: implement the activity, register it in `src/quiz/activities.ts` and the g
 registry, and set `available: true`.
 
 Students who play a quiz travel to its activity map. Currently available: **fishing** (on the
-beach map).
+beach map) and **Catching Bugs** (on the farm map).
+
+### Catching Bugs — farm
+
+- Pilih **Catching Bugs** di editor kuis. Pilih **Asesmen** (satu percobaan per
+  soal, default) atau **Latihan** (boleh mencoba lagi). Mapel dan tipe soal bebas:
+  aktivitas hanya memakai snapshot soal serta penilaian dari `QuizSession`.
+- Satu cricket terikat ke satu soal dan boleh ditangkap dalam urutan bebas.
+  Dekati sampai terlihat tanda **F**, lalu tekan **F / Spasi** atau **TANGKAP**.
+  Animasi net dimainkan sebelum panel soal terbuka. Menekan aksi dari jauh tidak
+  menghabiskan soal atau menambah miss.
+- Benar → tertangkap. Salah → lepas dan **miss +1**. Di latihan, cricket yang
+  sama tetap bergerak di ladang dan bisa ditangkap lagi untuk soal yang sama;
+  skor dan satu record final per soal memakai hasil akhirnya. Di asesmen,
+  cricket dihapus dan jawaban salah menjadi hasil final. Miss latihan adalah
+  jumlah percobaan salah, sehingga bisa melebihi jumlah soal.
+- **Tidak ada nyawa barn, tujuan ke barn, batas waktu, atau penalti otomatis.**
+  Cricket berkeliaran terus, termasuk selama membaca soal, tetapi seluruh
+  sprite tetap dalam area yang ditentukan di dalam pagar.
+- Total cricket mengikuti jumlah soal. Maksimal **5 aktif per ronde**
+  (`CRICKETS_PER_ROUND`); ronde berikutnya baru muncul setelah ronde sebelumnya
+  selesai. Ronde terakhir menyesuaikan sisa soal. Farm selalu **640 × 320 px**.
+- Area gerak adalah rectangle `cricket_field` pada object layer `catching_bugs`
+  di `public/assets/images/levels/farm/barn.json`. Pindahkan rectangle lewat Tiled
+  bila ladang diubah; jangan letakkan di pagar, air, barn atau objek padat.
+  Spawn pemain dan daftar tileset ada di `src/game/world/maps/farm-map.ts`.
+- Artwork asli: `animations/player/catching_net/` dan
+  `animations/animal/bug/cricket_animation.*`. Tidak ada gambar pengganti generik.
+  Net adalah sprite karakter sementara milik aktivitas; player/fishing tidak diubah.
+- Demo **Cricket di Ladang** (`quiz-sample-catching-bugs`) berisi tujuh contoh soal
+  lintas mapel, tiga tipe soal, dan dua ronde latihan. Demo ditambahkan sekali ke
+  instalasi lama tanpa menimpa kuis atau me-reseed fishing. Bisa langsung dimainkan
+  dari quest board; guru bisa memilih map/mode yang sama untuk soal buatannya sendiri.
+- Mode dan jumlah miss ikut disimpan dalam attempt LMS dan terlihat di detail
+  laporan guru. `QuizSummary.incorrect` tetap berarti jumlah soal final yang salah,
+  bukan jumlah retry.
+
+Validasi: jalankan `npm ci`, `npm test`, `npm run lint`, lalu `npm run build`.
+Tes mencakup batch/ronde, latihan vs asesmen, soal tak berurutan, hitungan miss,
+spawn/gerak terbatas, jarak tangkap, aset/map, persistensi LMS, dan regresi fishing.
 
 ### Quiz assignment
 A quiz is assigned to **everyone** in its scope, to whole **classes**, or to hand-picked

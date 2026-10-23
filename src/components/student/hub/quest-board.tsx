@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getActivity } from "@/quiz/activities";
 import { ActivityGuideDetails } from "@/components/ui/activity-guide";
 import { QUESTION_TYPES } from "@/quiz/question-types";
-import type { PlayableQuiz, QuestionType } from "@/quiz/types";
+import type { PlayableQuiz, QuestionType, QuizMode } from "@/quiz/types";
 import type { HubControls } from "../game-screen";
 
 export type QuestInfo = {
@@ -12,6 +12,7 @@ export type QuestInfo = {
     name: string;
     description: string;
     activityId: PlayableQuiz["activityId"];
+    mode?: QuizMode;
     questionCount: number;
     questionTypes: QuestionType[];
     attempts: number;
@@ -174,6 +175,11 @@ function QuestCard({
                         <span className="rounded bg-amber-200 px-2 py-0.5">
                             {quest.questionCount} question{quest.questionCount === 1 ? "" : "s"}
                         </span>
+                        {quest.activityId === "catching_bugs" && (
+                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-900">
+                                {quest.mode === "practice" ? "Latihan" : "Asesmen"}
+                            </span>
+                        )}
                         {quest.questionTypes.map((type) => (
                             <span key={type} title={QUESTION_TYPES[type].label} className="rounded bg-white px-1.5 py-0.5">
                                 {QUESTION_TYPES[type].icon}
