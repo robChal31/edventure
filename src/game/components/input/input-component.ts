@@ -1,138 +1,35 @@
+import { ActionLatch } from "./action-latch";
+
+/** Movement plus one primary action. Equipment is resolved outside the input layer. */
 export class InputComponent {
-    #up: boolean;
-    #down: boolean;
-    #left: boolean;
-    #right: boolean;
-    #actionKey: boolean;
-    #attackKey: boolean;
-    #selectKey: boolean;
-    #enterKey: boolean;
-    #fishingKey: boolean;
-    //for test change player equipment
-    #testWearAxeAnimationKey: boolean;
-    #testAxeActionAnimationKey: boolean;
+    #up = false;
+    #down = false;
+    #left = false;
+    #right = false;
+    #enabled = true;
+    #primary = new ActionLatch();
 
-    constructor() {
-        this.#up = false;
-        this.#down = false;
-        this.#left = false;
-        this.#right = false;
-        this.#actionKey = false;
-        this.#attackKey = false;
-        this.#selectKey = false;
-        this.#enterKey = false;
-        this.#fishingKey = false;
-        this.#testWearAxeAnimationKey = false;
-        this.#testAxeActionAnimationKey = false;
+    get isEnabled(): boolean { return this.#enabled; }
+    get isUpDown(): boolean { return this.#enabled && this.#up; }
+    set isUpDown(value: boolean) { this.#up = value; }
+    get isDownDown(): boolean { return this.#enabled && this.#down; }
+    set isDownDown(value: boolean) { this.#down = value; }
+    get isLeftDown(): boolean { return this.#enabled && this.#left; }
+    set isLeftDown(value: boolean) { this.#left = value; }
+    get isRightDown(): boolean { return this.#enabled && this.#right; }
+    set isRightDown(value: boolean) { this.#right = value; }
+    get isPrimaryActionJustDown(): boolean { return this.#primary.consume(); }
+
+    pressPrimaryAction(repeat = false): void { this.#primary.press(repeat); }
+
+    setEnabled(enabled: boolean): void {
+        this.#enabled = enabled;
+        this.#primary.setEnabled(enabled);
+        this.reset();
     }
 
-    get isUpDown(): boolean {
-        return this.#up;
-    }
-
-    set isUpDown(value: boolean) {
-        this.#up = value;
-    }
-
-    get isUpJustDown(): boolean{
-        return this.#up
-    }
-
-    get isTestWearAxeAnimationDown(): boolean {
-        return this.#testWearAxeAnimationKey;
-    }
-
-    set isTestWearAxeAnimationDown(value: boolean) {
-        this.#testWearAxeAnimationKey = value;
-    }
-
-    get isTestAxeActionAnimationDown(): boolean {
-        return this.#testAxeActionAnimationKey;
-    }
-
-    set isTestAxeActionAnimationDown(value: boolean) {
-        this.#testAxeActionAnimationKey = value;
-    }
-
-    get isDownDown(): boolean {
-        return this.#down;
-    }
-
-    set isDownDown(value: boolean) {
-        this.#down = value;
-    }
-
-    get isDownJustDown(): boolean {
-        return this.#down
-    }
-
-    get isLeftDown(): boolean {
-        return this.#left;
-    }
-
-    set isLeftDown(value: boolean) {
-        this.#left = value;
-    }
-
-    get isRightDown(): boolean {
-        return this.#right;
-    }
-
-    set isRightDown(value: boolean) {
-        this.#right = value;
-    }
-
-    get isActionKeyJustDown(): boolean {
-        return this.#actionKey;
-    }
-
-    set isActionKeyJustDown(value: boolean) {
-        this.#actionKey = value;
-    }
-
-    get isAttackKeyJustDown(): boolean {
-        return this.#attackKey;
-    }
-
-    set isAttackKeyJustDown(value: boolean) {
-        this.#attackKey = value;
-    }
-
-    get isSelectKeyJustDown(): boolean {
-        return this.#selectKey;
-    }
-
-    set isSelectKeyJustDown(value: boolean) {
-        this.#selectKey = value;
-    }
-
-    get isEnterKeyJustDown(): boolean {
-        return this.#enterKey;
-    }
-
-    set isEnterKeyJustDown(value: boolean) {
-        this.#enterKey = value;
-    }
-
-    get isFishingKeyJustDown(): boolean {
-        return this.#fishingKey;
-    }
-
-    set isFishingKeyJustDown(value: boolean) {
-        this.#fishingKey = value;
-    }
-
-    public reset(): void {
-        this.#up = false;
-        this.#down = false;
-        this.#left = false;
-        this.#right = false;
-        this.#actionKey = false;
-        this.#attackKey = false;
-        this.#selectKey = false;
-        this.#enterKey = false;
-        this.#fishingKey = false;
-        this.#testWearAxeAnimationKey = false;
-        this.#testAxeActionAnimationKey = false;
+    reset(): void {
+        this.#up = this.#down = this.#left = this.#right = false;
+        this.#primary.reset();
     }
 }

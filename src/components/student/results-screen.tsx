@@ -19,6 +19,7 @@ type ResultsScreenProps = {
 };
 
 export default function ResultsScreen({ summary, primary, secondary, note }: ResultsScreenProps) {
+    const bugs = summary.activityId === "catching_bugs";
     const pct = summary.total > 0 ? Math.round((summary.correct / summary.total) * 100) : 0;
 
     const verdict =
@@ -33,26 +34,33 @@ export default function ResultsScreen({ summary, primary, secondary, note }: Res
             <div className="lw-pop-in pixel-panel relative max-h-[92dvh] w-[min(94vw,620px)] overflow-y-auto rounded-2xl border-4 border-amber-700 bg-slate-900 p-6">
                 {pct >= 80 && <Confetti pieces={36} />}
 
-                <h2 className="text-center font-pixel text-lg text-amber-300">RESULTS</h2>
+                <h2 className="text-center font-pixel text-lg text-amber-300">{bugs ? "HASIL" : "RESULTS"}</h2>
                 <p className="mt-1 text-center text-xs text-slate-400">{summary.quizName}</p>
                 <p className="mt-2 text-center text-sm text-sky-200">{verdict}</p>
 
                 <div className="mt-5 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-emerald-500/20 p-3">
                         <div className="font-pixel text-xl text-emerald-300">{summary.correct}</div>
-                        <div className="mt-1 text-[10px] uppercase text-emerald-200">Caught</div>
+                        <div className="mt-1 text-[10px] uppercase text-emerald-200">{bugs ? "Tertangkap" : "Caught"}</div>
                     </div>
                     <div className="rounded-lg bg-rose-500/20 p-3">
-                        <div className="font-pixel text-xl text-rose-300">{summary.incorrect}</div>
-                        <div className="mt-1 text-[10px] uppercase text-rose-200">Escaped</div>
+                        <div className="font-pixel text-xl text-rose-300">{bugs ? summary.misses ?? summary.incorrect : summary.incorrect}</div>
+                        <div className="mt-1 text-[10px] uppercase text-rose-200">{bugs ? "Miss" : "Escaped"}</div>
                     </div>
                     <div className="rounded-lg bg-sky-500/20 p-3">
                         <div className="font-pixel text-xl text-sky-300">{summary.total}</div>
-                        <div className="mt-1 text-[10px] uppercase text-sky-200">Questions</div>
+                        <div className="mt-1 text-[10px] uppercase text-sky-200">{bugs ? "Soal" : "Questions"}</div>
                     </div>
                 </div>
 
                 <div className="mt-4 text-center font-pixel text-xs text-amber-200">Score: {pct}%</div>
+                {bugs && (
+                    <p className="mt-2 text-center text-xs text-amber-100">
+                        {summary.mode === "practice"
+                            ? "Latihan: skor dari hasil akhir tiap soal. Miss menghitung semua percobaan salah, termasuk saat mengulang."
+                            : "Asesmen: satu percobaan per soal. Jawaban salah dihitung miss."}
+                    </p>
+                )}
                 {note && <p className="mt-2 text-center text-xs text-slate-400">{note}</p>}
 
                 <div className="mt-5 flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">

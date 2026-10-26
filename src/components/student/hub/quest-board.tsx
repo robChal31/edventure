@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { getActivity } from "@/quiz/activities";
 import { ActivityGuideDetails } from "@/components/ui/activity-guide";
 import { QUESTION_TYPES } from "@/quiz/question-types";
-import type { PlayableQuiz, QuestionType } from "@/quiz/types";
+import type { PlayableQuiz, QuestionType, QuizMode } from "@/quiz/types";
 import type { HubControls } from "../game-screen";
 
 export type QuestInfo = {
@@ -12,6 +12,7 @@ export type QuestInfo = {
     name: string;
     description: string;
     activityId: PlayableQuiz["activityId"];
+    mode?: QuizMode;
     questionCount: number;
     questionTypes: QuestionType[];
     attempts: number;
@@ -35,11 +36,11 @@ export default function QuestBoard({ controls, quests, buildQuiz, autoOpen = fal
     const { setOverlayOpen } = controls;
     const pending = quests.filter((quest) => quest.attempts === 0).length;
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         setOverlayOpen(open);
     }, [open, setOverlayOpen]);
 
-    useEffect(() => () => setOverlayOpen(false), [setOverlayOpen]);
+    useLayoutEffect(() => () => setOverlayOpen(false), [setOverlayOpen]);
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
@@ -84,7 +85,7 @@ export default function QuestBoard({ controls, quests, buildQuiz, autoOpen = fal
             </div>
 
             {!open && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-44 flex justify-center px-3 sm:bottom-32">
+                <div className="equipment-prompt pointer-events-none absolute inset-x-0 flex justify-center px-3">
                     <div className="pixel-panel rounded-lg bg-slate-900/85 px-4 py-2 text-center text-xs text-amber-100">
                         Walk with the arrow keys · press <strong>Q</strong> for the Quest Board
                     </div>
@@ -174,6 +175,11 @@ function QuestCard({
                         <span className="rounded bg-amber-200 px-2 py-0.5">
                             {quest.questionCount} question{quest.questionCount === 1 ? "" : "s"}
                         </span>
+                        {quest.activityId === "catching_bugs" && (
+                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-900">
+                                {quest.mode === "practice" ? "Latihan" : "Asesmen"}
+                            </span>
+                        )}
                         {quest.questionTypes.map((type) => (
                             <span key={type} title={QUESTION_TYPES[type].label} className="rounded bg-white px-1.5 py-0.5">
                                 {QUESTION_TYPES[type].icon}

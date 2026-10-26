@@ -1,5 +1,6 @@
+import { ACTIVITIES } from "@/quiz/activities";
 import { sanitizeQuestion } from "@/quiz/question-types";
-import type { AnswerRecord, AnswerValue, QuizSummary } from "@/quiz/types";
+import type { ActivityId, AnswerRecord, AnswerValue, QuizSummary } from "@/quiz/types";
 import { createId, nowIso } from "../ids";
 import { createLocalCollection } from "../storage/local-collection";
 import type { QuizAttempt, Student } from "../types";
@@ -60,7 +61,12 @@ function sanitizeAttempt(raw: unknown): QuizAttempt | null {
         quizName: typeof value.quizName === "string" ? value.quizName : "Quiz",
         studentId: value.studentId,
         studentName: typeof value.studentName === "string" ? value.studentName : "Student",
-        activityId: "fishing",
+        activityId: ACTIVITIES.some((activity) => activity.id === value.activityId)
+            ? value.activityId as ActivityId
+            : "fishing",
+        ...(value.mode === "practice" || value.mode === "assessment" ? { mode: value.mode } : {}),
+        ...(typeof value.misses === "number" && Number.isSafeInteger(value.misses) && value.misses >= 0
+            ? { misses: value.misses } : {}),
         startedAt: typeof value.startedAt === "string" ? value.startedAt : nowIso(),
         completedAt: typeof value.completedAt === "string" ? value.completedAt : nowIso(),
         total,
@@ -91,6 +97,8 @@ export function recordAttempt(input: {
         studentId: student.id,
         studentName: student.name,
         activityId: summary.activityId,
+        ...(summary.mode ? { mode: summary.mode } : {}),
+        ...(summary.misses !== undefined ? { misses: summary.misses } : {}),
         startedAt: input.startedAt,
         completedAt: input.completedAt ?? nowIso(),
         total,

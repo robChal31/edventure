@@ -36,6 +36,11 @@
     "files": [
       {
         "type": "image",
+        "key": "UI_TARGET_MARKERS",
+        "url": "UI/Extras.png"
+      },
+      {
+        "type": "image",
         "key": "WORLD_SUMMER_GRASS",
         "url": "Tileset/Tileset Grass Summer.png"
       },
@@ -63,6 +68,11 @@
         "type": "image",
         "key": "ALL_PROPS_SEASON",
         "url": "Tileset/ALL props seasons.png"
+      },
+      {
+        "type": "image",
+        "key": "FARM_SHADOW",
+        "url": "Tileset/Shadow.png"
       },
       {
         "type": "image",
@@ -351,6 +361,11 @@
       },
       {
         "type": "tilemapTiledJSON",
+        "key": "FARM_MAP",
+        "url": "farm/barn.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
         "key": "BEACH_MAP",
         "url": "beach/beach_map.json"
       }
@@ -478,6 +493,12 @@
       },
       {
         "type": "aseprite",
+        "key": "PLAYER_CATCHING_NET",
+        "textureURL": "catching_net/catching_net_animation_sheet.png",
+        "atlasURL": "catching_net/catching_net_animation.json"
+      },
+      {
+        "type": "aseprite",
         "key": "PLAYER_AXE",
         "textureURL": "axe/axe_sheet.png",
         "atlasURL": "axe/axe.json"
@@ -517,6 +538,17 @@
         "key": "PLAYER_FISHING_CAPTURED_NO_FISH",
         "textureURL": "fishing/captured_no_fish_animation_sheet.png",
         "atlasURL": "fishing/captured_no_fish_animation.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/animations/animal/bug",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "CRICKET",
+        "textureURL": "cricket_animation_sheet.png",
+        "atlasURL": "cricket_animation.json"
       }
     ]
   }

@@ -34,6 +34,13 @@ export default function AttemptDetail({
                         <span>⏱ {formatDuration(attempt.startedAt, attempt.completedAt)}</span>
                     </div>
 
+                    {attempt.activityId === "catching_bugs" && (
+                        <p className="mb-4 rounded-lg border border-amber-700/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+                            {attempt.mode === "practice" ? "Latihan" : "Asesmen"} · Miss: {attempt.misses ?? attempt.total - attempt.correct}
+                            {attempt.mode === "practice" && " · Skor memakai hasil akhir tiap soal; miss menghitung setiap percobaan salah."}
+                        </p>
+                    )}
+
                     <ol className="flex flex-col gap-2">
                         {attempt.records.map((record, index) => (
                             <li

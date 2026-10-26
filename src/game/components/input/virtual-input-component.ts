@@ -1,47 +1,22 @@
 import { KeyboardComponent } from "./keyboard-component";
 import type { VirtualDirection } from "@/game/game-options";
 
-/**
- * A keyboard input component that also accepts movement from on-screen
- * touch controls. Real keyboard input still works; the two are OR'd
- * together so desktop and mobile both function.
- */
+/** Touch movement and keyboard use the same enabled/reset lifecycle. */
 export class VirtualInputComponent extends KeyboardComponent {
-    #virtualUp = false;
-    #virtualDown = false;
-    #virtualLeft = false;
-    #virtualRight = false;
+    #directions = new Set<VirtualDirection>();
 
-    override get isUpDown(): boolean {
-        return super.isUpDown || this.#virtualUp;
+    override get isUpDown(): boolean { return this.isEnabled && (super.isUpDown || this.#directions.has("up")); }
+    override get isDownDown(): boolean { return this.isEnabled && (super.isDownDown || this.#directions.has("down")); }
+    override get isLeftDown(): boolean { return this.isEnabled && (super.isLeftDown || this.#directions.has("left")); }
+    override get isRightDown(): boolean { return this.isEnabled && (super.isRightDown || this.#directions.has("right")); }
+
+    setVirtualDirection(direction: VirtualDirection, pressed: boolean): void {
+        if (pressed && this.isEnabled) this.#directions.add(direction);
+        else this.#directions.delete(direction);
     }
 
-    override get isDownDown(): boolean {
-        return super.isDownDown || this.#virtualDown;
-    }
-
-    override get isLeftDown(): boolean {
-        return super.isLeftDown || this.#virtualLeft;
-    }
-
-    override get isRightDown(): boolean {
-        return super.isRightDown || this.#virtualRight;
-    }
-
-    public setVirtualDirection(dir: VirtualDirection, pressed: boolean): void {
-        switch (dir) {
-            case "up":
-                this.#virtualUp = pressed;
-                break;
-            case "down":
-                this.#virtualDown = pressed;
-                break;
-            case "left":
-                this.#virtualLeft = pressed;
-                break;
-            case "right":
-                this.#virtualRight = pressed;
-                break;
-        }
+    override reset(): void {
+        super.reset();
+        this.#directions?.clear();
     }
 }

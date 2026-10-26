@@ -21,6 +21,7 @@ import type { Quiz, SchoolClass } from "./types";
  */
 
 const MIGRATION_KEY = "learning-world.lms.migration.v2";
+const BUGS_SAMPLE_KEY = "learning-world.lms.catching-bugs-sample.v1";
 
 let done = false;
 
@@ -130,6 +131,16 @@ function migrateQuizzes(schoolId: string | null): void {
     quizStore.upsertMany(missing);
 }
 
+/** Add only the new activity demo to existing installations, once, without re-seeding fishing. */
+function addCatchingBugsSample(): void {
+    if (window.localStorage.getItem(BUGS_SAMPLE_KEY)) return;
+    const existing = new Set(quizStore.getSnapshot().map((quiz) => quiz.id));
+    quizStore.upsertMany(seedQuizzes().filter(
+        (quiz) => quiz.activityId === "catching_bugs" && !existing.has(quiz.id)
+    ));
+    window.localStorage.setItem(BUGS_SAMPLE_KEY, new Date().toISOString());
+}
+
 /**
  * Runs the migration once per browser. Safe to call often: the result is
  * memoised and it does nothing on the server.
@@ -140,6 +151,7 @@ export function ensureLmsMigrated(): boolean {
 
     try {
         if (window.localStorage.getItem(MIGRATION_KEY)) {
+            addCatchingBugsSample();
             done = true;
             return true;
         }
@@ -149,6 +161,7 @@ export function ensureLmsMigrated(): boolean {
         migrateStudents(schoolId);
         migrateQuestions(schoolId);
         migrateQuizzes(schoolId);
+        addCatchingBugsSample();
 
         window.localStorage.setItem(MIGRATION_KEY, new Date().toISOString());
     } catch {

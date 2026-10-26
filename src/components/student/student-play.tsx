@@ -49,6 +49,7 @@ export default function StudentPlay() {
                 name: quiz.name,
                 description: quiz.description,
                 activityId: quiz.activityId,
+                mode: quiz.mode,
                 questionCount: resolved.length,
                 questionTypes: types,
                 attempts: mine?.count ?? 0,
@@ -90,6 +91,7 @@ export default function StudentPlay() {
 
     return (
         <GameScreen
+            playerName={student.name}
             badge={<StudentBadge student={student} onSignOut={signOut} />}
             exit={{ label: "SIGN OUT", onExit: signOut }}
             onQuizComplete={handleComplete}

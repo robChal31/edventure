@@ -190,6 +190,18 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                         </p>
 
                         <ActivityPicker value={draft.activityId} onChange={(activityId) => patch({ activityId })} />
+                        {draft.activityId === "catching_bugs" && (
+                            <Field label="Mode Catching Bugs" hint="Tidak ada nyawa barn. Setiap jawaban salah menambah miss.">
+                                <select
+                                    value={draft.mode}
+                                    onChange={(event) => patch({ mode: event.target.value === "practice" ? "practice" : "assessment" })}
+                                    className={inputClass}
+                                >
+                                    <option value="assessment">Asesmen — satu percobaan per soal</option>
+                                    <option value="practice">Latihan — cricket yang lepas bisa dicoba lagi</option>
+                                </select>
+                            </Field>
+                        )}
                         <ActivityGuideDetails activity={activity} />
 
                         <Toggle
