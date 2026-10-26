@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { DEBUG_CONFIG } from "../config/debug-config";
 
-import { FootprintConfig } from "../common/types";
+import { FootprintConfig, type PlayerAction } from "../common/types";
 import {
     ASSET_KEYS,
     MAHOGANY_ANIMATION_KEYS,
@@ -78,6 +78,10 @@ export class Tree
     // -------------------------------------------------------------------------
     // Interaction
     // -------------------------------------------------------------------------
+
+    public canInteract(action: PlayerAction["type"]): boolean {
+        return action === "axe" && !this.#isChopped && !this.#isChopping;
+    }
 
     public interact(context: InteractionContext): void {
         if (context.action.type !== "axe") {

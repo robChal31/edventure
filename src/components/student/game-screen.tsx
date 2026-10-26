@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import PhaserGame from "@/game/PhaserGame";
 import type {
     ActivityController,
@@ -18,6 +18,8 @@ import ActivityHud from "./activity-hud";
 import QuestionCard, { type AnswerReveal } from "./questions/question-card";
 import ResultsScreen from "./results-screen";
 import TouchControls from "./touch-controls";
+import EquipmentPicker from "./equipment-picker";
+import { EQUIPMENT, defaultEquipment, type EquipmentState } from "@/game/equipment/equipment";
 
 /** What a hub overlay (the village quest board) can do. */
 export type HubControls = {
@@ -30,6 +32,7 @@ export type HubControls = {
 type GameScreenProps = {
     /** Start straight at the activity's map (teacher preview). */
     initialQuiz?: PlayableQuiz;
+    playerName?: string;
     /** Overlay shown on the hub map (student quest board). */
     renderHub?: (controls: HubControls) => ReactNode;
     /** Top-left badge while on the hub (student name etc.). */
@@ -45,6 +48,7 @@ type CurrentQuestion = { question: Question; questionNumber: number; total: numb
 
 export default function GameScreen({
     initialQuiz,
+    playerName,
     renderHub,
     badge,
     ribbon,
@@ -67,6 +71,10 @@ export default function GameScreen({
     const [hubOverlayOpen, setHubOverlayOpen] = useState(false);
     const [confirmLeave, setConfirmLeave] = useState(false);
     const [guideOpen, setGuideOpen] = useState(false);
+    const [equipment, setEquipment] = useState<EquipmentState>({ equipped: defaultEquipment(initialQuiz?.activityId), locked: true, actionEnabled: false });
+    const [closeRequest, setCloseRequest] = useState<number | null>(null);
+    const [closedReceipt, setClosedReceipt] = useState<number | null>(null);
+    const acknowledgedClose = useRef<number | null>(null);
 
     const promptTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const startedAt = useRef<string>(new Date().toISOString());
@@ -82,11 +90,19 @@ export default function GameScreen({
         setReveal(null);
         setSummary(null);
         setPrompt(null);
+        setCloseRequest(null);
+        setClosedReceipt(null);
     }, []);
 
     const handleEvent = useCallback(
         (event: GameEvent) => {
             switch (event.type) {
+                case "equipment":
+                    setEquipment({ equipped: event.equipped, locked: event.locked, actionEnabled: event.actionEnabled });
+                    break;
+                case "question:close":
+                    setCloseRequest(event.requestId);
+                    break;
                 case "game:ready":
                     setReady(true);
                     break;
@@ -110,7 +126,7 @@ export default function GameScreen({
                     break;
                 case "phase":
                     setPhase(event.phase);
-                    if (event.phase !== "answering") {
+                    if (event.phase !== "answering" && event.phase !== "closing-question") {
                         setCurrent(null);
                         setReveal(null);
                     }
@@ -128,6 +144,8 @@ export default function GameScreen({
                     });
                     break;
                 case "question":
+                    setCloseRequest(null);
+                    setClosedReceipt(null);
                     setReveal(null);
                     setCurrent({
                         question: event.question,
@@ -170,12 +188,12 @@ export default function GameScreen({
     // HTML overlays need the keyboard; Phaser must not swallow keys then.
     const overlayOpen =
         Boolean(current) || Boolean(summary) || hubOverlayOpen || confirmLeave || guideOpen;
-    useEffect(() => {
+    useLayoutEffect(() => {
         controller?.setKeyboardEnabled(!overlayOpen);
-    }, [controller, overlayOpen]);
+    }, [controller, overlayOpen, mapId]);
 
     const gameOptions = useMemo<GameOptions>(
-        () => ({ initialQuiz, onEvent: handleEvent }),
+        () => ({ initialQuiz, playerName, onEvent: handleEvent }),
         // The game boots once; later changes are sent through the controller.
         // eslint-disable-next-line react-hooks/exhaustive-deps
         []
@@ -185,6 +203,23 @@ export default function GameScreen({
         (answer: AnswerValue) => controller?.answer(answer),
         [controller]
     );
+
+    const finishQuestionExit = useCallback(() => {
+        if (closeRequest === null) return;
+        setCurrent(null);
+        setReveal(null);
+        setClosedReceipt(closeRequest);
+        setCloseRequest(null);
+    }, [closeRequest]);
+
+    // This effect runs AFTER the commit that removes QuestionCard, never while its DOM is mounted.
+    useEffect(() => {
+        if (closedReceipt === null || current || !controller || acknowledgedClose.current === closedReceipt) return;
+        acknowledgedClose.current = closedReceipt;
+        controller.questionClosed(closedReceipt);
+    }, [closedReceipt, current, controller]);
+
+    const setEquipmentPickerOpen = useCallback((open: boolean) => controller?.setEquipmentPickerOpen(open), [controller]);
 
     const hubControls = useMemo<HubControls>(
         () => ({
@@ -280,7 +315,7 @@ export default function GameScreen({
             )}
 
             {prompt && !summary && !current && !travelling && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-44 z-10 flex justify-center px-3 sm:bottom-32">
+                <div className="equipment-prompt pointer-events-none absolute inset-x-0 z-10 flex justify-center px-3">
                     <div className="lw-pop-in pixel-panel max-w-[92vw] rounded-lg bg-slate-900/90 px-4 py-2 text-center text-sm text-amber-200">
                         {prompt}
                     </div>
@@ -304,26 +339,22 @@ export default function GameScreen({
                     questionNumber={current.questionNumber}
                     total={current.total}
                     reveal={reveal}
+                    closing={closeRequest !== null}
+                    onExited={finishQuestionExit}
+                    celebrate={activityId !== "catching_bugs"}
                     onAnswer={handleAnswer}
                 />
             )}
 
-            {mapId && !summary && !current && !travelling && !hubOverlayOpen && (
-                <TouchControls
-                    controller={controller}
-                    action={
-                        inActivity
-                            ? {
-                                  label:
-                                      phase === "waiting"
-                                          ? activity.copy.waitingActionLabel
-                                          : activity.copy.actionLabel,
-                                  enabled: phase === "idle" || phase === "waiting",
-                                  onPress: () => controller?.cast(),
-                              }
-                            : undefined
-                    }
-                />
+            {mapId && !overlayOpen && !travelling && (
+                <>
+                    <TouchControls controller={controller} action={{
+                        label: equipment.equipped === "rod" && phase === "waiting" ? activity.copy.waitingActionLabel : EQUIPMENT[equipment.equipped].actionLabel,
+                        enabled: equipment.actionEnabled,
+                        onPress: () => controller?.primaryAction(),
+                    }} />
+                    <EquipmentPicker key={`${mapId}-${equipment.locked}`} state={equipment} onEquip={(id) => controller?.equip(id)} onOpenChange={setEquipmentPickerOpen} />
+                </>
             )}
 
             {summary && (

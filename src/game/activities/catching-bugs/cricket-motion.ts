@@ -3,7 +3,6 @@ export type CricketField = Point & { width: number; height: number };
 export type CricketMotion = Point & {
     vx: number;
     vy: number;
-    turnIn: number;
     cooldown: number;
 };
 
@@ -43,72 +42,66 @@ export function readCricketField(objects: readonly FieldObject[], scale = 1): Cr
     };
 }
 
-function changeHeading(motion: CricketMotion, random: () => number): void {
-    const angle = random() * Math.PI * 2;
-    motion.vx = Math.cos(angle) * CRICKET_SPEED;
-    motion.vy = Math.sin(angle) * CRICKET_SPEED;
-    motion.turnIn = 0.7 + random();
-}
+export const CRICKET_SPACING = 36;
+export const RELEASE_SECONDS = 1;
 
-/** Spread one batch over the field instead of stacking sprites at one spawn. */
+/** True scatter with rejection sampling. A deterministic fallback prevents a bad RNG hanging the game. */
 export function spawnCrickets(
     field: CricketField,
     count: number,
     random: () => number = Math.random
 ): CricketMotion[] {
-    if (!Number.isSafeInteger(count) || count < 0) {
-        throw new RangeError("Cricket count must be a non-negative integer.");
-    }
-    if (count === 0) return [];
-
-    const columns = Math.ceil(Math.sqrt(count));
-    const rows = Math.ceil(count / columns);
+    if (!Number.isSafeInteger(count) || count < 0) throw new RangeError("Cricket count must be a non-negative integer.");
+    const result: CricketMotion[] = [];
+    const left = field.x + CRICKET_RADIUS;
+    const top = field.y + CRICKET_RADIUS;
     const width = field.width - CRICKET_RADIUS * 2;
     const height = field.height - CRICKET_RADIUS * 2;
-
-    return Array.from({ length: count }, (_, index) => {
-        const motion: CricketMotion = {
-            x: field.x + CRICKET_RADIUS + ((index % columns) + 0.25 + random() * 0.5) * width / columns,
-            y: field.y + CRICKET_RADIUS + (Math.floor(index / columns) + 0.25 + random() * 0.5) * height / rows,
-            vx: 0,
-            vy: 0,
-            turnIn: 0,
-            cooldown: 0,
-        };
-        changeHeading(motion, random);
-        return motion;
-    });
+    const free = (point: Point) => result.every((other) => Math.hypot(point.x - other.x, point.y - other.y) >= CRICKET_SPACING);
+    for (let index = 0; index < count; index += 1) {
+        let point: Point | undefined;
+        for (let attempt = 0; attempt < 100; attempt += 1) {
+            const candidate = { x: left + random() * width, y: top + random() * height };
+            if (free(candidate)) { point = candidate; break; }
+        }
+        if (!point) {
+            for (let y = top; y <= top + height && !point; y += CRICKET_SPACING) {
+                for (let x = left; x <= left + width; x += CRICKET_SPACING) {
+                    if (free({ x, y })) { point = { x, y }; break; }
+                }
+            }
+        }
+        if (!point) throw new RangeError("Not enough safe space for this cricket batch.");
+        result.push({ ...point, vx: 0, vy: 0, cooldown: 0 });
+    }
+    return result;
 }
 
-/** Keep the full sprite inside the field, including after a long/background frame. */
-export function moveCricket(
-    motion: CricketMotion,
-    field: CricketField,
-    delta: number,
-    random: () => number = Math.random
-): void {
-    if (!Number.isFinite(delta) || delta <= 0) return;
-    const seconds = Math.min(delta, 100) / 1000;
-    motion.cooldown = Math.max(0, motion.cooldown - seconds);
-    motion.turnIn -= seconds;
-    if (motion.turnIn <= 0) changeHeading(motion, random);
-
-    const speed = motion.cooldown > 0 ? 2 : 1;
-    motion.x += motion.vx * seconds * speed;
-    motion.y += motion.vy * seconds * speed;
-
-    const left = field.x + CRICKET_RADIUS;
-    const right = field.x + field.width - CRICKET_RADIUS;
-    const top = field.y + CRICKET_RADIUS;
-    const bottom = field.y + field.height - CRICKET_RADIUS;
-
-    if (motion.x <= left || motion.x >= right) {
-        motion.vx = motion.x <= left ? Math.abs(motion.vx) : -Math.abs(motion.vx);
-        motion.x = Math.max(left, Math.min(right, motion.x));
+/** Only a wrong answer starts movement; a practice cricket stops again instead of teleporting/respawning. */
+export function releaseCricket(motion: CricketMotion, field: CricketField, player: Point): void {
+    const angle = Math.atan2(motion.y - player.y, motion.x - player.x);
+    const distance = CRICKET_SPEED * 1.8;
+    for (const turn of [0, Math.PI / 2, -Math.PI / 2, Math.PI]) {
+        const x = Math.max(field.x + CRICKET_RADIUS, Math.min(field.x + field.width - CRICKET_RADIUS, motion.x + Math.cos(angle + turn) * distance));
+        const y = Math.max(field.y + CRICKET_RADIUS, Math.min(field.y + field.height - CRICKET_RADIUS, motion.y + Math.sin(angle + turn) * distance));
+        if (Math.hypot(x - motion.x, y - motion.y) < 8) continue;
+        motion.vx = (x - motion.x) / RELEASE_SECONDS;
+        motion.vy = (y - motion.y) / RELEASE_SECONDS;
+        motion.cooldown = RELEASE_SECONDS;
+        return;
     }
-    if (motion.y <= top || motion.y >= bottom) {
-        motion.vy = motion.y <= top ? Math.abs(motion.vy) : -Math.abs(motion.vy);
-        motion.y = Math.max(top, Math.min(bottom, motion.y));
+}
+
+/** Idle sprites animate in place. Released sprites move continuously and stop within the authored bounds. */
+export function moveCricket(motion: CricketMotion, field: CricketField, delta: number): void {
+    if (!Number.isFinite(delta) || delta <= 0 || motion.cooldown <= 0) return;
+    const seconds = Math.min(delta / 1000, 0.1, motion.cooldown);
+    motion.x = Math.max(field.x + CRICKET_RADIUS, Math.min(field.x + field.width - CRICKET_RADIUS, motion.x + motion.vx * seconds));
+    motion.y = Math.max(field.y + CRICKET_RADIUS, Math.min(field.y + field.height - CRICKET_RADIUS, motion.y + motion.vy * seconds));
+    motion.cooldown = Math.max(0, motion.cooldown - seconds);
+    if (motion.cooldown < 0.000001) {
+        motion.cooldown = 0;
+        motion.vx = motion.vy = 0;
     }
 }
 

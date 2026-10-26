@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { AnswerValue, PlayableQuiz } from "@/quiz/types";
+import type { PreparedAction } from "../equipment/targeting";
 import type { GameEvent } from "../game-options";
 import type { Player } from "../game-objects/player/player";
 import type { WorldMap } from "../world/world-map";
@@ -25,6 +26,10 @@ export interface Activity {
     create(): void;
     /** The activity key was pressed (F / Space) or the touch button tapped. */
     handlePrimaryAction(): void;
+    /** Preview and execution share the exact resolved target snapshot. */
+    preparePrimaryAction?(): PreparedAction;
+    /** React confirms that the closing question DOM has actually unmounted. */
+    questionClosed?(requestId: number): void;
     answer(answer: AnswerValue): void;
     /** Replay the quiz from the first question. */
     restart(): void;

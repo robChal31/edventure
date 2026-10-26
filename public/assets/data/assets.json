@@ -36,6 +36,11 @@
     "files": [
       {
         "type": "image",
+        "key": "UI_TARGET_MARKERS",
+        "url": "UI/Extras.png"
+      },
+      {
+        "type": "image",
         "key": "WORLD_SUMMER_GRASS",
         "url": "Tileset/Tileset Grass Summer.png"
       },

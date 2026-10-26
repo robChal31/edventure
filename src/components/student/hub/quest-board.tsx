@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { getActivity } from "@/quiz/activities";
 import { ActivityGuideDetails } from "@/components/ui/activity-guide";
 import { QUESTION_TYPES } from "@/quiz/question-types";
@@ -36,11 +36,11 @@ export default function QuestBoard({ controls, quests, buildQuiz, autoOpen = fal
     const { setOverlayOpen } = controls;
     const pending = quests.filter((quest) => quest.attempts === 0).length;
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         setOverlayOpen(open);
     }, [open, setOverlayOpen]);
 
-    useEffect(() => () => setOverlayOpen(false), [setOverlayOpen]);
+    useLayoutEffect(() => () => setOverlayOpen(false), [setOverlayOpen]);
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
@@ -85,7 +85,7 @@ export default function QuestBoard({ controls, quests, buildQuiz, autoOpen = fal
             </div>
 
             {!open && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-44 flex justify-center px-3 sm:bottom-32">
+                <div className="equipment-prompt pointer-events-none absolute inset-x-0 flex justify-center px-3">
                     <div className="pixel-panel rounded-lg bg-slate-900/85 px-4 py-2 text-center text-xs text-amber-100">
                         Walk with the arrow keys · press <strong>Q</strong> for the Quest Board
                     </div>

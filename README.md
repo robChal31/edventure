@@ -48,17 +48,22 @@ beach map) and **Catching Bugs** (on the farm map).
   soal, default) atau **Latihan** (boleh mencoba lagi). Mapel dan tipe soal bebas:
   aktivitas hanya memakai snapshot soal serta penilaian dari `QuizSession`.
 - Satu cricket terikat ke satu soal dan boleh ditangkap dalam urutan bebas.
-  Dekati sampai terlihat tanda **F**, lalu tekan **F / Spasi** atau **TANGKAP**.
+  Pilih **jaring** melalui slot alat bawah-tengah. Dekati tanda **?** sampai
+  sudut target berubah kuning, lalu tekan **F / Spasi** atau **TANGKAP**.
   Animasi net dimainkan sebelum panel soal terbuka. Menekan aksi dari jauh tidak
   menghabiskan soal atau menambah miss.
 - Benar → tertangkap. Salah → lepas dan **miss +1**. Di latihan, cricket yang
-  sama tetap bergerak di ladang dan bisa ditangkap lagi untuk soal yang sama;
+  sama bergerak sebentar, lalu berhenti tanpa menghilang dan bisa ditangkap lagi;
+  pertanyaan tetap sama;
   skor dan satu record final per soal memakai hasil akhirnya. Di asesmen,
-  cricket dihapus dan jawaban salah menjadi hasil final. Miss latihan adalah
+  cricket bergerak lalu memudar halus dan jawaban salah menjadi hasil final. Miss latihan adalah
   jumlah percobaan salah, sehingga bisa melebihi jumlah soal.
 - **Tidak ada nyawa barn, tujuan ke barn, batas waktu, atau penalti otomatis.**
-  Cricket berkeliaran terus, termasuk selama membaca soal, tetapi seluruh
-  sprite tetap dalam area yang ditentukan di dalam pagar.
+  Spawn acak dengan jarak minimal 36 px, kemudian diam sambil memainkan animasi
+  cricket asli. Hanya jawaban salah memicu gerak pendek di dalam pagar.
+- Efek tangkap/lepas baru berjalan **setelah modal soal selesai fade-out dan
+  di-unmount**. React mengirim receipt token unik sesudah commit; restart/travel
+  membatalkan token, timer, tween dan sprite lama. Practice tidak fade/despawn.
 - Total cricket mengikuti jumlah soal. Maksimal **5 aktif per ronde**
   (`CRICKETS_PER_ROUND`); ronde berikutnya baru muncul setelah ronde sebelumnya
   selesai. Ronde terakhir menyesuaikan sisa soal. Farm selalu **640 × 320 px**.
@@ -68,7 +73,8 @@ beach map) and **Catching Bugs** (on the farm map).
   Spawn pemain dan daftar tileset ada di `src/game/world/maps/farm-map.ts`.
 - Artwork asli: `animations/player/catching_net/` dan
   `animations/animal/bug/cricket_animation.*`. Tidak ada gambar pengganti generik.
-  Net adalah sprite karakter sementara milik aktivitas; player/fishing tidak diubah.
+  Net adalah sprite karakter sementara milik aktivitas. Art, aturan, resolver,
+  dan state animasi fishing tetap; hanya input bersama/preview target yang dihubungkan.
 - Demo **Cricket di Ladang** (`quiz-sample-catching-bugs`) berisi tujuh contoh soal
   lintas mapel, tiga tipe soal, dan dua ronde latihan. Demo ditambahkan sekali ke
   instalasi lama tanpa menimpa kuis atau me-reseed fishing. Bisa langsung dimainkan
@@ -77,9 +83,36 @@ beach map) and **Catching Bugs** (on the farm map).
   laporan guru. `QuizSummary.incorrect` tetap berarti jumlah soal final yang salah,
   bukan jumlah retry.
 
+### Equipment dan target bersama
+
+- Satu slot kayu dari `UI/Inventory/Slots.png` menampilkan alat aktif. Klik/tap
+  untuk membuka mini picker di atasnya. Di portrait sempit, slot berada di atas
+  baris D-pad/aksi agar tidak menutupi tombol. Ikon kapak, pancing, jaring, sekop
+  dan kayu semuanya dari sprite pack asli.
+- Default desa = kapak, fishing = pancing, Catching Bugs = jaring. Kapak, pancing
+  dan jaring bisa dipilih sendiri; sekop/kayu jelas **belum tersedia**. Tidak ada
+  gameplay gali tanah/bangun pagar palsu.
+- **F / Space / tombol aksi** adalah satu intent. Kapak menebas pohon di depan;
+  pancing menjalankan cast/reel yang sudah ada di fishing; jaring memilih cricket
+  terdekat di farm. Alat salah konteks memberi petunjuk, bukan menjalankan kuis
+  lain. Tombol test khusus alat (T/H/X/Z) dihapus dari input game; T/F tetap sah
+  untuk jawaban true/false di modal HTML.
+- `PreparedAction` menyimpan target dan eksekusinya dalam satu snapshot. Strategi
+  kapak memakai footprint pangkal objek di depan dan dalam jangkauan; jaring
+  memakai posisi cricket sesungguhnya (tanpa grid-snap); rod memakai hasil
+  `resolveCast` yang sama persis. Proyeksi tile disediakan untuk alat masa depan,
+  bukan implementasi pembangunan sekarang.
+- Empat sudut 8×8 dari `UI/Extras.png` diposisikan ulang, **bukan di-stretch**:
+  putih = kandidat, kuning = valid, merah = titik cast tidak valid. Sudut melebar
+  sebentar saat aksi. Kontrol/marker di-reset saat overlay, ganti alat, replay,
+  travel dan shutdown; menahan F/Space tidak mengulang atau menyimpan aksi.
+- Nama akun tampil di atas karakter hanya saat berjalan/idle; hilang saat aksi,
+  soal, hasil, guide atau overlay lain terbuka.
+
 Validasi: jalankan `npm ci`, `npm test`, `npm run lint`, lalu `npm run build`.
 Tes mencakup batch/ronde, latihan vs asesmen, soal tak berurutan, hitungan miss,
-spawn/gerak terbatas, jarak tangkap, aset/map, persistensi LMS, dan regresi fishing.
+spawn diam/terpisah, release terbatas, receipt modal, routing/lock alat, input latch,
+targeting objek/titik/tile, jarak tangkap, aset/map, persistensi LMS dan regresi fishing.
 
 ### Quiz assignment
 A quiz is assigned to **everyone** in its scope, to whole **classes**, or to hand-picked

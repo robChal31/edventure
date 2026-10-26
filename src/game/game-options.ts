@@ -8,10 +8,12 @@ import type {
 } from "@/quiz/types";
 import type { MapId } from "./world/maps/map-registry";
 
+import type { EquipmentId, EquipmentState } from "./equipment/equipment";
+
 export type { MapId };
 
 /**
- * The coarse state machine phases the fishing activity moves through.
+ * The coarse activity state machine phases.
  * The React HUD/overlays subscribe to these to drive the question panel
  * and result banners.
  */
@@ -29,6 +31,7 @@ export type FishingPhase =
 export type CatchingBugsPhase =
     | "idle"
     | "netting"
+    | "closing-question"
     | "answering"
     | "catching"
     | "escaped"
@@ -50,6 +53,8 @@ export type ActivityHudState = {
 
 export type GameEvent =
     | { type: "game:ready" }
+    | ({ type: "equipment" } & EquipmentState)
+    | { type: "question:close"; requestId: number }
     /** A map finished loading (first boot or after travelling). */
     | {
           type: "map:loaded";
@@ -92,15 +97,18 @@ export type ActivityController = {
     startQuiz(quiz: PlayableQuiz): void;
     /** Travel back to the village hub. */
     returnToHub(): void;
-    /** Same as pressing F / Space: cast, or reel in while waiting. */
-    cast(): void;
+    /** One action for keyboard, touch and the current equipment. */
+    primaryAction(): void;
+    equip(equipment: EquipmentId): void;
+    setEquipmentPickerOpen(open: boolean): void;
+    questionClosed(requestId: number): void;
     answer(answer: AnswerValue): void;
     /** Replay the current quiz from question 1 on the same map. */
     restart(): void;
     setVirtualDirection(dir: VirtualDirection, pressed: boolean): void;
     /**
      * Turn game keyboard handling off while an HTML overlay needs the keys
-     * (Phaser otherwise swallows F / Space / T / H... when typing).
+     * (Phaser otherwise swallows F / Space when typing). Also clears touch input.
      */
     setKeyboardEnabled(enabled: boolean): void;
 };
@@ -108,6 +116,8 @@ export type ActivityController = {
 export type GameOptions = {
     /** Map to open on boot. Defaults to the village hub. */
     initialMap?: MapId;
+    /** Display only; never used as a quiz/student identifier. */
+    playerName?: string;
     /** Start straight into an activity (e.g. teacher preview). */
     initialQuiz?: PlayableQuiz;
     onEvent: (event: GameEvent) => void;

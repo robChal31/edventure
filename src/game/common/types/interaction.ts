@@ -8,5 +8,6 @@ export type InteractionContext = {
 
 export interface Interactable {
     getInteractionBounds(): Phaser.Geom.Rectangle;
+    canInteract?(action: PlayerAction["type"]): boolean;
     interact(context: InteractionContext): void;
 }

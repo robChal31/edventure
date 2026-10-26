@@ -6,9 +6,11 @@ import { CatchingBugsSession, CRICKETS_PER_ROUND } from "../src/game/activities/
 import {
     CATCH_RANGE,
     CRICKET_RADIUS,
+    CRICKET_SPACING,
     moveCricket,
     nearestCricket,
     readCricketField,
+    releaseCricket,
     spawnCrickets,
     type CricketField,
 } from "../src/game/activities/catching-bugs/cricket-motion";
@@ -168,34 +170,54 @@ function assertInside(point: { x: number; y: number }, area = field): void {
     assert.ok(point.y >= area.y + CRICKET_RADIUS && point.y <= area.y + area.height - CRICKET_RADIUS);
 }
 
-test("bugs: all spawns and autonomous motion stay inside the fenced field", () => {
-    const random = randomGenerator();
-    const motions = spawnCrickets(field, 5, random);
-    assert.equal(motions.length, 5);
-    assert.equal(new Set(motions.map((motion) => `${motion.x},${motion.y}`)).size, 5);
-    for (let frame = 0; frame < 12000; frame += 1) {
-        for (const motion of motions) {
+test("bugs: random separated spawns animate in place without autonomous translation", () => {
+    for (const random of [randomGenerator(), () => 0, () => 0.5, () => 0.9999]) {
+        const motions = spawnCrickets(field, 5, random);
+        assert.equal(motions.length, 5);
+        const before = structuredClone(motions);
+        motions.forEach((motion, index) => {
             assertInside(motion);
-            const before = { x: motion.x, y: motion.y };
-            moveCricket(motion, field, frame % 100 === 0 ? 60000 : 16, random);
-            assertInside(motion);
-            assert.ok(Math.hypot(motion.x - before.x, motion.y - before.y) <= 2.401);
+            for (const other of motions.slice(index + 1)) {
+                assert.ok(Math.hypot(motion.x - other.x, motion.y - other.y) >= CRICKET_SPACING);
+            }
+        });
+        for (let frame = 0; frame < 12000; frame += 1) {
+            motions.forEach((motion) => moveCricket(motion, field, frame % 100 === 0 ? 60000 : 16));
         }
+        assert.deepEqual(motions, before);
     }
+    assert.notDeepEqual(spawnCrickets(field, 5, randomGenerator()), spawnCrickets(field, 5, () => 0.9));
     assert.deepEqual(spawnCrickets(field, 0), []);
+    for (const count of [-1, 0.5, NaN, Infinity]) assert.throws(() => spawnCrickets(field, count), RangeError);
 });
 
-test("bugs: release/bounce cannot cross the field boundary or create an automatic miss", () => {
-    const motion = spawnCrickets(field, 1, () => 0)[0];
-    Object.assign(motion, { x: field.x + CRICKET_RADIUS, y: field.y + CRICKET_RADIUS, vx: -24, vy: -24, cooldown: 1.2, turnIn: 2 });
-    moveCricket(motion, field, 100);
-    assertInside(motion);
-    assert.ok(motion.vx > 0 && motion.vy > 0);
-    assert.ok(motion.cooldown > 0);
-    for (const delta of [-1, 0, NaN, Infinity]) {
-        const before = { ...motion };
-        moveCricket(motion, field, delta);
-        assert.deepEqual(motion, before);
+test("bugs: wrong-answer release darts smoothly inside fences then stops, even in a corner", () => {
+    for (const x of [field.x + CRICKET_RADIUS, field.x + field.width / 2, field.x + field.width - CRICKET_RADIUS]) {
+        for (const y of [field.y + CRICKET_RADIUS, field.y + field.height / 2, field.y + field.height - CRICKET_RADIUS]) {
+            const motion = { x, y, vx: 0, vy: 0, cooldown: 0 };
+            releaseCricket(motion, field, { x: field.x + field.width / 2, y: field.y + field.height / 2 });
+            assert.equal(motion.x, x); // No initial teleport.
+            assert.equal(motion.y, y);
+            assert.ok(motion.cooldown > 0);
+            for (const delta of [-1, 0, NaN, Infinity]) {
+                const before = { ...motion };
+                moveCricket(motion, field, delta);
+                assert.deepEqual(motion, before);
+            }
+            for (let frame = 0; frame < 80; frame += 1) {
+                const before = { ...motion };
+                moveCricket(motion, field, 16);
+                assertInside(motion);
+                assert.ok(Math.hypot(motion.x - before.x, motion.y - before.y) < 0.7);
+            }
+            assert.ok(Math.hypot(motion.x - x, motion.y - y) > 8);
+            assert.equal(motion.cooldown, 0);
+            assert.equal(motion.vx, 0);
+            assert.equal(motion.vy, 0);
+            const stopped = { ...motion };
+            for (let frame = 0; frame < 100; frame += 1) moveCricket(motion, field, 100);
+            assert.deepEqual(motion, stopped);
+        }
     }
 });
 

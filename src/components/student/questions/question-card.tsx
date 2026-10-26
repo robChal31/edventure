@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import type { AnswerValue, Question } from "@/quiz/types";
 import { QuestionTypeBadge, SubjectTag } from "@/components/ui/badges";
 import Confetti from "./confetti";
@@ -28,6 +28,10 @@ type QuestionCardProps = {
     /** Heading shown in the card's top bar, from the activity's copy. */
     cue?: string;
     shortAnswerHint?: string;
+    closing?: boolean;
+    onExited?: () => void;
+    /** Bug-world celebration happens after this card unmounts. Fishing keeps its existing reveal. */
+    celebrate?: boolean;
 };
 
 /**
@@ -43,11 +47,21 @@ export default function QuestionCard({
     layout = "overlay",
     cue = "❓ QUESTION",
     shortAnswerHint,
+    closing = false,
+    onExited,
+    celebrate = true,
 }: QuestionCardProps) {
     const titleId = useId();
     const isOverlay = layout === "overlay";
 
-    const motion = reveal ? (reveal.correct ? "lw-glow-green" : "lw-shake") : "lw-pop-in";
+    useEffect(() => {
+        if (!closing || !onExited) return;
+        // animationend may be disabled by reduced motion or a backgrounded tab.
+        const fallback = setTimeout(onExited, 230);
+        return () => clearTimeout(fallback);
+    }, [closing, onExited]);
+
+    const motion = closing ? "lw-close-question" : reveal ? (reveal.correct ? "lw-glow-green" : "lw-shake") : "lw-pop-in";
     const border = reveal
         ? reveal.correct
             ? "border-emerald-500"
@@ -58,9 +72,13 @@ export default function QuestionCard({
         <div
             role="dialog"
             aria-labelledby={titleId}
+            data-closing={closing || undefined}
+            onAnimationEnd={(event) => {
+                if (closing && event.target === event.currentTarget && event.animationName === "lw-close-question") onExited?.();
+            }}
             className={`pointer-events-auto relative w-full max-w-160 overflow-hidden rounded-2xl border-4 bg-slate-900/95 shadow-[0_8px_0_rgba(0,0,0,0.45)] backdrop-blur ${border} ${motion}`}
         >
-            {reveal?.correct && <Confetti />}
+            {celebrate && reveal?.correct && <Confetti />}
 
             <header className="lw-waves flex items-center justify-between gap-2 px-4 py-2.5">
                 <span className="font-pixel text-[10px] text-sky-50 drop-shadow">

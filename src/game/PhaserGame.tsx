@@ -29,7 +29,12 @@ export default function PhaserGame({ options, onReady }: PhaserGameProps) {
         let cancelled = false;
 
         (async () => {
-            const { createGame } = await import("./game");
+            // Canvas text is rasterized once: load the original pixel font before
+            // name tags/question marks are created, rather than baking in a fallback.
+            const [{ createGame }] = await Promise.all([
+                import("./game"),
+                document.fonts.load('8px "Press Start 2P"').catch(() => []),
+            ]);
             if (cancelled || !container) return;
             handle = createGame(container, propsRef.current.options);
             propsRef.current.onReady?.(handle.controller);

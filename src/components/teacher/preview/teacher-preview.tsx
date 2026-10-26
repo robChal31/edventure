@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useHydrated, useQuestions, useQuizzes } from "@/lms/hooks";
+import { useHydrated, useQuestions, useQuizzes, useSignedInStaff } from "@/lms/hooks";
 import { toPlayableQuiz } from "@/lms/services/playable-quiz";
 import GameScreen from "@/components/student/game-screen";
 import { pixelButtonClass } from "@/components/ui/pixel-button";
@@ -12,6 +12,7 @@ import { pixelButtonClass } from "@/components/ui/pixel-button";
 export default function TeacherPreview({ quizId }: { quizId: string }) {
     const router = useRouter();
     const hydrated = useHydrated();
+    const staff = useSignedInStaff();
     const quizzes = useQuizzes();
     const questions = useQuestions();
 
@@ -45,6 +46,7 @@ export default function TeacherPreview({ quizId }: { quizId: string }) {
 
     return (
         <GameScreen
+            playerName={staff?.name ?? "Preview"}
             initialQuiz={playable}
             ribbon="TEACHER PREVIEW · RESULTS ARE NOT SAVED"
             exit={{ label: "✕ EXIT PREVIEW", onExit: () => router.push("/teacher/quizzes") }}

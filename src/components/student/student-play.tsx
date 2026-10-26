@@ -91,6 +91,7 @@ export default function StudentPlay() {
 
     return (
         <GameScreen
+            playerName={student.name}
             badge={<StudentBadge student={student} onSignOut={signOut} />}
             exit={{ label: "SIGN OUT", onExit: signOut }}
             onQuizComplete={handleComplete}
