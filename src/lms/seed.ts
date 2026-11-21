@@ -85,7 +85,7 @@ export function seedStudents(): Student[] {
     ): Student => ({ id, name, schoolId, classId, className, code, avatar, createdAt: SEED_DATE });
 
     return [
-        student("student-demo-ani", "Ani", DEMO_SCHOOL_IDS.harapan, "class-4a", "4A", "TUNA11", "🐠"),
+        student("student-demo-josh", "Josh", DEMO_SCHOOL_IDS.harapan, "class-4a", "4A", "TUNA11", "🐠"),
         student("student-demo-budi", "Budi", DEMO_SCHOOL_IDS.harapan, "class-4a", "4A", "CRAB22", "🦀"),
         student("student-demo-citra", "Citra", DEMO_SCHOOL_IDS.harapan, "class-4b", "4B", "SEAL33", "🦭"),
         student("student-demo-dewi", "Dewi", DEMO_SCHOOL_IDS.cendekia, "class-7a", "7A", "OTTER44", "🦦"),
@@ -97,7 +97,7 @@ const SCHOOL_QUESTIONS: Question[] = [
     {
         id: "harapan-q-shells",
         type: "multiple_choice",
-        text: "Ani has 4 bags. Each bag has 6 shells. How many shells does she have?",
+        text: "Josh has 4 bags. Each bag has 6 shells. How many shells does she have?",
         options: ["10", "18", "24", "30"],
         correctIndex: 2,
         explanation: "4 groups of 6 is 24.",
@@ -155,6 +155,21 @@ const GLOBAL_QUIZ_DEFAULTS = {
 
 export function seedQuizzes(): Quiz[] {
     const samples: Quiz[] = [
+        {
+            ...GLOBAL_QUIZ_DEFAULTS,
+            id: "quiz-sample-catching-bugs",
+            name: "Cricket di Ladang",
+            description: "Contoh latihan lintas mapel: tangkap cricket, jawab soal, dan coba lagi kalau lepas. Tujuh soal dalam dua ronde.",
+            activityId: "catching_bugs",
+            mode: "practice",
+            questionIds: ["bank-1", "bank-tf-1", "bank-sa-2", "bank-sa-4", "bank-sa-5", "bank-tf-3", "bank-2"],
+            assignment: { mode: "everyone" },
+            grade: 4,
+            curriculum: "general",
+            difficulty: "easy",
+            cognitiveLevel: "understand",
+            tags: ["demo", "lintas-mapel"],
+        },
         {
             ...GLOBAL_QUIZ_DEFAULTS,
             id: "quiz-sample-ocean",

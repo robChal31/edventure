@@ -1,3 +1,5 @@
+import { getLocale } from "@/i18n/locale";
+import { translate } from "@/i18n/translate";
 import Phaser from "phaser";
 import { DEPTH_CONFIG } from "@/game/config/depth-config";
 import { FISHING_TEXTURE_KEYS } from "../assets/fishing-textures";
@@ -51,7 +53,7 @@ export class FeedbackEffects {
     }
 
     public popup(text: string, x: number, y: number, color: string): void {
-        const label = this.scene.add.text(x, y, text, {
+        const label = this.scene.add.text(x, y, translate(getLocale(), text), {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: "10px",
             color,

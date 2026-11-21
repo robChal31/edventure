@@ -11,6 +11,7 @@ export class WorldObjectRegistry {
 
     public register(object: WorldObject): void {
         this.#objects.push(object);
+        object.gameObject.once("destroy", () => this.unregister(object));
 
         if (object.interactable) {
             this.#interactables.push(
@@ -29,6 +30,16 @@ export class WorldObjectRegistry {
                 object.visible
             );
         }
+    }
+
+    /** Mutate the arrays in place: systems keep references to these collections. */
+    public unregister(object: WorldObject): void {
+        const remove = <T>(items: T[], item: T | undefined) => {
+            const index = item === undefined ? -1 : items.indexOf(item);
+            if (index >= 0) items.splice(index, 1);
+        };
+        remove(this.#objects, object); remove(this.#interactables, object.interactable);
+        remove(this.#collidables, object.collidable); remove(this.#visibleObjects, object.visible);
     }
 
     public registerAll(objects: WorldObject[]): void {

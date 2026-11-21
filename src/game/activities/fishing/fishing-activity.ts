@@ -10,6 +10,7 @@ import type { Point } from "@/game/world/water/water-grid";
 import { WaterDebugOverlay } from "@/game/world/water/water-debug";
 import { WaterSurface } from "@/game/world/water/water-surface";
 import type { Activity, ActivityContext } from "../activity";
+import type { PreparedAction } from "@/game/equipment/targeting";
 import { createFishingTextures } from "./assets/fishing-textures";
 import { resolveCast, type CastResult } from "./cast/cast-resolver";
 import { FeedbackEffects } from "./effects/feedback-effects";
@@ -55,7 +56,7 @@ export class FishingActivity implements Activity {
 
     constructor(ctx: ActivityContext) {
         this.#ctx = ctx;
-        this.#session = new QuizSession(ctx.quiz);
+        this.#session = new QuizSession(ctx.quiz, ctx.progress?.quiz);
         this.#surface = new WaterSurface(ctx.worldMap, ctx.mapObjects);
         this.#water = new WaterEffects(ctx.scene);
         this.#feedback = new FeedbackEffects(ctx.scene);
@@ -96,8 +97,11 @@ export class FishingActivity implements Activity {
 
         this.#school = new AmbientFishSchool(this.scene, this.#surface);
 
-        this.#toIdle();
+        if (this.#session.isComplete) { this.#emitHud(); this.#complete(); }
+        else this.#toIdle();
     }
+
+    public snapshot() { return { quiz: this.#session.snapshot() }; }
 
     public handlePrimaryAction(): void {
         switch (this.#phase) {
@@ -111,6 +115,19 @@ export class FishingActivity implements Activity {
                 // Busy (casting, biting, answering, ...): ignore.
                 break;
         }
+    }
+
+    /** One deterministic landing result is shared by the marker and the cast. */
+    public preparePrimaryAction(): PreparedAction {
+        if (this.#phase !== "idle") return { target: null, execute: () => this.handlePrimaryAction() };
+        const cast = resolveCast(this.player, this.#surface);
+        return {
+            target: {
+                kind: "point", status: cast.inWater ? "valid" : "invalid",
+                bounds: { x: cast.point.x - 4, y: cast.point.y - 4, width: 8, height: 8 },
+            },
+            execute: () => { if (this.#phase === "idle") this.#castLine(cast); },
+        };
     }
 
     public answer(answer: AnswerValue): void {
@@ -187,8 +204,8 @@ export class FishingActivity implements Activity {
     // Cast
     // ─────────────────────────────────────────
 
-    #castLine(): void {
-        const cast = resolveCast(this.player, this.#surface);
+    #castLine(prepared?: CastResult): void {
+        const cast = prepared ?? resolveCast(this.player, this.#surface);
         this.#cast = cast;
         this.#debug?.markProbe(cast.point.x, cast.point.y, cast.hit);
 
@@ -463,6 +480,7 @@ export class FishingActivity implements Activity {
     }
 
     #emitHud(questionNumber: number = this.#session.currentNumber): void {
+        this.emit({ type: "progress", progress: this.snapshot() });
         this.emit({
             type: "hud",
             caught: this.#session.correctCount,

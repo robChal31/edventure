@@ -1,5 +1,6 @@
+import { ACTIVITIES } from "@/quiz/activities";
 import { sanitizeQuestion } from "@/quiz/question-types";
-import type { AnswerRecord, AnswerValue, QuizSummary } from "@/quiz/types";
+import type { ActivityId, AnswerRecord, AnswerValue, QuizSummary } from "@/quiz/types";
 import { createId, nowIso } from "../ids";
 import { createLocalCollection } from "../storage/local-collection";
 import type { QuizAttempt, Student } from "../types";
@@ -60,7 +61,12 @@ function sanitizeAttempt(raw: unknown): QuizAttempt | null {
         quizName: typeof value.quizName === "string" ? value.quizName : "Quiz",
         studentId: value.studentId,
         studentName: typeof value.studentName === "string" ? value.studentName : "Student",
-        activityId: "fishing",
+        activityId: ACTIVITIES.some((activity) => activity.id === value.activityId)
+            ? value.activityId as ActivityId
+            : "fishing",
+        ...(value.mode === "practice" || value.mode === "assessment" ? { mode: value.mode } : {}),
+        ...(typeof value.misses === "number" && Number.isSafeInteger(value.misses) && value.misses >= 0
+            ? { misses: value.misses } : {}),
         startedAt: typeof value.startedAt === "string" ? value.startedAt : nowIso(),
         completedAt: typeof value.completedAt === "string" ? value.completedAt : nowIso(),
         total,
@@ -73,6 +79,8 @@ function sanitizeAttempt(raw: unknown): QuizAttempt | null {
 export const attemptStore = createLocalCollection<QuizAttempt>({
     key: "learning-world.lms.attempts.v1",
     sanitize: sanitizeAttempt,
+    // Never clear a durable checkpoint after an in-memory-only result write.
+    requirePersistence: true,
 });
 
 export function recordAttempt(input: {
@@ -80,17 +88,24 @@ export function recordAttempt(input: {
     summary: QuizSummary;
     startedAt: string;
     completedAt?: string;
+    /** Stable across reload/resume so one run can be recorded only once. */
+    runId?: string;
 }): QuizAttempt {
     const { student, summary } = input;
     const total = summary.total;
+    const id = input.runId ? `attempt-${student.id}-${input.runId}` : createId("attempt");
+    const existing = attemptStore.get(id);
+    if (existing) return existing;
 
     return attemptStore.upsert({
-        id: createId("attempt"),
+        id,
         quizId: summary.quizId,
         quizName: summary.quizName,
         studentId: student.id,
         studentName: student.name,
         activityId: summary.activityId,
+        ...(summary.mode ? { mode: summary.mode } : {}),
+        ...(summary.misses !== undefined ? { misses: summary.misses } : {}),
         startedAt: input.startedAt,
         completedAt: input.completedAt ?? nowIso(),
         total,

@@ -11,22 +11,30 @@ import { WorldObjectLoader } from "../world/world-object-loader";
 import { SCENE_KEYS } from "./scene-keys";
 import Phaser from "phaser";
 import { InteractionSystem } from "../systems/interaction-system";
-import { PlayerAction } from "../common/types";
 import { CollisionSystem } from "../systems/collision-system";
 import { WorldObjectFactory } from "../world/world-object-factory";
 import { WorldObjectRegistry } from "../world/world-object-registry";
 import { MapAnimationLoader } from "../world/map-animation-loader";
 import { HUB_MAP_ID, MapId, WORLD_MAPS } from "../world/maps/map-registry";
 import { WorldMapDefinition } from "../world/world-map-definition";
-import type { ActivityController, GameOptions } from "../game-options";
+import type { ActivityController, ActivityPhase, GameEvent, GameOptions } from "../game-options";
 import type { Activity, MapObject } from "../activities/activity";
 import { ACTIVITY_REGISTRY } from "../activities/activity-registry";
 import type { PlayableQuiz } from "@/quiz/types";
+import { EQUIPMENT, defaultEquipment, equipmentRoute, equipmentState, isEquipmentId, type EquipmentId, type EquipmentState } from "../equipment/equipment";
+import type { PreparedAction } from "../equipment/targeting";
+import { TargetMarker } from "../equipment/target-marker";
+import type { ActivityProgress } from "@/quiz/progress";
+import { TreeBreeze } from "../world/tree-breeze";
+import { WorldShadows } from "../world/world-shadows";
+import { MapMusic } from "../common/audio/map-music";
+import { CloudLayer } from "../world/cloud-layer";
 
 /** Data passed to `scene.restart()` when travelling between maps. */
 type GameSceneData = {
     mapId?: MapId;
     quiz?: PlayableQuiz | null;
+    progress?: ActivityProgress;
 };
 
 const TRAVEL_FADE_MS = 450;
@@ -46,6 +54,19 @@ export class GameScene extends Phaser.Scene {
     #activity?: Activity;
     #options?: GameOptions;
     #controller!: ActivityController;
+    #equipped: EquipmentId = "none";
+    #phase: ActivityPhase = "idle";
+    #initialProgress?: ActivityProgress;
+    #overlayOpen = false;
+    #equipmentPickerOpen = false;
+    #lastEquipmentState = "";
+    #marker?: TargetMarker;
+    #nameTag?: Phaser.GameObjects.Text;
+    #nameConnector?: Phaser.GameObjects.Graphics;
+    #breeze?: TreeBreeze;
+    #shadows?: WorldShadows;
+    #clouds?: CloudLayer;
+    #music?: MapMusic;
 
     // Per-run state (reset in init/create on every map load).
     #mapId: MapId = HUB_MAP_ID;
@@ -62,12 +83,26 @@ export class GameScene extends Phaser.Scene {
         this.#options = options;
 
         this.#controller = {
-            startQuiz: (quiz) =>
-                this.#travelTo(ACTIVITY_REGISTRY[quiz.activityId].mapId, quiz),
+            startQuiz: (quiz, progress) =>
+                this.#travelTo(ACTIVITY_REGISTRY[quiz.activityId].mapId, quiz, progress),
+            getProgress: () => this.#activity?.snapshot() ?? null,
+            setMusicEnabled: (enabled) => this.#music?.setEnabled(enabled),
             returnToHub: () => this.#travelTo(HUB_MAP_ID, null),
-            cast: () => this.#handleFishingKey(),
+            primaryAction: () => this.#controls?.pressPrimaryAction(),
+            equip: (equipment) => this.#equip(equipment),
+            setEquipmentPickerOpen: (open) => {
+                if (!this.#isReady) return;
+                this.#equipmentPickerOpen = open;
+                this.#applyControlsEnabled();
+            },
+            questionClosed: (id) => this.#activity?.questionClosed?.(id),
             answer: (answer) => this.#activity?.answer(answer),
-            restart: () => this.#activity?.restart(),
+            restart: () => {
+                this.#controls?.reset();
+                this.#marker?.hide();
+                this.#activity?.restart();
+                this.#syncEquipment();
+            },
             setVirtualDirection: (dir, pressed) =>
                 this.#controls?.setVirtualDirection(dir, pressed),
             setKeyboardEnabled: (enabled) => this.#setKeyboardEnabled(enabled),
@@ -95,9 +130,17 @@ export class GameScene extends Phaser.Scene {
                 : (this.#options?.initialMap ?? HUB_MAP_ID);
         }
 
+        this.#initialProgress = data?.progress;
         this.#activity = undefined;
         this.#mapSprites = [];
         this.#playerBodyDebug = undefined;
+        this.#equipped = defaultEquipment(this.#quiz?.activityId);
+        this.#phase = "idle";
+        this.#overlayOpen = false;
+        this.#equipmentPickerOpen = false;
+        this.#lastEquipmentState = "";
+        this.#marker = undefined;
+        this.#nameTag = undefined;
         this.#isReady = false;
         this.#isTravelling = false;
     }
@@ -120,7 +163,11 @@ export class GameScene extends Phaser.Scene {
         this.#initCamera();
         this.#initPlayer();
         this.#initSystems();
+        this.#marker = new TargetMarker(this);
         this.#collisionSystem.setup();
+        this.#breeze = new TreeBreeze(this, this.#worldObjectRegistry.objects);
+        this.#shadows = new WorldShadows(this, this.#player, this.#worldObjectRegistry.objects, this.#worldMap, this.#mapSprites);
+        this.#clouds = new CloudLayer(this, this.#worldMap.widthInPixels, this.#worldMap.heightInPixels, this.#worldMap.hasAuthoredClouds);
         this.#initDebug();
 
         this.#isReady = true;
@@ -140,6 +187,8 @@ export class GameScene extends Phaser.Scene {
         });
 
         this.#initActivity();
+        this.#music = new MapMusic(this, this.mapDefinition.soundtrack, (state) => this.#options?.onEvent({ type: "music", ...state }));
+        this.#syncEquipment();
         this.cameras.main.fadeIn(TRAVEL_FADE_MS, 0, 0, 0);
     }
 
@@ -147,6 +196,14 @@ export class GameScene extends Phaser.Scene {
         this.#activity?.destroy();
         this.#activity = undefined;
         this.#isReady = false;
+        this.#controls?.destroy();
+        this.#marker?.destroy();
+        this.#nameTag?.destroy();
+        this.#nameConnector?.destroy();
+        this.#breeze?.destroy();
+        this.#shadows?.destroy();
+        this.#clouds?.destroy();
+        this.#music?.destroy();
     }
 
     // ─────────────────────────────────────────
@@ -159,18 +216,32 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
+        this.input.keyboard.manager.enabled = true;
+        this.input.keyboard.resetKeys();
         this.#controls = new VirtualInputComponent(this.input.keyboard);
     }
 
     #setKeyboardEnabled(enabled: boolean): void {
-        const keyboard = this.input?.keyboard;
-        if (!keyboard) return;
+        this.#overlayOpen = !enabled;
+        this.#applyControlsEnabled();
+    }
 
-        // While disabled Phaser neither reads nor swallows keys, so HTML
-        // inputs get every key (F, Space, T, H...). Reset so no key stays
-        // "held" from before.
-        keyboard.manager.enabled = enabled;
-        keyboard.resetKeys();
+    #applyControlsEnabled(): void {
+        const allowInput = !this.#overlayOpen && !this.#equipmentPickerOpen && !this.#isTravelling;
+        this.#controls?.setEnabled(allowInput);
+        this.#player?.setControlsPaused(!allowInput);
+        const keyboard = this.input?.keyboard;
+        if (keyboard) {
+            // Release captures for HTML answers and clear held keys/directions on BOTH transitions.
+            keyboard.manager.enabled = allowInput;
+            keyboard.resetKeys();
+        }
+        if (!allowInput) {
+            this.#marker?.hide();
+            this.#nameTag?.setVisible(false);
+            this.#nameConnector?.setVisible(false);
+        }
+        this.#syncEquipment();
     }
 
     // ─────────────────────────────────────────
@@ -193,6 +264,7 @@ export class GameScene extends Phaser.Scene {
 
         this.#interactionSystem =
             new InteractionSystem(
+                this,
                 this.#player,
                 this.#worldObjectRegistry.interactables
             );
@@ -201,7 +273,8 @@ export class GameScene extends Phaser.Scene {
             this,
             this.#player,
             this.#worldMap,
-            this.#worldObjectRegistry.objects
+            this.#worldObjectRegistry.objects,
+            this.#mapSprites
         );
     }
     // ─────────────────────────────────────────
@@ -253,19 +326,19 @@ export class GameScene extends Phaser.Scene {
             controls: this.#controls,
             facing: spawn?.facing,
 
-            onAxeAction: () => {
-                this.#handlePlayerInteraction({
-                    type: "axe",
-                    onMiss: () => {
-                        this.sound.play(ASSET_KEYS.AXE_SWING);
-                    },
-                });
-            },
-
-            onFishingAction: () => this.#handleFishingKey(),
+            onPrimaryAction: () => this.#useEquipment(),
         });
 
         this.#player.setScale(WORLD_CONFIG.scale);
+        this.#player.wearAxe(this.#equipped === "axe");
+        const name = this.#options?.playerName?.trim();
+        if (name) {
+            this.#nameTag = this.add.text(position.x, position.y - 23, name.length > 20 ? `${name.slice(0, 19)}…` : name, {
+                fontFamily: '"Press Start 2P"', fontSize: "7px", color: "#fff8d5", stroke: "#172b25", strokeThickness: 2,
+            }).setName("player-name-tag").setOrigin(0.5, 1).setDepth(DEPTH_CONFIG.WORLD_UI).setVisible(false);
+        }
+
+        this.#nameConnector = this.add.graphics().setName("player-name-connector").setDepth(DEPTH_CONFIG.WORLD_UI - 1).setVisible(false);
 
         this.cameras.main.startFollow(
             this.#player,
@@ -275,23 +348,59 @@ export class GameScene extends Phaser.Scene {
         );
     }
 
-    #handlePlayerInteraction(action: PlayerAction): void {
-        this.#interactionSystem.interact(action);
+    #equipmentState(): EquipmentState {
+        return equipmentState(this.#equipped, {
+            phase: this.#phase, overlayOpen: this.#overlayOpen, pickerOpen: this.#equipmentPickerOpen, travelling: this.#isTravelling,
+            playerBusy: this.#player?.isActionBusy ?? false, playerLocked: this.#player?.isInputLocked ?? false,
+        });
     }
 
-    /** F / Space / the CAST button. */
-    #handleFishingKey(): void {
-        if (!this.#isReady || this.#isTravelling) return;
+    #syncEquipment(): void {
+        const state = this.#equipmentState();
+        const signature = JSON.stringify(state);
+        if (signature === this.#lastEquipmentState) return;
+        this.#lastEquipmentState = signature;
+        this.#options?.onEvent({ type: "equipment", ...state });
+    }
 
-        if (this.#activity) {
-            this.#activity.handlePrimaryAction();
-            return;
+    #equip(equipment: EquipmentId): void {
+        if (!this.#isReady || !isEquipmentId(equipment) || !EQUIPMENT[equipment].available || this.#equipmentState().locked) return;
+        this.#controls.reset();
+        this.#equipped = equipment;
+        this.#player.wearAxe(equipment === "axe");
+        this.#marker?.hide();
+        this.#syncEquipment();
+    }
+
+    #prepareEquipment(): PreparedAction {
+        const route = equipmentRoute(this.#equipped, this.#quiz?.activityId ?? null);
+        if (route === "none") return { target: null, execute: () => {} };
+        if (route === "axe") return this.#interactionSystem.prepareAxeAction();
+        if (route === "activity" && this.#activity) {
+            return this.#activity.preparePrimaryAction?.() ?? { target: null, execute: () => this.#activity?.handlePrimaryAction() };
         }
+        return { target: null, execute: () => this.#options?.onEvent({
+            type: "prompt", message: EQUIPMENT[this.#equipped].hint,
+        }) };
+    }
 
-        this.#options?.onEvent({
-            type: "prompt",
-            message: "Pick a quest on the Quest Board (press Q) to go fishing!",
-        });
+    #useEquipment(): void {
+        if (!this.#isReady || !this.#equipmentState().actionEnabled) return;
+        const prepared = this.#prepareEquipment();
+        this.#marker?.show(prepared.target);
+        this.#marker?.pulse();
+        this.#controls.reset();
+        prepared.execute();
+        this.#syncEquipment();
+    }
+
+    #onActivityEvent(event: GameEvent): void {
+        if (event.type === "phase") {
+            this.#phase = event.phase;
+            this.#controls.reset();
+        }
+        this.#options?.onEvent(event);
+        this.#syncEquipment();
     }
 
     #initObjects(): void {
@@ -382,7 +491,8 @@ export class GameScene extends Phaser.Scene {
             worldMap: this.#worldMap,
             mapObjects: this.#collectMapObjects(),
             quiz: this.#quiz,
-            emit: (event) => this.#options?.onEvent(event),
+            progress: this.#initialProgress,
+            emit: (event) => this.#onActivityEvent(event),
         });
 
         this.#activity.create();
@@ -407,18 +517,26 @@ export class GameScene extends Phaser.Scene {
     // TRAVEL
     // ─────────────────────────────────────────
 
-    #travelTo(mapId: MapId, quiz: PlayableQuiz | null): void {
+    #travelTo(mapId: MapId, quiz: PlayableQuiz | null, progress?: ActivityProgress): void {
         if (!this.#isReady || this.#isTravelling) return;
 
         this.#isTravelling = true;
+        // Cancel gates/timers immediately, not 450ms later when the fade finishes.
+        this.#activity?.destroy();
+        this.#activity = undefined;
+        this.#controls.setEnabled(false);
+        this.#marker?.hide();
+        this.#nameTag?.setVisible(false);
+        this.#nameConnector?.setVisible(false);
         this.#player.setInputLocked(true);
+        this.#syncEquipment();
         this.#options?.onEvent({ type: "travel:start", to: mapId });
 
         this.cameras.main.fadeOut(TRAVEL_FADE_MS, 0, 0, 0);
         this.cameras.main.once(
             Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
             () => {
-                const data: GameSceneData = { mapId, quiz };
+                const data: GameSceneData = { mapId, quiz, progress };
                 this.scene.restart(data);
             }
         );
@@ -437,8 +555,8 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Objects: depth = body bottom (kaki)
-        this.#worldObjectRegistry.objects.forEach(({ depthSortable, collidable }) => {
-            if (!depthSortable) return;
+        this.#worldObjectRegistry.objects.forEach(({ gameObject, depthSortable, collidable }) => {
+            if (!depthSortable || !gameObject.active) return;
 
             const body = collidable?.collisionBody;
             const depthRef = body
@@ -450,6 +568,27 @@ export class GameScene extends Phaser.Scene {
 
         this.#objectVisibilitySystem.update();
         this.#activity?.update(time, delta);
+        this.#breeze?.update(time);
+        this.#shadows?.update();
+        this.#clouds?.update(delta);
+        const state = this.#equipmentState();
+        if (this.#overlayOpen || this.#equipmentPickerOpen || this.#isTravelling) this.#marker?.hide();
+        else this.#marker?.show(state.actionEnabled ? this.#prepareEquipment().target : null);
+        this.#marker?.update(delta);
+        const roaming = !state.locked && !this.#equipmentPickerOpen && this.#player.visible;
+        this.#nameTag?.setPosition(Math.round(this.#player.x), Math.round(this.#player.y - 23)).setVisible(roaming);
+        if (this.#nameConnector) {
+            this.#nameConnector.clear().setVisible(roaming && Boolean(this.#nameTag));
+            if (roaming && this.#nameTag) {
+                const x = Math.round(this.#player.x); const y = Math.round(this.#player.y);
+                this.#nameConnector.lineStyle(1, 0xfff8d5, 0.95);
+                this.#nameConnector.beginPath();
+                this.#nameConnector.moveTo(x, y - 21); this.#nameConnector.lineTo(x + 2, y - 19);
+                this.#nameConnector.lineTo(x, y - 17); this.#nameConnector.lineTo(x - 2, y - 19);
+                this.#nameConnector.closePath(); this.#nameConnector.strokePath();
+            }
+        }
+        this.#syncEquipment();
         this.#drawPlayerBodyDebug();
     }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import type { QuizAssignment, SchoolClass, Student } from "@/lms/types";
 
 type Props = {
@@ -31,6 +32,7 @@ function groupByClass(students: readonly Student[]): Array<[string, Student[]]> 
 }
 
 export default function AssignmentPicker({ assignment, students, classes, everyoneLabel, onChange }: Props) {
+    const { t } = useI18n();
     const selectedStudents = new Set(assignment.mode === "students" ? assignment.studentIds : []);
     const selectedClasses = new Set(assignment.mode === "classes" ? assignment.classIds : []);
 
@@ -63,7 +65,7 @@ export default function AssignmentPicker({ assignment, students, classes, everyo
 
     return (
         <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Who can play it?</legend>
+            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("Who can play it?")}</legend>
 
             <div className="grid grid-cols-3 gap-2">
                 {MODES.map((option) => {
@@ -78,8 +80,8 @@ export default function AssignmentPicker({ assignment, students, classes, everyo
                                 active ? "border-amber-400 bg-amber-400/15" : "border-slate-700 hover:border-slate-500"
                             }`}
                         >
-                            <div className="text-sm font-bold text-slate-100">{option.label}</div>
-                            <div className="text-[11px] text-slate-400">{option.hint}</div>
+                            <div className="text-sm font-bold text-slate-100">{t(option.label)}</div>
+                            <div className="text-[11px] text-slate-400">{t(option.hint)}</div>
                         </button>
                     );
                 })}
@@ -90,7 +92,7 @@ export default function AssignmentPicker({ assignment, students, classes, everyo
             {assignment.mode === "classes" && (
                 <div className="mt-1 flex flex-wrap gap-2 rounded-xl border-2 border-slate-800 p-2">
                     {classes.length === 0 ? (
-                        <p className="p-2 text-sm text-slate-500">No classes yet — create them on the Classes page.</p>
+                        <p className="p-2 text-sm text-slate-500">{t("No classes yet — create them on the Classes page.")}</p>
                     ) : (
                         classes.map((klass) => {
                             const on = selectedClasses.has(klass.id);
@@ -116,7 +118,7 @@ export default function AssignmentPicker({ assignment, students, classes, everyo
             {assignment.mode === "students" && (
                 <div className="mt-1 max-h-56 overflow-y-auto rounded-xl border-2 border-slate-800 p-2">
                     {students.length === 0 ? (
-                        <p className="p-2 text-sm text-slate-500">No students yet — add them on the Students page.</p>
+                        <p className="p-2 text-sm text-slate-500">{t("No students yet — add them on the Students page.")}</p>
                     ) : (
                         groupByClass(students).map(([className, group]) => {
                             const allIn = group.every((student) => selectedStudents.has(student.id));

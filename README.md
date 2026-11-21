@@ -40,7 +40,148 @@ means: implement the activity, register it in `src/quiz/activities.ts` and the g
 registry, and set `available: true`.
 
 Students who play a quiz travel to its activity map. Currently available: **fishing** (on the
-beach map).
+beach map) and **Catching Bugs** (on the farm map).
+
+### Catching Bugs — farm
+
+- Pilih **Catching Bugs** di editor kuis. Pilih **Asesmen** (satu percobaan per
+  soal, default) atau **Latihan** (boleh mencoba lagi). Mapel dan tipe soal bebas:
+  aktivitas hanya memakai snapshot soal serta penilaian dari `QuizSession`.
+- Satu cricket terikat ke satu soal dan boleh ditangkap dalam urutan bebas.
+  Pilih **jaring** melalui slot alat bawah-tengah. Dekati tanda **?** sampai
+  sudut target berubah kuning, lalu tekan **F / Spasi** atau **TANGKAP**.
+  Animasi net dimainkan sebelum panel soal terbuka. Menekan aksi dari jauh tidak
+  menghabiskan soal atau menambah miss.
+- Benar → tertangkap. Salah → lepas dan **miss +1**. Di latihan, cricket yang
+  sama bergerak sebentar, lalu berhenti tanpa menghilang dan bisa ditangkap lagi;
+  pertanyaan tetap sama;
+  skor dan satu record final per soal memakai hasil akhirnya. Di asesmen,
+  cricket bergerak lalu memudar halus dan jawaban salah menjadi hasil final. Miss latihan adalah
+  jumlah percobaan salah, sehingga bisa melebihi jumlah soal.
+- **Tidak ada nyawa barn, tujuan ke barn, batas waktu, atau penalti otomatis.**
+  Spawn acak dengan jarak minimal 36 px, kemudian diam sambil memainkan animasi
+  cricket asli. Hanya jawaban salah memicu gerak pendek di dalam pagar.
+- Efek tangkap/lepas baru berjalan **setelah modal soal selesai fade-out dan
+  di-unmount**. React mengirim receipt token unik sesudah commit; restart/travel
+  membatalkan token, timer, tween dan sprite lama. Practice tidak fade/despawn.
+- Total cricket mengikuti jumlah soal. Maksimal **5 aktif per ronde**
+  (`CRICKETS_PER_ROUND`); ronde berikutnya baru muncul setelah ronde sebelumnya
+  selesai. Ronde terakhir menyesuaikan sisa soal. Farm selalu **640 × 320 px**.
+- Area gerak adalah rectangle `cricket_field` pada object layer `catching_bugs`
+  di `public/assets/images/levels/farm/barn.json`. Pindahkan rectangle lewat Tiled
+  bila ladang diubah; jangan letakkan di pagar, air, barn atau objek padat.
+  Spawn pemain dan daftar tileset ada di `src/game/world/maps/farm-map.ts`.
+- Artwork asli: `animations/player/catching_net/` dan
+  `animations/animal/bug/cricket_animation.*`. Tidak ada gambar pengganti generik.
+  Net adalah sprite karakter sementara milik aktivitas. Art, aturan, resolver,
+  dan state animasi fishing tetap; hanya input bersama/preview target yang dihubungkan.
+- Demo **Cricket di Ladang** (`quiz-sample-catching-bugs`) berisi tujuh contoh soal
+  lintas mapel, tiga tipe soal, dan dua ronde latihan. Demo ditambahkan sekali ke
+  instalasi lama tanpa menimpa kuis atau me-reseed fishing. Bisa langsung dimainkan
+  dari quest board; guru bisa memilih map/mode yang sama untuk soal buatannya sendiri.
+- Mode dan jumlah miss ikut disimpan dalam attempt LMS dan terlihat di detail
+  laporan guru. `QuizSummary.incorrect` tetap berarti jumlah soal final yang salah,
+  bukan jumlah retry.
+
+### Equipment dan target bersama
+
+- Satu slot kayu dari `UI/Inventory/Slots.png` menampilkan alat aktif. Klik/tap
+  untuk membuka mini picker di atasnya. Di portrait sempit, slot berada di atas
+  baris D-pad/aksi agar tidak menutupi tombol. Ikon kapak, pancing, jaring, sekop
+  dan kayu semuanya dari sprite pack asli.
+- Di desa, tangan pemain awalnya **kosong** (tanpa alat). Fishing mulai dengan
+  pancing; Catching Bugs dengan jaring. Kapak, pancing dan jaring dapat dipilih;
+  **Lepas alat / Unequip** mengembalikan tangan kosong. Sekop/kayu masih jelas
+  **belum tersedia**; tidak ada gameplay gali tanah/bangun pagar palsu.
+- **F / Space / tombol aksi** adalah satu intent. Kapak menebas pohon di depan;
+  pancing menjalankan cast/reel yang sudah ada di fishing; jaring memilih cricket
+  terdekat di farm. Alat salah konteks memberi petunjuk, bukan menjalankan kuis
+  lain. Tombol test khusus alat (T/H/X/Z) dihapus dari input game; T/F tetap sah
+  untuk jawaban true/false di modal HTML.
+- `PreparedAction` menyimpan target dan eksekusinya dalam satu snapshot. Strategi
+  kapak memakai footprint pangkal objek di depan dan dalam jangkauan; jaring
+  memakai posisi cricket sesungguhnya (tanpa grid-snap); rod memakai hasil
+  `resolveCast` yang sama persis. Proyeksi tile disediakan untuk alat masa depan,
+  bukan implementasi pembangunan sekarang.
+- Empat sudut 8×8 dari `UI/Extras.png` diposisikan ulang, **bukan di-stretch**:
+  putih = kandidat, kuning = valid, merah = titik cast tidak valid. Sudut melebar
+  sebentar saat aksi. Kontrol/marker di-reset saat overlay, ganti alat, replay,
+  travel dan shutdown; menahan F/Space tidak mengulang atau menyimpan aksi.
+- Nama akun tampil di atas karakter hanya saat berjalan/idle; hilang saat aksi,
+  soal, hasil, guide atau overlay lain terbuka.
+
+### Bahasa, gambar, dan progres tersimpan
+
+- UI tersedia dalam **Bahasa Indonesia** (default) dan **English** melalui pilihan
+  bahasa di halaman masuk, panel staf, dan game. Pilihan menetap di browser.
+  Teks soal, opsi, nama siswa dan isi buatan guru tidak diterjemahkan otomatis.
+  Katalog UI ada di `src/i18n/messages-id.json`.
+- Editor soal menyediakan **Insert image** (PNG/JPEG/WebP, berkas asli maksimal
+  5 MB). Gambar diperkecil secara lokal hingga sisi terpanjang 1440 px dan sekitar
+  250 KB; deskripsi gambar wajib diisi. Prompt dapat berupa teks, gambar, atau
+  keduanya. Gambar ikut dalam preview, permainan, hasil dan detail laporan.
+  SVG dan URL gambar eksternal tidak diterima. Kapasitas tetap mengikuti batas
+  penyimpanan browser; kegagalan simpan ditampilkan, tidak dianggap berhasil.
+- Jawaban final, urutan/snapshot soal, run ID dan miss latihan otomatis disimpan
+  pada checkpoint per siswa/kuis. **Save / exit** juga menyediakan **Save & keep
+  playing**. **Resume**, **Start over** dan **Not now** tersedia untuk progres
+  yang masih ditugaskan/dipublikasikan kepada siswa tersebut.
+- **F5 / Ctrl-R / Cmd-R** menawarkan dialog save/reload. Tombol refresh/close milik
+  browser hanya mengizinkan konfirmasi native (teks/tombolnya tidak dapat
+  dikustomisasi aplikasi); checkpoint disimpan dulu. Perangkat/browser dapat
+  membatasi dialog native. Progres tersimpan pada browser ini, bukan lintas perangkat.
+- Resume mengulang aksi yang belum selesai dengan aman, bukan menyimpan posisi
+  pixel/animasi atau teks jawaban yang belum dikirim. Soal yang sudah selesai tidak
+  diulang; miss latihan tetap ada. Hasil disimpan **sekali per run** sebelum
+  checkpoint dihapus. Jika gagal, halaman hasil menyediakan retry dan tidak
+  meninggalkan hasil yang belum tersimpan.
+- Progres **pengerjaan** memakai jumlah soal yang diselesaikan, terpisah dari
+  tangkapan/skor. Semua soal selesai tetap mempunyai ending, termasuk skor 0%.
+  Dorongan “tinggal sedikit” hanya muncul dekat akhir, bukan sepanjang permainan.
+- Tombol **Help** menggantikan petunjuk gerak permanen. Tema terang dibatasi ke
+  workspace guru/admin; kartu/game siswa tetap memakai gaya pixel semula.
+
+### Pohon, render, dan soundtrack per map
+
+- Definisi mahogany, maple, birch dan pine ada di
+  `public/assets/data/object/tree/`, memakai atlas **Shadow** asli. Pohon berdiri
+  mempertahankan 5 tebasan awal; tunggul/kayu yang sudah terpotong perlu **3**
+  tebasan tambahan, mengeluarkan log berskala 0.5 lalu hilang beserta collider-nya.
+- Objek tree/wood di map desa dan farm sekarang punya class/properties Tiled.
+  Import `tree/tiled-classes.json` ke Custom Types di proyek Tiled bila diperlukan.
+  Contoh: class `tree`, properties `species: maple`, `variant: large`,
+  `stage: standing`; class `wood` + `species: birch` membuat tunggul. Property
+  `treeVariant` dapat mempertahankan varian warna bernama. Layer legacy tetap
+  didukung. Tidak ada pohon baru yang dipaksakan ke tata letak map.
+- Angin hanya mengenai cluster kecil yang tampak di kamera, maksimal 7 pohon
+  dengan jeda 6.5–13 detik dan stagger; bukan seluruh map sekaligus. Pangkal,
+  bayangan dan collider tetap diam. Kelapa memakai potongan kanopi asli.
+  Reduced-motion mematikan gerakan angin/awan.
+- `CLOUDS` mempunyai depth world tertinggi (di atas objek, efek tangkap dan name
+  tag), termasuk tile/object yang diberi class/property clouds di layer campuran.
+  Map tanpa awan memakai dua sprite awan asli yang ringan. Shadow atlas/tile
+  asli tidak digandakan; pemain, cricket dan objek darat yang memerlukan mendapat
+  contact shadow. Ketiga map aktif: desa, farm dan pantai.
+- Ketiga `src/game/world/maps/*-map.ts` punya `soundtrack: null` sampai track
+  dipilih. **Belum ada lagu yang ditambahkan/dipilih.** Untuk mengaktifkan map,
+  simpan audio berlisensi di `public/assets/music/`, lalu ganti `null` dengan:
+
+  ```ts
+  soundtrack: {
+      key: "music-village", // unik untuk setiap track
+      urls: ["/assets/music/village.ogg", "/assets/music/village.mp3"],
+      volume: 0.25,
+  },
+  ```
+
+  Preloader menangani cache; controller menunggu audio unlock, loop per map,
+  menyimpan preferensi on/off, serta membersihkan track saat travel/shutdown.
+  Tombol musik hanya tampil jika track tersedia. SFX fishing/tebang tidak diubah.
+
+Validasi: jalankan `npm ci`, `npm test`, `npm run lint`, lalu `npm run build`.
+Tes mencakup batch/ronde, latihan vs asesmen, soal tak berurutan, hitungan miss,
+spawn diam/terpisah, release terbatas, receipt modal, routing/lock alat, input latch,
+targeting objek/titik/tile, jarak tangkap, aset/map, persistensi LMS dan regresi fishing.
 
 ### Quiz assignment
 A quiz is assigned to **everyone** in its scope, to whole **classes**, or to hand-picked

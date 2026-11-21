@@ -1,3 +1,4 @@
+import type { MapSoundtrack } from "../common/audio/map-music";
 import type { Facing } from "../common/types";
 
 export type WorldMapTileset = {
@@ -38,6 +39,7 @@ export type WorldObjectType =
 export type WorldMapAnimationDefinition = {
     layer: string;
     animationKey: string;
+    collidable?: boolean;
 };
 
 /** Where the player appears, in map pixels (before WORLD_CONFIG.scale). */
@@ -49,6 +51,8 @@ export type WorldMapSpawn = {
 
 export type WorldMapDefinition = {
     key: string;
+    /** No audio is loaded until an original/licensed track is configured. */
+    soundtrack?: MapSoundtrack | null;
 
     tilesets: WorldMapTileset[];
 

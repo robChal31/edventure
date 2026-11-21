@@ -1,58 +1,35 @@
 "use client";
+import { useI18n } from "@/i18n/provider";
+import type { ActivityHudState } from "@/game/game-options";
+import { completionProgress } from "@/quiz/completion-progress";
 
 type ActivityHudProps = {
-    roomName: string;
-    questionNumber: number;
-    total: number;
-    caught: number;
-    answered: number;
-    /** Icon and label of the score line, from the activity's copy. */
-    scoreIcon: string;
-    scoreLabel: string;
-};
+    roomName: string; questionNumber: number; total: number; caught: number; answered: number;
+    scoreIcon: string; scoreLabel: string;
+} & Pick<ActivityHudState, "misses" | "round" | "rounds" | "mode">;
 
-/** Quest title, progress and score for any activity. */
-export default function ActivityHud({
-    roomName,
-    questionNumber,
-    total,
-    caught,
-    answered,
-    scoreIcon,
-    scoreLabel,
-}: ActivityHudProps) {
-    return (
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2 sm:p-3">
-            <div className="pixel-panel rounded-lg bg-slate-900/80 px-3 py-2">
-                <div className="font-pixel text-[10px] text-amber-300">
-                    {roomName}
-                </div>
-                <div className="mt-1 font-pixel text-[9px] text-sky-300">
-                    Question {Math.min(questionNumber, total)} of {total}
-                </div>
+/** Completion and academic/game success are deliberately separate, at every score. */
+export default function ActivityHud({ roomName, questionNumber, total, caught, answered, scoreIcon, scoreLabel, misses, round, rounds, mode }: ActivityHudProps) {
+    const { t } = useI18n();
+    const progress = completionProgress(answered, total);
+    return <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2 sm:p-3">
+        <div className="pixel-panel max-w-[62vw] rounded-lg bg-slate-900/85 px-3 py-2">
+            <div className="break-words font-pixel text-[9px] leading-relaxed text-amber-300 sm:text-[10px]">{roomName}</div>
+            <div className="mt-1 font-pixel text-[8px] leading-relaxed text-sky-300">{t("Question {value0} of {value1}", { value0: Math.min(questionNumber, total), value1: total })}</div>
+            <div className="mt-1 flex flex-wrap gap-x-2 text-[10px] text-amber-100">
+                {mode && <span>{mode === "practice" ? t("Practice") : t("Assessment")} · {t("Round {round}/{rounds}", { round: round ?? 1, rounds: rounds ?? 1 })}</span>}
+                <span>{t("Completed {answered}/{total}", { answered: progress.completed, total })}</span>
             </div>
-
-            <div className="pixel-panel rounded-lg bg-slate-900/80 px-3 py-2 text-right">
-                <div className="font-pixel text-[10px] text-emerald-300">
-                    {scoreIcon} {caught}/{answered} {scoreLabel}
-                </div>
-                <div className="mt-1 flex max-w-[45vw] flex-wrap justify-end gap-0.5" aria-hidden>
-                    {Array.from({ length: total }).map((_, i) => (
-                        <span
-                            key={i}
-                            className={`text-[10px] ${
-                                i < caught
-                                    ? "opacity-100"
-                                    : i < answered
-                                      ? "opacity-25 grayscale"
-                                      : "opacity-40"
-                            }`}
-                        >
-                            {scoreIcon}
-                        </span>
-                    ))}
-                </div>
+            <div className="mt-1.5 h-1.5 w-full min-w-28 overflow-hidden rounded-full bg-slate-700" role="progressbar" aria-label={t("Questions completed")}
+                aria-valuenow={progress.completed} aria-valuemin={0} aria-valuemax={Math.max(1, total)}>
+                <div className="h-full rounded-full bg-teal-300 transition-[width] duration-300" style={{ width: `${progress.percent}%` }} />
             </div>
+            {progress.nearFinish && <p className="mt-1 text-[10px] text-teal-200" aria-live="polite">{t("Only {count} left — keep going!", { count: progress.remaining })}</p>}
         </div>
-    );
+        <div className="pixel-panel shrink-0 rounded-lg bg-slate-900/85 px-3 py-2 text-right">
+            <div className="font-pixel text-[10px] text-emerald-300">{scoreIcon} {caught}/{total}</div>
+            <div className="mt-1 text-[10px] text-emerald-200">{t(scoreLabel)}</div>
+            {misses !== undefined && <div className="mt-1 font-pixel text-[9px] text-rose-300" aria-live="polite">{t("Miss:")} {misses}</div>}
+        </div>
+    </div>;
 }

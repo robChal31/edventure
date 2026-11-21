@@ -1,0 +1,78 @@
+{
+  "pine_tree_small": {
+    "stage": "standing",
+    "chopCount": 5,
+    "dropCount": 2,
+    "tiles": [
+      [34, 35]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 12,
+      "offsetX": 8,
+      "offsetY": -14
+    }
+  },
+  "pine_tree_medium": {
+    "stage": "standing",
+    "chopCount": 5,
+    "dropCount": 3,
+    "tiles": [
+      [36, 37],
+      [20, 21],
+      [4, 5]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 12,
+      "offsetX": 8,
+      "offsetY": -14
+    }
+  },
+  "pine_tree_large": {
+    "stage": "standing",
+    "chopCount": 5,
+    "dropCount": 3,
+    "tiles": [
+      [38, 39],
+      [22, 23],
+      [6, 7]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 12,
+      "offsetX": 8,
+      "offsetY": -14
+    }
+  },
+  "no_leaf_pine": {
+    "stage": "standing",
+    "chopCount": 5,
+    "dropCount": 3,
+    "tiles": [
+      [42, 43],
+      [26, 27],
+      [10, 11]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 12,
+      "offsetX": 8,
+      "offsetY": -14
+    }
+  },
+  "chopped_pine_tree": {
+    "stage": "stump",
+    "chopCount": 3,
+    "dropCount": 2,
+    "tiles": [
+      [44, 45]
+    ],
+    "footprint": {
+      "width": 16,
+      "height": 12,
+      "offsetX": 8,
+      "offsetY": -14
+    }
+  }
+}

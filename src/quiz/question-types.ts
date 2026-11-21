@@ -1,3 +1,4 @@
+import { sanitizeQuestionImage } from "./question-image";
 import {
     COGNITIVE_LEVELS,
     DIFFICULTIES,
@@ -14,6 +15,7 @@ import type {
     Classification,
     MultipleChoiceQuestion,
     Question,
+    QuestionImage,
     QuestionType,
     ShortAnswerQuestion,
     TrueFalseQuestion,
@@ -71,6 +73,7 @@ export type QuestionDraft = {
     id?: string;
     type: QuestionType;
     text: string;
+    image?: QuestionImage;
     explanation: string;
     options: string[];
     correctIndex: number;
@@ -116,6 +119,7 @@ export function draftFromQuestion(question: Question): QuestionDraft {
         ...emptyDraft(question.type),
         id: question.id,
         text: question.text,
+        image: question.image,
         explanation: question.explanation ?? "",
         createdAt: question.createdAt,
         schoolId: question.schoolId,
@@ -149,8 +153,11 @@ export function draftFromQuestion(question: Question): QuestionDraft {
 export function validateDraft(draft: QuestionDraft): string[] {
     const errors: string[] = [];
 
-    if (!draft.text.trim()) {
+    if (!draft.text.trim() && !draft.image) {
         errors.push("Write the question text.");
+    }
+    if (draft.image && (!sanitizeQuestionImage(draft.image) || !draft.image.alt.trim())) {
+        errors.push("Add a valid image and describe it for accessibility.");
     }
 
     // Labels: a question must say what it is for, so it can be found later.
@@ -203,6 +210,7 @@ export function questionFromDraft(
     const base = {
         id,
         text: draft.text.trim(),
+        image: sanitizeQuestionImage(draft.image),
         explanation: draft.explanation.trim() || undefined,
         createdAt: draft.createdAt ?? now,
         updatedAt: now,
@@ -321,6 +329,7 @@ export function sanitizeQuestion(raw: unknown): Question | null {
     const base = {
         id: value.id,
         text: value.text,
+        image: sanitizeQuestionImage(value.image),
         explanation:
             typeof value.explanation === "string" ? value.explanation : undefined,
         createdAt: typeof value.createdAt === "string" ? value.createdAt : undefined,

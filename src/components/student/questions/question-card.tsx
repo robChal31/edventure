@@ -1,6 +1,8 @@
 "use client";
 
-import { useId } from "react";
+import { useI18n } from "@/i18n/provider";
+import { useEffect, useId } from "react";
+import Image from "next/image";
 import type { AnswerValue, Question } from "@/quiz/types";
 import { QuestionTypeBadge, SubjectTag } from "@/components/ui/badges";
 import Confetti from "./confetti";
@@ -13,6 +15,8 @@ export type AnswerReveal = {
     answer: AnswerValue;
     /** Display text of the right answer. */
     correctAnswer: string;
+    /** A wrong practice catch leaves the target available for another attempt. */
+    retryable?: boolean;
 };
 
 type QuestionCardProps = {
@@ -25,6 +29,13 @@ type QuestionCardProps = {
     layout?: "overlay" | "inline";
     /** Heading shown in the card's top bar, from the activity's copy. */
     cue?: string;
+    shortAnswerHint?: string;
+    closing?: boolean;
+    onExited?: () => void;
+    /** Bug-world celebration happens after this card unmounts. Fishing keeps its existing reveal. */
+    celebrate?: boolean;
+    /** A Help / Save dialog is above this card; keep drafts but suspend all answer input. */
+    suspended?: boolean;
 };
 
 /**
@@ -39,11 +50,24 @@ export default function QuestionCard({
     onAnswer,
     layout = "overlay",
     cue = "❓ QUESTION",
+    shortAnswerHint,
+    closing = false,
+    onExited,
+    celebrate = true,
+    suspended = false,
 }: QuestionCardProps) {
+    const { t } = useI18n();
     const titleId = useId();
     const isOverlay = layout === "overlay";
 
-    const motion = reveal ? (reveal.correct ? "lw-glow-green" : "lw-shake") : "lw-pop-in";
+    useEffect(() => {
+        if (!closing || !onExited) return;
+        // animationend may be disabled by reduced motion or a backgrounded tab.
+        const fallback = setTimeout(onExited, 230);
+        return () => clearTimeout(fallback);
+    }, [closing, onExited]);
+
+    const motion = closing ? "lw-close-question" : reveal ? (reveal.correct ? "lw-glow-green" : "lw-shake") : "lw-pop-in";
     const border = reveal
         ? reveal.correct
             ? "border-emerald-500"
@@ -52,15 +76,21 @@ export default function QuestionCard({
 
     const card = (
         <div
-            role="dialog"
+            role={isOverlay ? "dialog" : "group"}
             aria-labelledby={titleId}
-            className={`pointer-events-auto relative w-full max-w-160 overflow-hidden rounded-2xl border-4 bg-slate-900/95 shadow-[0_8px_0_rgba(0,0,0,0.45)] backdrop-blur ${border} ${motion}`}
+            inert={suspended}
+            aria-hidden={suspended || undefined}
+            data-closing={closing || undefined}
+            onAnimationEnd={(event) => {
+                if (closing && event.target === event.currentTarget && event.animationName === "lw-close-question") onExited?.();
+            }}
+            className={`pointer-events-auto relative w-full max-w-160 max-h-[90dvh] overflow-y-auto rounded-2xl border-4 bg-slate-900/95 shadow-[0_8px_0_rgba(0,0,0,0.45)] backdrop-blur ${border} ${motion}`}
         >
-            {reveal?.correct && <Confetti />}
+            {celebrate && reveal?.correct && <Confetti />}
 
             <header className="lw-waves flex items-center justify-between gap-2 px-4 py-2.5">
                 <span className="font-pixel text-[10px] text-sky-50 drop-shadow">
-                    <span className="lw-wiggle mr-1">{cue}</span>
+                    <span className="lw-wiggle mr-1">{t(cue)}</span>
                 </span>
                 <span className="rounded bg-slate-950/50 px-2 py-1 font-pixel text-[10px] text-amber-200">
                     Q {questionNumber}/{total}
@@ -77,33 +107,38 @@ export default function QuestionCard({
                     id={titleId}
                     className="text-lg font-semibold leading-snug text-amber-50 sm:text-xl"
                 >
-                    {question.text}
+                    {question.text || t("Look at the image and answer.")}
                 </h2>
+
+                {question.image && <figure className="mt-3 rounded-xl bg-white/95 p-2">
+                    <Image src={question.image.src} alt={question.image.alt} width={question.image.width} height={question.image.height}
+                        unoptimized className="mx-auto max-h-[28dvh] w-auto max-w-full rounded object-contain" />
+                </figure>}
 
                 <div className="mt-4">
                     {question.type === "multiple_choice" && (
                         <MultipleChoiceAnswers
                             question={question}
                             reveal={reveal}
-                            onAnswer={onAnswer}
-                            keyboardShortcuts={isOverlay}
+                            onAnswer={(answer) => { if (!suspended) onAnswer(answer); }}
+                            keyboardShortcuts={isOverlay && !suspended}
                         />
                     )}
                     {question.type === "true_false" && (
                         <TrueFalseAnswers
                             question={question}
                             reveal={reveal}
-                            onAnswer={onAnswer}
-                            keyboardShortcuts={isOverlay}
+                            onAnswer={(answer) => { if (!suspended) onAnswer(answer); }}
+                            keyboardShortcuts={isOverlay && !suspended}
                         />
                     )}
                     {question.type === "short_answer" && (
-                        <ShortAnswerInput reveal={reveal} onAnswer={onAnswer} autoFocus={isOverlay} />
+                        <ShortAnswerInput reveal={reveal} onAnswer={(answer) => { if (!suspended) onAnswer(answer); }} autoFocus={isOverlay && !suspended} submitHint={shortAnswerHint} />
                     )}
                 </div>
             </div>
 
-            {reveal && <RevealBanner reveal={reveal} explanation={question.explanation} />}
+            {reveal && <RevealBanner reveal={reveal} explanation={question.explanation} trueFalse={question.type === "true_false"} />}
         </div>
     );
 
@@ -121,10 +156,13 @@ export default function QuestionCard({
 function RevealBanner({
     reveal,
     explanation,
+    trueFalse,
 }: {
+    trueFalse: boolean;
     reveal: AnswerReveal;
     explanation?: string;
 }) {
+    const { t } = useI18n();
     return (
         <div
             className={`lw-fade-in border-t-4 px-4 py-3 sm:px-6 ${
@@ -142,14 +180,16 @@ function RevealBanner({
                             : "border-rose-300 text-rose-200"
                     }`}
                 >
-                    {reveal.correct ? "✔ NICE CATCH!" : "✘ IT GOT AWAY…"}
+                    {reveal.correct ? t("✔ NICE CATCH!") : t("✘ IT GOT AWAY…")}
                 </span>
                 {!reveal.correct && (
-                    <span className="text-sm text-slate-200">
-                        Answer: <strong className="text-emerald-300">{reveal.correctAnswer}</strong>
+                    <span className="text-sm text-slate-200">{t("Answer:")}{" "}<strong className="text-emerald-300">{trueFalse ? t(reveal.correctAnswer) : reveal.correctAnswer}</strong>
                     </span>
                 )}
             </div>
+            {reveal.retryable && (
+                <p className="mt-2 text-sm text-amber-200">{t("Practice: cricket escaped, miss +1. Approach and catch it again to retry the same question.")}</p>
+            )}
             {explanation && (
                 <p className="mt-2 text-sm text-slate-300">
                     <span aria-hidden>💡 </span>

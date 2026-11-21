@@ -30,9 +30,8 @@ export type PlayerConfig = {
     controls: KeyboardComponent
     /** Initial facing (defaults to down). */
     facing?: Facing
-    onAxeAction?: () => void;
-    /** Fired when the fishing key (F or Space) is just pressed. */
-    onFishingAction?: () => void;
+    /** The equipment router, not the player/input, chooses an action. */
+    onPrimaryAction?: () => void;
 }
 
 type FishingAnimationHandlers = {
@@ -50,8 +49,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     #fishingFacing: Facing = "down";
     #cancelFishingAnimation?: () => void;
     #inputLocked = false;
-    #onAxeAction?: () => void;
-    #onFishingAction?: () => void;
+    #onPrimaryAction?: () => void;
+    #controlsPaused = false;
+    #cancelAxeAnimation?: () => void;
 
     constructor(config: PlayerConfig) {
         const { scene, position, assetKey, frame } = config;
@@ -66,8 +66,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         body.setOffset(PLAYER_BODY.offsetX, PLAYER_BODY.offsetY);
 
         this.#controls = config.controls
-        this.#onAxeAction = config.onAxeAction
-        this.#onFishingAction = config.onFishingAction
+        this.#onPrimaryAction = config.onPrimaryAction
 
         this.#face(config.facing ?? "down");
         this.#playIdle();
@@ -76,6 +75,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         config.scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             config.scene.events.off(Phaser.Scenes.Events.UPDATE, this.update, this);
             this.#cancelFishingAnimation?.();
+            this.#cancelAxeAnimation?.();
         })
     }
 
@@ -85,15 +85,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     update(): void {
-        // The fishing key goes to the activity first: depending on its phase
-        // it casts, reels in early, or does nothing.
-        if (
-            this.#controls.isFishingKeyJustDown &&
-            !this.#isAxeActionPlaying &&
-            !this.#inputLocked
-        ) {
-            this.#onFishingAction?.();
+        // Consume even blocked presses so answers/overlays never queue a later tool use.
+        const pressed = this.#controls.isPrimaryActionJustDown;
+        if (pressed && !this.#isAxeActionPlaying && !this.#inputLocked && !this.#controlsPaused) {
+            this.#onPrimaryAction?.();
         }
+        if (this.#controlsPaused) (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
 
         if (this.#isAxeActionPlaying || this.#isFishing) {
             return;
@@ -101,28 +98,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.#updateMovement();
 
-        if (this.#inputLocked) {
+        if (this.#inputLocked || this.#controlsPaused) {
             this.#playIdle();
-            return;
-        }
-
-        if (this.#controls.isTestWearAxeAnimationDown) {
-            this.#isWearingAxe = !this.#isWearingAxe;
-
-            if (this.#isWearingAxe) {
-                this.#playIdleAxe();
-            } else {
-                this.#playIdle();
-            }
-
-            return;
-        }
-
-        if (this.#controls.isTestAxeActionAnimationDown) {
-            if (this.#isWearingAxe) {
-                this.#playAxeAction();
-            }
-
             return;
         }
 
@@ -218,10 +195,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    #playAxeAction(): void {
-        if (this.#isAxeActionPlaying) return;
+    public swingAxe(onHit: () => void): void {
+        if (this.isActionBusy || this.#inputLocked || this.#controlsPaused) return;
 
         this.#isAxeActionPlaying = true;
+        (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
 
         let animationKey: string;
 
@@ -239,17 +217,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 break;
         }
 
+        const finish = (animation: Phaser.Animations.Animation) => {
+            if (animation.key !== animationKey) return;
+            this.#cancelAxeAnimation?.();
+            this.#isAxeActionPlaying = false;
+            this.#playIdleAxe();
+        };
+        this.#cancelAxeAnimation = () => {
+            this.off(Phaser.Animations.Events.ANIMATION_COMPLETE, finish);
+            this.#cancelAxeAnimation = undefined;
+        };
+        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, finish);
         this.play(animationKey);
+        onHit();
+    }
 
-        this.#onAxeAction?.();
+    public get isActionBusy(): boolean { return this.#isAxeActionPlaying || this.#isFishing; }
+    public get isInputLocked(): boolean { return this.#inputLocked; }
 
-        this.once(
-            Phaser.Animations.Events.ANIMATION_COMPLETE,
-            () => {
-                this.#isAxeActionPlaying = false;
-                this.#playIdleAxe();
-            }
-        );
+    public setControlsPaused(paused: boolean): void {
+        this.#controlsPaused = paused;
+        if (paused) (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+    }
+
+    public wearAxe(wearing: boolean): void {
+        this.#isWearingAxe = wearing;
+        if (!this.isActionBusy) {
+            if (wearing) this.#playIdleAxe();
+            else this.#playIdle();
+        }
     }
 
     public setInputLocked(locked: boolean): void {
@@ -463,7 +459,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     #updateMovement(): void {
         const body = this.body as Phaser.Physics.Arcade.Body;
 
-        if (this.#inputLocked) {
+        if (this.#inputLocked || this.#controlsPaused) {
             body.setVelocity(0);
             return;
         }

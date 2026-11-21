@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useState } from "react";
 import {
     generateStudentCode,
@@ -23,8 +24,9 @@ type Props = {
 };
 
 export default function StudentEditor({ draft, classes, schools, actorIsSuper, onClose }: Props) {
+    const { t } = useI18n();
     return (
-        <Modal open={draft !== null} title={draft?.id ? "Edit student" : "Add student"} onClose={onClose}>
+        <Modal open={draft !== null} title={draft?.id ? t("Edit student") : t("Add student")} onClose={onClose}>
             {draft && (
                 <Form
                     key={draft.id ?? "new"}
@@ -52,6 +54,7 @@ function Form({
     actorIsSuper: boolean;
     onClose: () => void;
 }) {
+    const { t } = useI18n();
     const [draft, setDraft] = useState(initial);
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -93,23 +96,23 @@ function Form({
             }}
         >
             <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Name">
+                <Field label={t("Name")}>
                     <input
                         value={draft.name}
                         onChange={(event) => patch({ name: event.target.value })}
-                        placeholder="e.g. Ani"
+                        placeholder={t("e.g. Josh")}
                         className={inputClass}
                         autoFocus
                     />
                 </Field>
                 {actorIsSuper ? (
-                    <Field label="School">
+                    <Field label={t("School")}>
                         <select
                             value={draft.schoolId ?? ""}
                             onChange={(event) => patch({ schoolId: event.target.value || null, classId: null })}
                             className={inputClass}
                         >
-                            <option value="">Choose a school…</option>
+                            <option value="">{t("Choose a school…")}</option>
                             {schools.map((school) => (
                                 <option key={school.id} value={school.id}>
                                     {school.name}
@@ -118,23 +121,23 @@ function Form({
                         </select>
                     </Field>
                 ) : null}
-                <Field label="Class">
+                <Field label={t("Class")}>
                     <select
                         value={draft.classId ?? ""}
                         onChange={(event) => patch({ classId: event.target.value || null })}
                         className={inputClass}
                     >
-                        <option value="">No class yet</option>
+                        <option value="">{t("No class yet")}</option>
                         {schoolClasses.map((klass) => (
                             <option key={klass.id} value={klass.id}>
-                                {klass.name} · Grade {klass.grade}
+                                {klass.name}{" "}{t("· Grade")}{" "}{klass.grade}
                             </option>
                         ))}
                     </select>
                 </Field>
             </div>
 
-            <Field label="Login code" hint="Students type this on the student login page.">
+            <Field label={t("Login code")} hint={t("Students type this on the student login page.")}>
                 <div className="flex gap-2">
                     <input
                         value={draft.code}
@@ -142,14 +145,14 @@ function Form({
                         className={`${inputClass} font-pixel tracking-widest`}
                         maxLength={16}
                     />
-                    <PixelButton tone="slate" onClick={regenerate} title="New random code">
+                    <PixelButton tone="slate" onClick={regenerate} title={t("New random code")}>
                         🎲
                     </PixelButton>
                 </div>
             </Field>
 
             <fieldset>
-                <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Avatar</legend>
+                <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("Avatar")}</legend>
                 <div className="flex flex-wrap gap-2">
                     {STUDENT_AVATARS.map((avatar) => (
                         <button
@@ -172,12 +175,8 @@ function Form({
             <ErrorList errors={errors} />
 
             <div className="flex justify-end gap-2">
-                <PixelButton tone="slate" onClick={onClose}>
-                    Cancel
-                </PixelButton>
-                <PixelButton tone="emerald" type="submit">
-                    💾 Save
-                </PixelButton>
+                <PixelButton tone="slate" onClick={onClose}>{t("Cancel")}</PixelButton>
+                <PixelButton tone="emerald" type="submit">{t("💾 Save")}</PixelButton>
             </div>
         </form>
     );

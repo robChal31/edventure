@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useEffect, useState } from "react";
 import type { AnswerValue, MultipleChoiceQuestion } from "@/quiz/types";
 import { isTypingTarget } from "./keyboard";
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function MultipleChoiceAnswers({ question, reveal, onAnswer, keyboardShortcuts = true }: Props) {
+    const { t } = useI18n();
     const [picked, setPicked] = useState<number | null>(null);
     const locked = picked !== null || reveal !== null;
     const selected =
@@ -84,7 +86,7 @@ export default function MultipleChoiceAnswers({ question, reveal, onAnswer, keyb
                             disabled={locked}
                             onClick={() => choose(index)}
                             className={`group relative flex min-h-16 items-center gap-3 rounded-xl border-b-4 px-3 py-3 text-left transition duration-150 disabled:cursor-default ${tile.tile} ${state}`}
-                            aria-label={`Option ${tile.letter}: ${option}`}
+                            aria-label={t("Option {value0}: {value1}", { value0: tile.letter, value1: option })}
                         >
                             <span className="flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-lg bg-black/20 font-pixel text-[10px] leading-none text-white">
                                 <span aria-hidden className="text-sm leading-none">{tile.shape}</span>
@@ -92,15 +94,14 @@ export default function MultipleChoiceAnswers({ question, reveal, onAnswer, keyb
                             </span>
                             <span className="flex-1 text-base font-bold leading-snug">{option}</span>
                             {mark && (
-                                <span className="lw-stamp font-pixel text-lg text-white drop-shadow">{mark}</span>
+                                <span className="lw-stamp font-pixel text-lg text-white drop-shadow">{t(mark)}</span>
                             )}
                         </button>
                     );
                 })}
             </div>
             {!locked && keyboardShortcuts && (
-                <p className="mt-3 hidden text-center font-pixel text-[9px] text-slate-500 sm:block">
-                    TAP AN ANSWER — OR PRESS 1–{question.options.length}
+                <p className="mt-3 hidden text-center font-pixel text-[9px] text-slate-500 sm:block">{t("TAP AN ANSWER — OR PRESS 1–")}{question.options.length}
                 </p>
             )}
         </div>

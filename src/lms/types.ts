@@ -1,4 +1,4 @@
-import type { ActivityId, AnswerRecord, Classification } from "@/quiz/types";
+import type { ActivityId, AnswerRecord, Classification, QuizMode } from "@/quiz/types";
 
 /**
  * Teacher-side (LMS) entities. Questions live in `src/quiz/types.ts`
@@ -93,6 +93,8 @@ export type Quiz = Classification & {
     description: string;
     /** The activity (game map) the quiz is played in. */
     activityId: ActivityId;
+    /** Catching Bugs play rules; legacy quizzes default to assessment. */
+    mode?: QuizMode;
     /** Ordered references into the question bank. */
     questionIds: string[];
     shuffleQuestions: boolean;
@@ -123,4 +125,6 @@ export type QuizAttempt = {
     /** 0–100, rounded. */
     score: number;
     records: AnswerRecord[];
+    mode?: QuizMode;
+    misses?: number;
 };

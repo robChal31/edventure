@@ -13,7 +13,10 @@ import type {
 } from "./taxonomy";
 
 /** Activities (games/maps) a quiz can be played in. See `./activities.ts`. */
-export type ActivityId = "fishing";
+export type ActivityId = "fishing" | "catching_bugs";
+
+/** Assessment resolves each question once; practice lets a wrong target be retried. */
+export type QuizMode = "assessment" | "practice";
 
 // ─────────────────────────────────────────
 // QUESTIONS
@@ -38,10 +41,14 @@ export type Classification = {
     tags?: string[];
 };
 
+export type QuestionImage = { src: string; alt: string; width: number; height: number };
+
 type QuestionBase = Classification & {
     id: string;
     /** The prompt shown to the student. */
     text: string;
+    /** Optional, locally uploaded raster image. */
+    image?: QuestionImage;
     /** Optional "why" shown to the student after they answer. */
     explanation?: string;
     /**
@@ -114,6 +121,8 @@ export type PlayableQuiz = {
     id: string;
     name: string;
     activityId: ActivityId;
+    /** Omitted by legacy quizzes; Catching Bugs defaults to assessment. */
+    mode?: QuizMode;
     questions: Question[];
 };
 
@@ -133,4 +142,8 @@ export type QuizSummary = {
     correct: number;
     incorrect: number;
     records: AnswerRecord[];
+    /** Present for activities that distinguish practice from assessment. */
+    mode?: QuizMode;
+    /** Wrong catch attempts, including practice retries (not final incorrect questions). */
+    misses?: number;
 };

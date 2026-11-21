@@ -33,6 +33,7 @@ export function toPlayableQuiz(
         id: quiz.id,
         name: quiz.name,
         activityId: quiz.activityId,
+        ...(quiz.mode ? { mode: quiz.mode } : {}),
         questions: quiz.shuffleQuestions ? shuffled(resolved, random) : resolved,
     };
 }

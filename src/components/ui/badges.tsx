@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/i18n/provider";
 import { QUESTION_TYPES } from "@/quiz/question-types";
 import type { QuestionType } from "@/quiz/types";
 
@@ -8,14 +11,15 @@ const TYPE_STYLES: Record<QuestionType, string> = {
 };
 
 export function QuestionTypeBadge({ type, compact = false }: { type: QuestionType; compact?: boolean }) {
+    const { t } = useI18n();
     const info = QUESTION_TYPES[type];
     return (
         <span
             className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ${TYPE_STYLES[type]}`}
-            title={info.description}
+            title={t(info.description)}
         >
             <span aria-hidden>{info.icon}</span>
-            {compact ? info.shortLabel : info.label}
+            {t(compact ? info.shortLabel : info.label)}
         </span>
     );
 }
@@ -28,25 +32,23 @@ export function scoreTone(score: number | null): string {
 }
 
 export function ScorePill({ score, label }: { score: number | null; label?: string }) {
+    const { t } = useI18n();
     return (
         <span
             className={`inline-flex min-w-12 items-center justify-center rounded-md px-2 py-0.5 text-xs font-bold tabular-nums ring-1 ${scoreTone(score)}`}
         >
-            {score === null ? "—" : `${score}%`}
+            {score === null ? "—" : t("{value0}%", { value0: score })}
             {label && <span className="ml-1 font-normal opacity-80">{label}</span>}
         </span>
     );
 }
 
 export function StatusPill({ published }: { published: boolean }) {
+    const { t } = useI18n();
     return published ? (
-        <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-500/40">
-            ● Published
-        </span>
+        <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-500/40">{t("● Published")}</span>
     ) : (
-        <span className="rounded-md bg-slate-700/60 px-2 py-0.5 text-[11px] font-semibold text-slate-300 ring-1 ring-slate-600">
-            ○ Draft
-        </span>
+        <span className="rounded-md bg-slate-700/60 px-2 py-0.5 text-[11px] font-semibold text-slate-300 ring-1 ring-slate-600">{t("○ Draft")}</span>
     );
 }
 

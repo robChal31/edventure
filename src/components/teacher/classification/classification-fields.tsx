@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useId } from "react";
 import {
     COGNITIVE_LEVELS,
@@ -48,6 +49,7 @@ export function GradeSelect({
     onChange: (grade: number | null) => void;
     id?: string;
 }) {
+    const { t } = useI18n();
     return (
         <select
             id={id}
@@ -55,12 +57,11 @@ export function GradeSelect({
             onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
             className={inputClass}
         >
-            <option value="">Choose a grade…</option>
+            <option value="">{t("Choose a grade…")}</option>
             {(Object.keys(GRADE_STAGES) as (keyof typeof GRADE_STAGES)[]).map((stage) => (
-                <optgroup key={stage} label={GRADE_STAGES[stage].label}>
+                <optgroup key={stage} label={t(GRADE_STAGES[stage].label)}>
                     {GRADE_STAGES[stage].grades.map((grade) => (
-                        <option key={grade} value={grade}>
-                            Grade {grade}
+                        <option key={grade} value={grade}>{t("Grade")}{" "}{grade}
                         </option>
                     ))}
                 </optgroup>
@@ -76,6 +77,7 @@ export default function ClassificationFields({
     knownTopics = [],
     compact = false,
 }: Props) {
+    const { t } = useI18n();
     const subjectListId = useId();
     const topicListId = useId();
     const subjectOptions = Array.from(new Set([...SUBJECTS, ...knownSubjects])).sort((a, b) =>
@@ -84,23 +86,21 @@ export default function ClassificationFields({
 
     return (
         <fieldset className="flex flex-col gap-4 rounded-xl border-2 border-slate-800 p-4">
-            <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Labels · used to find and report on it
-            </legend>
+            <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("Labels · used to find and report on it")}</legend>
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                    label="Grade (cocok untuk)"
-                    hint={value.grade ? `${GRADE_STAGES[stageOfGrade(value.grade)].label}` : "The class level it is written for."}
+                    label={t("Grade (suitable for)")}
+                    hint={value.grade ? t("{value0}", { value0: t(GRADE_STAGES[stageOfGrade(value.grade)].label) }) : t("The class level it is written for.")}
                 >
                     <GradeSelect value={value.grade} onChange={(grade) => onChange({ grade })} />
                 </Field>
-                <Field label="Subject">
+                <Field label={t("Subject")}>
                     <input
                         value={value.subject}
                         onChange={(event) => onChange({ subject: event.target.value })}
                         list={subjectListId}
-                        placeholder="e.g. Mathematics"
+                        placeholder={t("e.g. Mathematics")}
                         className={inputClass}
                     />
                     <datalist id={subjectListId}>
@@ -109,12 +109,12 @@ export default function ClassificationFields({
                         ))}
                     </datalist>
                 </Field>
-                <Field label="Topic">
+                <Field label={t("Topic")}>
                     <input
                         value={value.topic}
                         onChange={(event) => onChange({ topic: event.target.value })}
                         list={topicListId}
-                        placeholder="e.g. Fractions"
+                        placeholder={t("e.g. Fractions")}
                         className={inputClass}
                     />
                     <datalist id={topicListId}>
@@ -123,16 +123,16 @@ export default function ClassificationFields({
                         ))}
                     </datalist>
                 </Field>
-                <Field label="Curriculum">
+                <Field label={t("Curriculum")}>
                     <select
                         value={value.curriculum}
                         onChange={(event) => onChange({ curriculum: event.target.value as CurriculumId | "" })}
                         className={inputClass}
                     >
-                        <option value="">Choose a curriculum…</option>
+                        <option value="">{t("Choose a curriculum…")}</option>
                         {CURRICULUM_ORDER.map((id) => (
                             <option key={id} value={id}>
-                                {CURRICULA[id].label} — {CURRICULA[id].hint}
+                                {t(CURRICULA[id].label)} — {t(CURRICULA[id].hint)}
                             </option>
                         ))}
                     </select>
@@ -141,7 +141,7 @@ export default function ClassificationFields({
 
             {!compact && (
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Difficulty">
+                    <Field label={t("Difficulty")}>
                         <div className="grid grid-cols-3 gap-1.5">
                             {(Object.keys(DIFFICULTIES) as Difficulty[]).map((level) => (
                                 <button
@@ -155,12 +155,12 @@ export default function ClassificationFields({
                                             : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                                     }`}
                                 >
-                                    {DIFFICULTIES[level].icon} {DIFFICULTIES[level].label}
+                                    {DIFFICULTIES[level].icon} {t(DIFFICULTIES[level].label)}
                                 </button>
                             ))}
                         </div>
                     </Field>
-                    <Field label="Thinking level" hint={COGNITIVE_LEVELS[value.cognitiveLevel].hint}>
+                    <Field label={t("Thinking level")} hint={t(COGNITIVE_LEVELS[value.cognitiveLevel].hint)}>
                         <select
                             value={value.cognitiveLevel}
                             onChange={(event) => onChange({ cognitiveLevel: event.target.value as CognitiveLevel })}
@@ -168,7 +168,7 @@ export default function ClassificationFields({
                         >
                             {(Object.keys(COGNITIVE_LEVELS) as CognitiveLevel[]).map((level) => (
                                 <option key={level} value={level}>
-                                    {COGNITIVE_LEVELS[level].label}
+                                    {t(COGNITIVE_LEVELS[level].label)}
                                 </option>
                             ))}
                         </select>
@@ -176,11 +176,11 @@ export default function ClassificationFields({
                 </div>
             )}
 
-            <Field label="Tags" hint="Comma separated, e.g. fractions, word-problem">
+            <Field label={t("Tags")} hint={t("Comma separated, e.g. fractions, word-problem")}>
                 <input
                     value={value.tagsText}
                     onChange={(event) => onChange({ tagsText: event.target.value })}
-                    placeholder="fractions, word-problem"
+                    placeholder={t("fractions, word-problem")}
                     className={inputClass}
                 />
             </Field>
