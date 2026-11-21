@@ -89,7 +89,8 @@ export const VILLAGE_MAP: WorldMapDefinition = {
         {
             name: "hay_bales",
             assetKey: ASSET_KEYS.HAY_BALES,
-        }
+        },
+        { name: "shadow", assetKey: ASSET_KEYS.FARM_SHADOW },
     ],
 
     layers: {

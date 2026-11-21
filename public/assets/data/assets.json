@@ -76,6 +76,11 @@
       },
       {
         "type": "image",
+        "key": "CLOUDS",
+        "url": "Objects/Props/clouds.png"
+      },
+      {
+        "type": "image",
         "key": "WORLD_BEACH",
         "url": "Tileset/Beach animations tiles.png"
       },

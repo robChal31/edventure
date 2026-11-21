@@ -59,7 +59,6 @@ export class CollisionSystem {
     #setupHigherGroundEdgeCollision(): void {
         const higherGroundEdge = this.worldMap.map.getLayer("higher_ground_edge")
             ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
-            console.log("higherGroundEdge", higherGroundEdge);
 
         const groundCliffEdge = this.worldMap.map.getLayer("ground_cliff")
             ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;

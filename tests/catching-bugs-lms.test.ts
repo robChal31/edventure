@@ -31,11 +31,11 @@ before(() => {
     data.set("learning-world.lms.attempts.v1", JSON.stringify([
         {
             id: "stored-bugs", quizId: summary.quizId, quizName: summary.quizName,
-            studentId: "ani", studentName: "Ani", activityId: "catching_bugs", mode: "practice", misses: 3,
+            studentId: "josh", studentName: "Josh", activityId: "catching_bugs", mode: "practice", misses: 3,
             startedAt: "2026-01-01", completedAt: "2026-01-01", total: 1, records: summary.records,
         },
         {
-            id: "legacy", quizId: "old", studentId: "ani", records: summary.records,
+            id: "legacy", quizId: "old", studentId: "josh", records: summary.records,
             activityId: "unknown-legacy", mode: "invalid", misses: -1,
         },
     ]));
@@ -89,7 +89,7 @@ test("bugs LMS: attempts preserve activity, final scores, mode and retry misses 
     assert.equal(legacy.activityId, "fishing");
     assert.equal(legacy.mode, undefined);
     assert.equal(legacy.misses, undefined);
-    const recorded = recordAttempt({ student: { id: "ani", name: "Ani" }, summary, startedAt: "2026-01-01" });
+    const recorded = recordAttempt({ student: { id: "josh", name: "Josh" }, summary, startedAt: "2026-01-01" });
     assert.equal(recorded.mode, "practice");
     assert.equal(recorded.misses, 3);
     const stored = JSON.parse(data.get("learning-world.lms.attempts.v1")!);
