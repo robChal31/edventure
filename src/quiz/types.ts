@@ -41,10 +41,14 @@ export type Classification = {
     tags?: string[];
 };
 
+export type QuestionImage = { src: string; alt: string; width: number; height: number };
+
 type QuestionBase = Classification & {
     id: string;
     /** The prompt shown to the student. */
     text: string;
+    /** Optional, locally uploaded raster image. */
+    image?: QuestionImage;
     /** Optional "why" shown to the student after they answer. */
     explanation?: string;
     /**

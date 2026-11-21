@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { MC_MAX_OPTIONS, MC_MIN_OPTIONS, type QuestionDraft } from "@/quiz/question-types";
 import { inputClass } from "@/components/ui/panels";
 
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export default function MultipleChoiceFields({ draft, onChange }: Props) {
+    const { t } = useI18n();
     const setOption = (index: number, value: string) => {
         const options = draft.options.slice();
         options[index] = value;
@@ -34,9 +36,7 @@ export default function MultipleChoiceFields({ draft, onChange }: Props) {
 
     return (
         <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Options — select the correct one
-            </legend>
+            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("Options — select the correct one")}</legend>
 
             {draft.options.map((option, index) => {
                 const correct = index === draft.correctIndex;
@@ -57,9 +57,9 @@ export default function MultipleChoiceFields({ draft, onChange }: Props) {
                         <input
                             value={option}
                             onChange={(event) => setOption(index, event.target.value)}
-                            placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                            placeholder={t("Option {value0}", { value0: String.fromCharCode(65 + index) })}
                             className={`${inputClass} border-transparent bg-slate-900`}
-                            aria-label={`Option ${String.fromCharCode(65 + index)}`}
+                            aria-label={t("Option {value0}", { value0: String.fromCharCode(65 + index) })}
                         />
                         <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs font-semibold text-slate-300">
                             <input
@@ -68,15 +68,13 @@ export default function MultipleChoiceFields({ draft, onChange }: Props) {
                                 checked={correct}
                                 onChange={() => onChange({ correctIndex: index })}
                                 className="h-4 w-4 accent-emerald-500"
-                            />
-                            Correct
-                        </label>
+                            />{t("Correct")}</label>
                         <button
                             type="button"
                             onClick={() => removeOption(index)}
                             disabled={draft.options.length <= MC_MIN_OPTIONS}
                             className="rounded px-2 py-1 text-slate-500 hover:bg-slate-800 hover:text-rose-300 disabled:opacity-30"
-                            aria-label={`Remove option ${String.fromCharCode(65 + index)}`}
+                            aria-label={t("Remove option {value0}", { value0: String.fromCharCode(65 + index) })}
                         >
                             ✕
                         </button>
@@ -89,9 +87,7 @@ export default function MultipleChoiceFields({ draft, onChange }: Props) {
                     type="button"
                     onClick={() => onChange({ options: [...draft.options, ""] })}
                     className="self-start rounded-lg border-2 border-dashed border-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:border-sky-500 hover:text-sky-300"
-                >
-                    + Add option
-                </button>
+                >{t("+ Add option")}</button>
             )}
         </fieldset>
     );

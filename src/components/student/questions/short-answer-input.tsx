@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useState } from "react";
 import type { AnswerValue } from "@/quiz/types";
 import type { AnswerReveal } from "./question-card";
@@ -13,7 +14,8 @@ type Props = {
 
 const MAX_LENGTH = 80;
 
-export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true, submitHint = "PRESS ENTER TO REEL IT IN" }: Props) {
+export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true, submitHint = "PRESS ENTER TO ANSWER" }: Props) {
+    const { t } = useI18n();
     const [text, setText] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const locked = submitted || reveal !== null;
@@ -51,8 +53,8 @@ export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true, s
                     onChange={(event) => setText(event.target.value.slice(0, MAX_LENGTH))}
                     disabled={locked}
                     maxLength={MAX_LENGTH}
-                    placeholder="Type your answer…"
-                    aria-label="Your answer"
+                    placeholder={t("Type your answer…")}
+                    aria-label={t("Your answer")}
                     autoComplete="off"
                     autoCapitalize="off"
                     spellCheck={false}
@@ -63,15 +65,13 @@ export default function ShortAnswerInput({ reveal, onAnswer, autoFocus = true, s
             {!reveal && (
                 <div className="mt-3 flex items-center justify-between gap-3">
                     <span className="hidden font-pixel text-[9px] text-slate-500 sm:block">
-                        {submitHint}
+                        {t(submitHint)}
                     </span>
                     <button
                         type="submit"
                         disabled={locked || !text.trim()}
                         className="pixel-btn ml-auto rounded-xl bg-amber-400 px-5 py-3 font-pixel text-xs text-amber-950 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        ✔ SUBMIT
-                    </button>
+                    >{t("✔ SUBMIT")}</button>
                 </div>
             )}
         </form>

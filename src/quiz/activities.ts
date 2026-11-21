@@ -57,7 +57,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
         tagline: "Cast your line and answer to reel in fish.",
         available: true,
         copy: {
-            startLabel: "GO FISH ▶",
+            startLabel: "Play",
             actionLabel: "🎣 CAST",
             waitingActionLabel: "↩ REEL IN",
             questionCue: "🐟 FISH ON THE LINE!",
@@ -83,7 +83,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
             controls: [
                 ["Arrow keys", "Walk"],
                 ["F or Space", "Use equipped tool (rod: cast / reel in)"],
-                ["Equipment slot", "Choose axe, rod or net; shovel/wood unavailable"],
+                ["Equipment slot", "Choose a tool or empty hands"],
                 ["1–4 or A–D", "Choose an answer"],
                 ["T / F", "True or false"],
                 ["Enter", "Submit a short answer"],
@@ -99,7 +99,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
         tagline: "Dekati cricket di ladang, ayunkan net, lalu jawab soal untuk menangkapnya.",
         available: true,
         copy: {
-            startLabel: "KE LADANG ▶",
+            startLabel: "Play",
             actionLabel: "TANGKAP",
             waitingActionLabel: "TANGKAP",
             questionCue: "🦗 CRICKET DALAM JANGKAUAN!",
@@ -128,7 +128,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
             controls: [
                 ["Tombol panah / D-pad", "Berjalan mendekati cricket"],
                 ["F / Spasi / tombol aksi", "Gunakan alat aktif (jaring: cricket terdekat)"],
-                ["Slot alat", "Pilih kapak, pancing atau jaring"],
+                ["Slot alat", "Choose a tool or empty hands"],
                 ["1–6 atau A–F", "Pilih jawaban"],
                 ["T / F", "Benar / salah"],
                 ["Enter", "Kirim jawaban singkat"],

@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useAttempts, useHydrated, useQuestions, useQuizzes, useStudents } from "@/lms/hooks";
 import { attemptStats, completionForQuiz, sortByNewest } from "@/lms/services/reports";
@@ -11,6 +12,7 @@ import { pixelButtonClass } from "@/components/ui/pixel-button";
 import AttemptsTable from "../reports/attempts-table";
 
 export default function TeacherDashboard() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const students = useStudents();
     const questions = useQuestions();
@@ -20,7 +22,7 @@ export default function TeacherDashboard() {
     if (!hydrated) {
         return (
             <>
-                <PageHeader title="Dashboard" />
+                <PageHeader title={t("Dashboard")} />
                 <Skeleton rows={4} />
             </>
         );
@@ -36,19 +38,13 @@ export default function TeacherDashboard() {
     return (
         <>
             <PageHeader
-                title="Dashboard"
-                description="Your class at a glance."
+                title={t("Dashboard")}
+                description={t("Your class at a glance.")}
                 actions={
                     <>
-                        <Link href="/teacher/questions" className={pixelButtonClass("sky", "sm")}>
-                            + Question
-                        </Link>
-                        <Link href="/teacher/quizzes" className={pixelButtonClass("amber", "sm")}>
-                            + Quiz
-                        </Link>
-                        <Link href="/teacher/students" className={pixelButtonClass("emerald", "sm")}>
-                            + Student
-                        </Link>
+                        <Link href="/teacher/questions" className={pixelButtonClass("sky", "sm")}>{t("+ Question")}</Link>
+                        <Link href="/teacher/quizzes" className={pixelButtonClass("amber", "sm")}>{t("+ Quiz")}</Link>
+                        <Link href="/teacher/students" className={pixelButtonClass("emerald", "sm")}>{t("+ Student")}</Link>
                     </>
                 }
             />
@@ -56,32 +52,32 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <StatCard
                     icon="🧒"
-                    label="Students"
+                    label={t("Students")}
                     value={students.length}
-                    hint={classes ? `${classes} class${classes === 1 ? "" : "es"}` : "No classes yet"}
+                    hint={classes ? t("{value0} class{value1}", { value0: classes, value1: classes === 1 ? "" : "es" }) : t("No classes yet")}
                     tone="emerald"
                 />
-                <StatCard icon="❓" label="Questions" value={questions.length} hint={typeCounts} tone="sky" />
+                <StatCard icon="❓" label={t("Questions")} value={questions.length} hint={typeCounts} tone="sky" />
                 <StatCard
                     icon="📜"
-                    label="Quizzes"
+                    label={t("Quizzes")}
                     value={quizzes.length}
-                    hint={`${published} published · ${quizzes.length - published} draft`}
+                    hint={t("{value0} published · {value1} draft", { value0: published, value1: quizzes.length - published })}
                     tone="amber"
                 />
                 <StatCard
                     icon="🎯"
-                    label="Average score"
+                    label={t("Average score")}
                     value={stats.averageScore === null ? "—" : `${stats.averageScore}%`}
-                    hint={`${stats.count} attempt${stats.count === 1 ? "" : "s"}`}
+                    hint={t("{value0} attempt{value1}", { value0: stats.count, value1: stats.count === 1 ? "" : "s" })}
                     tone="violet"
                 />
             </div>
 
             <section className="mt-8">
-                <h2 className="mb-3 font-pixel text-xs text-sky-300">QUIZ PROGRESS</h2>
+                <h2 className="mb-3 font-pixel text-xs text-sky-300">{t("QUIZ PROGRESS")}</h2>
                 {quizzes.length === 0 ? (
-                    <p className="text-sm text-slate-500">No quizzes yet.</p>
+                    <p className="text-sm text-slate-500">{t("No quizzes yet.")}</p>
                 ) : (
                     <div className="grid gap-3 md:grid-cols-2">
                         {quizzes.map((quiz) => {
@@ -102,17 +98,16 @@ export default function TeacherDashboard() {
                                             <div className="truncate font-semibold text-slate-100">{quiz.name}</div>
                                             <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
                                                 <StatusPill published={quiz.published} />
-                                                <span>{resolveQuizQuestions(quiz, questions).length} questions</span>
+                                                <span>{resolveQuizQuestions(quiz, questions).length}{" "}{t("questions")}</span>
                                             </div>
                                         </div>
-                                        <ScorePill score={quizStats.averageScore} label="avg" />
+                                        <ScorePill score={quizStats.averageScore} label={t("avg")} />
                                     </div>
                                     <div className="mt-3">
                                         <div className="flex justify-between text-xs text-slate-400">
-                                            <span>Completed</span>
+                                            <span>{t("Completed")}</span>
                                             <span>
-                                                {completion.completed}/{completion.assigned} students
-                                            </span>
+                                                {completion.completed}/{completion.assigned}{" "}{t("students")}</span>
                                         </div>
                                         <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-slate-800">
                                             <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
@@ -127,15 +122,13 @@ export default function TeacherDashboard() {
 
             <section className="mt-8">
                 <div className="mb-3 flex items-center justify-between">
-                    <h2 className="font-pixel text-xs text-sky-300">RECENT ATTEMPTS</h2>
-                    <Link href="/teacher/reports" className="text-xs font-semibold text-sky-300 hover:underline">
-                        All reports →
-                    </Link>
+                    <h2 className="font-pixel text-xs text-sky-300">{t("RECENT ATTEMPTS")}</h2>
+                    <Link href="/teacher/reports" className="text-xs font-semibold text-sky-300 hover:underline">{t("All reports →")}</Link>
                 </div>
                 <AttemptsTable
                     attempts={sortByNewest(attempts).slice(0, 8)}
                     students={students}
-                    emptyText="No one has played yet. Share the student codes from the Students page — results appear here live."
+                    emptyText={t("No one has played yet. Share the student codes from the Students page — results appear here live.")}
                 />
             </section>
         </>

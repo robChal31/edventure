@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import type { QuestionDraft } from "@/quiz/question-types";
 
 type Props = {
@@ -8,11 +9,10 @@ type Props = {
 };
 
 export default function TrueFalseFields({ draft, onChange }: Props) {
+    const { t } = useI18n();
     return (
         <fieldset>
-            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                The statement is…
-            </legend>
+            <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("The statement is…")}</legend>
             <div className="grid grid-cols-2 gap-3">
                 {[true, false].map((value) => {
                     const active = draft.correctAnswer === value;
@@ -32,7 +32,7 @@ export default function TrueFalseFields({ draft, onChange }: Props) {
                             aria-pressed={active}
                             className={`flex items-center justify-center gap-2 rounded-xl border-4 px-4 py-4 font-pixel text-xs transition ${tone}`}
                         >
-                            {value ? "✔ TRUE" : "✘ FALSE"}
+                            {value ? t("✔ TRUE") : t("✘ FALSE")}
                         </button>
                     );
                 })}

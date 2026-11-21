@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useMemo, useState } from "react";
 import { canManageRoster, isSuperAdmin, visibleClasses, visibleStudents } from "@/lms/access";
 import {
@@ -24,6 +25,7 @@ import { EmptyState, ErrorList, Field, inputClass, PageHeader, Skeleton } from "
 import PixelButton from "@/components/ui/pixel-button";
 
 export default function ClassesManager() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const actor = useSignedInStaff();
     const classes = useClasses();
@@ -52,11 +54,9 @@ export default function ClassesManager() {
     return (
         <>
             <PageHeader
-                title="Classes"
+                title={t("Classes")}
                 description={
-                    canEdit
-                        ? "Classes group students and decide which teacher sees whom. Students are added on the Students page."
-                        : "The classes you teach and their students."
+                    canEdit ? t("Classes group students and decide which teacher sees whom. Students are added on the Students page.") : t("The classes you teach and their students.")
                 }
                 actions={
                     canEdit ? (
@@ -69,9 +69,7 @@ export default function ClassesManager() {
                                     grade: 4,
                                 })
                             }
-                        >
-                            + New class
-                        </PixelButton>
+                        >{t("+ New class")}</PixelButton>
                     ) : null
                 }
             />
@@ -81,9 +79,9 @@ export default function ClassesManager() {
                     value={schoolFilter}
                     onChange={(e) => setSchoolFilter(e.target.value)}
                     className={`${inputClass} mb-4 sm:w-64`}
-                    aria-label="Filter by school"
+                    aria-label={t("Filter by school")}
                 >
-                    <option value="">All schools</option>
+                    <option value="">{t("All schools")}</option>
                     {schools.map((s) => (
                         <option key={s.id} value={s.id}>
                             {s.name}
@@ -93,8 +91,8 @@ export default function ClassesManager() {
             )}
 
             {scoped.length === 0 ? (
-                <EmptyState icon="🧺" title="NO CLASSES YET">
-                    {canEdit ? "Create a class such as 4A, then add students to it." : "No classes are assigned to you yet."}
+                <EmptyState icon="🧺" title={t("NO CLASSES YET")}>
+                    {canEdit ? t("Create a class such as 4A, then add students to it.") : t("No classes are assigned to you yet.")}
                 </EmptyState>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -108,29 +106,26 @@ export default function ClassesManager() {
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
                                         <h2 className="font-pixel text-sm text-amber-200">{klass.name}</h2>
-                                        <p className="mt-1 text-xs text-slate-400">
-                                            Grade {klass.grade}
+                                        <p className="mt-1 text-xs text-slate-400">{t("Grade")}{" "}{klass.grade}
                                             {isSuperAdmin(actor) && ` · ${schoolName(klass.schoolId)}`}
                                         </p>
                                     </div>
                                     <span className="rounded-md bg-slate-800 px-2 py-1 text-xs tabular-nums text-slate-300">
-                                        {members.length} student{members.length === 1 ? "" : "s"}
+                                        {t("{count} student{suffix}", { count: members.length, suffix: members.length === 1 ? "" : "s" })}
                                     </span>
                                 </div>
 
                                 <p className="mt-3 text-xs text-slate-400">
-                                    <span className="font-semibold text-slate-300">Teachers: </span>
-                                    {teachers.length ? teachers.map((t) => t.name).join(", ") : "none yet"}
+                                    <span className="font-semibold text-slate-300">{t("Teachers:")}{" "}</span>
+                                    {teachers.length ? teachers.map((t) => t.name).join(", ") : t("none yet")}
                                 </p>
                                 <p className="mt-1 line-clamp-2 text-xs text-slate-500">
-                                    {members.length ? members.map((m) => `${m.avatar} ${m.name}`).join(" · ") : "No students"}
+                                    {members.length ? members.map((m) => `${m.avatar} ${m.name}`).join(" · ") : t("No students")}
                                 </p>
 
                                 {canEdit && (
                                     <div className="mt-4 flex justify-end gap-1.5">
-                                        <PixelButton tone="sky" size="sm" onClick={() => setEditing({ ...klass })}>
-                                            ✎ Edit
-                                        </PixelButton>
+                                        <PixelButton tone="sky" size="sm" onClick={() => setEditing({ ...klass })}>{t("✎ Edit")}</PixelButton>
                                         <PixelButton tone="rose" size="sm" onClick={() => setDeleting(klass)}>
                                             🗑
                                         </PixelButton>
@@ -146,14 +141,12 @@ export default function ClassesManager() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete class?"
+                title={t("Delete class?")}
                 danger
-                confirmLabel="Delete class"
+                confirmLabel={t("Delete class")}
                 message={
                     <p>
-                        {deleting?.name} will be removed. Its students stay in the school but without a class, and
-                        quizzes assigned to this class lose it.
-                    </p>
+                        {deleting?.name}{" "}{t("will be removed. Its students stay in the school but without a class, and quizzes assigned to this class lose it.")}</p>
                 }
                 onCancel={() => setDeleting(null)}
                 onConfirm={() => {
@@ -176,8 +169,9 @@ function ClassEditor({
     schoolsAvailable: readonly { id: string; name: string }[];
     actorIsSuper: boolean;
 }) {
+    const { t } = useI18n();
     return (
-        <Modal open={draft !== null} title={draft?.id ? "Edit class" : "New class"} onClose={onClose}>
+        <Modal open={draft !== null} title={draft?.id ? t("Edit class") : t("New class")} onClose={onClose}>
             {draft && (
                 <ClassForm
                     key={draft.id ?? "new"}
@@ -202,6 +196,7 @@ function ClassForm({
     schools: readonly { id: string; name: string }[];
     actorIsSuper: boolean;
 }) {
+    const { t } = useI18n();
     const [draft, setDraft] = useState(initial);
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -221,7 +216,7 @@ function ClassForm({
             }}
         >
             <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Class name" hint="e.g. 4A">
+                <Field label={t("Class name")} hint="e.g. 4A">
                     <input
                         value={draft.name}
                         onChange={(e) => setDraft({ ...draft, name: e.target.value })}
@@ -229,22 +224,21 @@ function ClassForm({
                         autoFocus
                     />
                 </Field>
-                <Field label="Grade">
+                <Field label={t("Grade")}>
                     <select
                         value={draft.grade}
                         onChange={(e) => setDraft({ ...draft, grade: Number(e.target.value) })}
                         className={inputClass}
                     >
                         {GRADES.map((g) => (
-                            <option key={g} value={g}>
-                                Grade {g}
+                            <option key={g} value={g}>{t("Grade")}{" "}{g}
                             </option>
                         ))}
                     </select>
                 </Field>
             </div>
             {actorIsSuper && (
-                <Field label="School">
+                <Field label={t("School")}>
                     <select
                         value={draft.schoolId}
                         onChange={(e) => setDraft({ ...draft, schoolId: e.target.value })}
@@ -260,8 +254,8 @@ function ClassForm({
             )}
             <ErrorList errors={errors} />
             <div className="flex justify-end gap-2">
-                <PixelButton tone="slate" onClick={onClose}>Cancel</PixelButton>
-                <PixelButton tone="emerald" type="submit">💾 Save class</PixelButton>
+                <PixelButton tone="slate" onClick={onClose}>{t("Cancel")}</PixelButton>
+                <PixelButton tone="emerald" type="submit">{t("💾 Save class")}</PixelButton>
             </div>
         </form>
     );

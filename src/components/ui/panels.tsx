@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/i18n/provider";
 import type { ReactNode } from "react";
 
 export function StatCard({
@@ -81,8 +84,9 @@ export function PageHeader({
 }
 
 export function Skeleton({ rows = 3 }: { rows?: number }) {
+    const { t } = useI18n();
     return (
-        <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading">
+        <div className="flex flex-col gap-3" aria-busy="true" aria-label={t("Loading")}>
             {Array.from({ length: rows }).map((_, i) => (
                 <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-800/70" />
             ))}
@@ -114,11 +118,12 @@ export const inputClass =
     "w-full rounded-lg border-2 border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none";
 
 export function ErrorList({ errors }: { errors: string[] }) {
+    const { t } = useI18n();
     if (errors.length === 0) return null;
     return (
         <ul className="rounded-lg border-2 border-rose-700 bg-rose-950/50 px-4 py-2 text-sm text-rose-200">
             {errors.map((error) => (
-                <li key={error}>• {error}</li>
+                <li key={error}>• {t(error)}</li>
             ))}
         </ul>
     );

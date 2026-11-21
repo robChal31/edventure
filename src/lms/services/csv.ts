@@ -38,7 +38,7 @@ export function attemptsToCsv(attempts: readonly QuizAttempt[]): string {
                     attempt.score,
                     index + 1,
                     QUESTION_TYPES[record.question.type].label,
-                    record.question.text,
+                    record.question.text || record.question.image?.alt || "",
                     describeAnswer(record.question, record.answer),
                     describeCorrectAnswer(record.question),
                     record.correct ? "yes" : "no",

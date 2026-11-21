@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Student } from "@/lms/types";
@@ -21,6 +22,7 @@ import BulkAddStudents from "./bulk-add-students";
 import StudentEditor from "./student-editor";
 
 export default function StudentManager() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const actor = useSignedInStaff();
     const allStudents = useStudents();
@@ -65,17 +67,13 @@ export default function StudentManager() {
     return (
         <>
             <PageHeader
-                title="Students"
-                description="Each student logs in at /student with their code. Results show up in their report."
+                title={t("Students")}
+                description={t("Each student logs in at /student with their code. Results show up in their report.")}
                 actions={
                     canEdit ? (
                         <>
-                            <PixelButton tone="slate" onClick={() => setBulkOpen(true)}>
-                                ⇪ Paste a class list
-                            </PixelButton>
-                            <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft(defaultTarget.schoolId, null))}>
-                                + Add student
-                            </PixelButton>
+                            <PixelButton tone="slate" onClick={() => setBulkOpen(true)}>{t("⇪ Paste a class list")}</PixelButton>
+                            <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft(defaultTarget.schoolId, null))}>{t("+ Add student")}</PixelButton>
                         </>
                     ) : null
                 }
@@ -85,20 +83,19 @@ export default function StudentManager() {
                 <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="🔎 Search by name…"
+                    placeholder={t("🔎 Search by name…")}
                     className={`${inputClass} sm:max-w-xs`}
-                    aria-label="Search students"
+                    aria-label={t("Search students")}
                 />
                 <select
                     value={classFilter}
                     onChange={(e) => setClassFilter(e.target.value)}
                     className={`${inputClass} sm:w-44`}
-                    aria-label="Filter by class"
+                    aria-label={t("Filter by class")}
                 >
-                    <option value="">All classes</option>
+                    <option value="">{t("All classes")}</option>
                     {classes.map((klass) => (
-                        <option key={klass.id} value={klass.id}>
-                            Class {klass.name}
+                        <option key={klass.id} value={klass.id}>{t("Class")}{" "}{klass.name}
                         </option>
                     ))}
                 </select>
@@ -109,30 +106,26 @@ export default function StudentManager() {
             ) : students.length === 0 ? (
                 <EmptyState
                     icon="🧒"
-                    title="NO STUDENTS YET"
+                    title={t("NO STUDENTS YET")}
                     action={
                         canEdit ? (
-                            <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft(defaultTarget.schoolId, null))}>
-                                + Add your first student
-                            </PixelButton>
+                            <PixelButton tone="emerald" onClick={() => setEditing(emptyStudentDraft(defaultTarget.schoolId, null))}>{t("+ Add your first student")}</PixelButton>
                         ) : undefined
                     }
                 >
-                    {canEdit
-                        ? "Add students one by one or paste a whole class list."
-                        : "No students are in your classes yet. Your school admin adds them."}
+                    {canEdit ? t("Add students one by one or paste a whole class list.") : t("No students are in your classes yet. Your school admin adds them.")}
                 </EmptyState>
             ) : (
                 <div className="overflow-x-auto rounded-xl border-2 border-slate-800">
                     <table className="w-full min-w-[720px] text-left text-sm">
                         <thead className="bg-slate-900 text-[11px] uppercase tracking-wide text-slate-400">
                             <tr>
-                                <th className="px-4 py-2.5">Student</th>
-                                <th className="px-4 py-2.5">Class</th>
-                                <th className="px-4 py-2.5">Login code</th>
-                                <th className="px-4 py-2.5">Quizzes done</th>
-                                <th className="px-4 py-2.5">Average</th>
-                                <th className="px-4 py-2.5">Last played</th>
+                                <th className="px-4 py-2.5">{t("Student")}</th>
+                                <th className="px-4 py-2.5">{t("Class")}</th>
+                                <th className="px-4 py-2.5">{t("Login code")}</th>
+                                <th className="px-4 py-2.5">{t("Quizzes done")}</th>
+                                <th className="px-4 py-2.5">{t("Average")}</th>
+                                <th className="px-4 py-2.5">{t("Last played")}</th>
                                 <th className="px-4 py-2.5" />
                             </tr>
                         </thead>
@@ -161,11 +154,11 @@ export default function StudentManager() {
                                                 <code className="rounded bg-slate-800 px-2 py-1 font-pixel text-[10px] tracking-widest text-amber-300">
                                                     {student.code}
                                                 </code>
-                                                <button type="button" onClick={() => copyCode(student)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title="Copy code">
+                                                <button type="button" onClick={() => copyCode(student)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title={t("Copy code")}>
                                                     {copied === student.id ? "✔" : "⧉"}
                                                 </button>
                                                 {canEdit && (
-                                                    <button type="button" onClick={() => regenerateStudentCode(student.id)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title="New code">
+                                                    <button type="button" onClick={() => regenerateStudentCode(student.id)} className="rounded px-1.5 py-1 text-xs text-slate-400 hover:bg-slate-800" title={t("New code")}>
                                                         🎲
                                                     </button>
                                                 )}
@@ -178,24 +171,18 @@ export default function StudentManager() {
                                         <td className="px-4 py-2.5 text-slate-400">{formatRelative(stats.lastCompletedAt)}</td>
                                         <td className="px-4 py-2.5">
                                             <div className="flex justify-end gap-1">
-                                                <Link href={`/teacher/students/${student.id}`} className="rounded px-2 py-1 text-xs font-semibold text-sky-300 hover:bg-slate-800">
-                                                    Report
-                                                </Link>
+                                                <Link href={`/teacher/students/${student.id}`} className="rounded px-2 py-1 text-xs font-semibold text-sky-300 hover:bg-slate-800">{t("Report")}</Link>
                                                 {canEdit && (<>
                                                 <button
                                                     type="button"
                                                     onClick={() => setEditing({ ...student })}
                                                     className="rounded px-2 py-1 text-xs font-semibold text-slate-300 hover:bg-slate-800"
-                                                >
-                                                    Edit
-                                                </button>
+                                                >{t("Edit")}</button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setDeleting(student)}
                                                     className="rounded px-2 py-1 text-xs font-semibold text-rose-300 hover:bg-slate-800"
-                                                >
-                                                    Delete
-                                                </button>
+                                                >{t("Delete")}</button>
                                                 </>)}
                                             </div>
                                         </td>
@@ -212,17 +199,12 @@ export default function StudentManager() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete student?"
+                title={t("Delete student?")}
                 danger
-                confirmLabel="Delete"
+                confirmLabel={t("Delete")}
                 message={
                     <p>
-                        {deleting?.avatar} {deleting?.name} will be removed
-                        {deletingAttempts > 0
-                            ? ` together with ${deletingAttempts} quiz attempt${deletingAttempts === 1 ? "" : "s"}`
-                            : ""}
-                        . This can&apos;t be undone.
-                    </p>
+                        {deleting?.avatar} {deleting?.name}{" "}{t("will be removed")}{deletingAttempts > 0 ? t(" together with {value0} quiz attempt{value1}", { value0: deletingAttempts, value1: deletingAttempts === 1 ? "" : "s" }) : ""}{t(". This can't be undone.")}</p>
                 }
                 onCancel={() => setDeleting(null)}
                 onConfirm={() => {

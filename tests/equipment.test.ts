@@ -15,8 +15,8 @@ import { QuestionCloseGate } from "../src/game/activities/catching-bugs/question
 const roaming: EquipmentContext = { phase: "idle", overlayOpen: false, travelling: false, playerBusy: false, playerLocked: false };
 
 test("equipment: map defaults do not prevent selecting tools; unimplemented tools have no route", () => {
-    assert.equal(defaultEquipment(), "axe");
-    assert.equal(defaultEquipment(null), "axe");
+    assert.equal(defaultEquipment(), "none");
+    assert.equal(defaultEquipment(null), "none");
     assert.equal(defaultEquipment("fishing"), "rod");
     assert.equal(defaultEquipment("catching_bugs"), "net");
     for (const activity of [null, "fishing", "catching_bugs"] as const) {
@@ -190,6 +190,7 @@ test("modal receipt: restart/travel and replacement requests invalidate old or c
 
 test("equipment art: every icon/slot/marker is an existing original sheet", () => {
     for (const tool of Object.values(EQUIPMENT)) {
+        if (!tool.icon) { assert.equal(tool.id, "none"); continue; }
         const path = `public${tool.icon.url}`;
         assert.ok(existsSync(path), tool.id);
         const png = readFileSync(path);

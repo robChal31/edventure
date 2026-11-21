@@ -12,6 +12,7 @@ import { removeQuestionFromQuizzes } from "./quiz-repository";
 /** The question bank: the global premade bank plus each school's questions. */
 export const questionStore = createLocalCollection<Question>({
     key: "learning-world.lms.questions.v1",
+    requirePersistence: true,
     sanitize: sanitizeQuestion,
     seed: seedQuestions,
 });

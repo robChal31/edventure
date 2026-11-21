@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useMemo, useState } from "react";
 import { ACTIVITIES, getActivity } from "@/quiz/activities";
 import { emptyDraft, type QuestionDraft } from "@/quiz/question-types";
@@ -31,8 +32,9 @@ type QuizEditorProps = {
 };
 
 export default function QuizEditor({ draft, onClose }: QuizEditorProps) {
+    const { t } = useI18n();
     return (
-        <Modal open={draft !== null} title={draft?.id ? "Edit quiz" : "New quiz"} onClose={onClose} size="xl">
+        <Modal open={draft !== null} title={draft?.id ? t("Edit quiz") : t("New quiz")} onClose={onClose} size="xl">
             {draft && <EditorForm key={draft.id ?? "new"} initial={draft} onClose={onClose} />}
         </Modal>
     );
@@ -67,8 +69,9 @@ function Toggle({
 
 /** The activity (game map) the quiz is played in. */
 function ActivityPicker({ value, onChange }: { value: ActivityId; onChange: (id: ActivityId) => void }) {
+    const { t } = useI18n();
     return (
-        <Field label="Activity (map)" hint="The game world students play the quiz in. More maps are coming.">
+        <Field label={t("Activity (map)")} hint={t("The game world students play the quiz in. More maps are coming.")}>
             <div className="grid gap-2 sm:grid-cols-2">
                 {ACTIVITIES.map((activity) => {
                     const active = value === activity.id;
@@ -84,16 +87,16 @@ function ActivityPicker({ value, onChange }: { value: ActivityId; onChange: (id:
                             }`}
                         >
                             <span className="text-2xl" aria-hidden>{activity.icon}</span>
-                            <span className="text-sm font-bold text-slate-100">{activity.label}</span>
-                            <span className="text-[11px] text-slate-400">📍 {activity.location}</span>
-                            <span className="text-[11px] text-slate-500">{activity.tagline}</span>
+                            <span className="text-sm font-bold text-slate-100">{t(activity.label)}</span>
+                            <span className="text-[11px] text-slate-400">📍 {t(activity.location)}</span>
+                            <span className="text-[11px] text-slate-500">{t(activity.tagline)}</span>
                         </button>
                     );
                 })}
                 <div className="flex flex-col items-start gap-1 rounded-xl border-2 border-dashed border-slate-800 p-3 text-slate-500">
                     <span className="text-2xl" aria-hidden>🗺️</span>
-                    <span className="text-sm font-semibold">More maps</span>
-                    <span className="text-[11px]">Coming soon</span>
+                    <span className="text-sm font-semibold">{t("More maps")}</span>
+                    <span className="text-[11px]">{t("Coming soon")}</span>
                 </div>
             </div>
         </Field>
@@ -101,6 +104,7 @@ function ActivityPicker({ value, onChange }: { value: ActivityId; onChange: (id:
 }
 
 function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => void }) {
+    const { t } = useI18n();
     const actor = useSignedInStaff();
     const allQuestions = useQuestions();
     const allStudents = useStudents();
@@ -142,11 +146,11 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
     };
 
     const activity = getActivity(draft.activityId);
-    const ownerName = draft.schoolId === null || draft.schoolId === undefined ? "the global bank (everyone)" : schoolName(draft.schoolId);
+    const ownerName = draft.schoolId === null || draft.schoolId === undefined ? t("the global bank (everyone)") : schoolName(draft.schoolId);
     const everyoneLabel =
         draft.schoolId === null || draft.schoolId === undefined
-            ? "Every student on the platform."
-            : `Every student of ${schools.find((s) => s.id === draft.schoolId)?.name ?? "this school"}.`;
+            ? t("Every student on the platform.")
+            : t("Every student of {school}.", { school: schools.find((s) => s.id === draft.schoolId)?.name ?? t("this school") });
 
     return (
         <>
@@ -156,24 +160,24 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                     save();
                 }}
             >
-                <p className="mb-4 text-xs text-slate-500">Saved to: {ownerName}</p>
+                <p className="mb-4 text-xs text-slate-500">{t("Saved to:")}{" "}{ownerName}</p>
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                     <div className="flex flex-col gap-4">
-                        <Field label="Quiz name">
+                        <Field label={t("Quiz name")}>
                             <input
                                 value={draft.name}
                                 onChange={(event) => patch({ name: event.target.value })}
-                                placeholder="e.g. Cells and Organisms"
+                                placeholder={t("e.g. Cells and Organisms")}
                                 className={inputClass}
                                 autoFocus
                             />
                         </Field>
-                        <Field label="Description" hint="Shown on the student's quest board.">
+                        <Field label={t("Description")} hint={t("Shown on the student's quest board.")}>
                             <textarea
                                 value={draft.description}
                                 onChange={(event) => patch({ description: event.target.value })}
                                 rows={2}
-                                placeholder="What is this quest about?"
+                                placeholder={t("What is this quest about?")}
                                 className={inputClass}
                             />
                         </Field>
@@ -185,20 +189,19 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                             knownTopics={topics}
                             compact
                         />
-                        <p className="-mt-2 text-[11px] text-slate-500">
-                            Quiz labels: {draft.curriculum ? CURRICULA[draft.curriculum as CurriculumId].label : "curriculum not set"}
+                        <p className="-mt-2 text-[11px] text-slate-500">{t("Quiz labels:")}{" "}{draft.curriculum ? t(CURRICULA[draft.curriculum as CurriculumId].label) : t("curriculum not set")}
                         </p>
 
                         <ActivityPicker value={draft.activityId} onChange={(activityId) => patch({ activityId })} />
                         {draft.activityId === "catching_bugs" && (
-                            <Field label="Mode Catching Bugs" hint="Tidak ada nyawa barn. Setiap jawaban salah menambah miss.">
+                            <Field label={t("Catching Bugs mode")} hint={t("There are no barn lives. Each wrong answer adds a miss.")}>
                                 <select
                                     value={draft.mode}
                                     onChange={(event) => patch({ mode: event.target.value === "practice" ? "practice" : "assessment" })}
                                     className={inputClass}
                                 >
-                                    <option value="assessment">Asesmen — satu percobaan per soal</option>
-                                    <option value="practice">Latihan — cricket yang lepas bisa dicoba lagi</option>
+                                    <option value="assessment">{t("Assessment — one attempt per question")}</option>
+                                    <option value="practice">{t("Practice — escaped crickets can be retried")}</option>
                                 </select>
                             </Field>
                         )}
@@ -207,14 +210,14 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                         <Toggle
                             checked={draft.published}
                             onChange={(published) => patch({ published })}
-                            label="Published"
-                            hint="Visible on assigned students' quest boards. Untick to keep it as a draft."
+                            label={t("Published")}
+                            hint={t("Visible on assigned students' quest boards. Untick to keep it as a draft.")}
                         />
                         <Toggle
                             checked={draft.shuffleQuestions}
                             onChange={(shuffleQuestions) => patch({ shuffleQuestions })}
-                            label="Shuffle questions"
-                            hint="Every play-through asks the questions in a new order."
+                            label={t("Shuffle questions")}
+                            hint={t("Every play-through asks the questions in a new order.")}
                         />
 
                         <AssignmentPicker
@@ -237,12 +240,8 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                 <div className="mt-5 flex flex-col gap-3 border-t-2 border-slate-800 pt-4">
                     <ErrorList errors={errors} />
                     <div className="flex justify-end gap-2">
-                        <PixelButton tone="slate" onClick={onClose}>
-                            Cancel
-                        </PixelButton>
-                        <PixelButton tone="emerald" type="submit">
-                            💾 Save quiz
-                        </PixelButton>
+                        <PixelButton tone="slate" onClick={onClose}>{t("Cancel")}</PixelButton>
+                        <PixelButton tone="emerald" type="submit">{t("💾 Save quiz")}</PixelButton>
                     </div>
                 </div>
             </form>
@@ -252,7 +251,7 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                 draft={newQuestion}
                 subjects={subjects}
                 topics={topics}
-                ownerLabel={authoringSchoolId(actor) === null ? "Global bank" : schoolName(authoringSchoolId(actor))}
+                ownerLabel={authoringSchoolId(actor) === null ? t("Global bank") : schoolName(authoringSchoolId(actor))}
                 onClose={() => setNewQuestion(null)}
                 onSaved={(question: Question) => patch({ questionIds: [...draft.questionIds, question.id] })}
             />

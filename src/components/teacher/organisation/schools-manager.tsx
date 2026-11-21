@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useState } from "react";
 import { canManageSchools } from "@/lms/access";
 import { useClasses, useHydrated, useSchools, useSignedInStaff, useStaff, useStudents } from "@/lms/hooks";
@@ -17,6 +18,7 @@ import PixelButton from "@/components/ui/pixel-button";
 import { NoAccess } from "./access-notice";
 
 export default function SchoolsManager() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const actor = useSignedInStaff();
     const schools = useSchools();
@@ -29,7 +31,7 @@ export default function SchoolsManager() {
 
     if (!hydrated) return <Skeleton rows={3} />;
     if (!canManageSchools(actor)) {
-        return <NoAccess>Only the developer account creates and removes schools.</NoAccess>;
+        return <NoAccess>{t("Only the developer account creates and removes schools.")}</NoAccess>;
     }
 
     const counts = (schoolId: string) => ({
@@ -41,19 +43,15 @@ export default function SchoolsManager() {
     return (
         <>
             <PageHeader
-                title="Schools"
-                description="Each school has its own admin, classes, teachers and students. Questions and quizzes made by a school stay in that school."
+                title={t("Schools")}
+                description={t("Each school has its own admin, classes, teachers and students. Questions and quizzes made by a school stay in that school.")}
                 actions={
-                    <PixelButton tone="amber" onClick={() => setEditing({ name: "", code: "" })}>
-                        + New school
-                    </PixelButton>
+                    <PixelButton tone="amber" onClick={() => setEditing({ name: "", code: "" })}>{t("+ New school")}</PixelButton>
                 }
             />
 
             {schools.length === 0 ? (
-                <EmptyState icon="🏫" title="NO SCHOOLS YET">
-                    Create a school, then add its admin and classes.
-                </EmptyState>
+                <EmptyState icon="🏫" title={t("NO SCHOOLS YET")}>{t("Create a school, then add its admin and classes.")}</EmptyState>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2">
                     {schools.map((school) => {
@@ -67,14 +65,12 @@ export default function SchoolsManager() {
                                     </div>
                                 </div>
                                 <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-                                    <Stat label="Classes" value={c.classes} />
-                                    <Stat label="Students" value={c.students} />
-                                    <Stat label="Staff" value={c.staff} />
+                                    <Stat label={t("Classes")} value={c.classes} />
+                                    <Stat label={t("Students")} value={c.students} />
+                                    <Stat label={t("Staff")} value={c.staff} />
                                 </dl>
                                 <div className="mt-4 flex justify-end gap-1.5">
-                                    <PixelButton tone="sky" size="sm" onClick={() => setEditing({ ...school })}>
-                                        ✎ Edit
-                                    </PixelButton>
+                                    <PixelButton tone="sky" size="sm" onClick={() => setEditing({ ...school })}>{t("✎ Edit")}</PixelButton>
                                     <PixelButton tone="rose" size="sm" onClick={() => setDeleting(school)}>
                                         🗑
                                     </PixelButton>
@@ -89,14 +85,12 @@ export default function SchoolsManager() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete school?"
+                title={t("Delete school?")}
                 danger
-                confirmLabel="Delete school"
+                confirmLabel={t("Delete school")}
                 message={
                     <p>
-                        {deleting?.name} and everything in it (classes, staff accounts and students)
-                        will be removed. Its questions and quizzes will also be deleted. This can&apos;t be undone.
-                    </p>
+                        {deleting?.name}{" "}{t("and everything in it (classes, staff accounts and students) will be removed. Its questions and quizzes will also be deleted. This can't be undone.")}</p>
                 }
                 onCancel={() => setDeleting(null)}
                 onConfirm={() => {
@@ -118,14 +112,16 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 function SchoolEditor({ draft, onClose }: { draft: SchoolDraft | null; onClose: () => void }) {
+    const { t } = useI18n();
     return (
-        <Modal open={draft !== null} title={draft?.id ? "Edit school" : "New school"} onClose={onClose}>
+        <Modal open={draft !== null} title={draft?.id ? t("Edit school") : t("New school")} onClose={onClose}>
             {draft && <SchoolForm key={draft.id ?? "new"} initial={draft} onClose={onClose} />}
         </Modal>
     );
 }
 
 function SchoolForm({ initial, onClose }: { initial: SchoolDraft; onClose: () => void }) {
+    const { t } = useI18n();
     const [draft, setDraft] = useState(initial);
     const [errors, setErrors] = useState<string[]>([]);
 
@@ -144,16 +140,16 @@ function SchoolForm({ initial, onClose }: { initial: SchoolDraft; onClose: () =>
                 save();
             }}
         >
-            <Field label="School name">
+            <Field label={t("School name")}>
                 <input
                     value={draft.name}
                     onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                    placeholder="e.g. SD Harapan Bangsa"
+                    placeholder={t("e.g. SD Harapan Bangsa")}
                     className={inputClass}
                     autoFocus
                 />
             </Field>
-            <Field label="Short code" hint="Shown on reports, e.g. HBG">
+            <Field label={t("Short code")} hint={t("Shown on reports, e.g. HBG")}>
                 <input
                     value={draft.code}
                     onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })}
@@ -163,8 +159,8 @@ function SchoolForm({ initial, onClose }: { initial: SchoolDraft; onClose: () =>
             </Field>
             <ErrorList errors={errors} />
             <div className="flex justify-end gap-2">
-                <PixelButton tone="slate" onClick={onClose}>Cancel</PixelButton>
-                <PixelButton tone="emerald" type="submit">💾 Save</PixelButton>
+                <PixelButton tone="slate" onClick={onClose}>{t("Cancel")}</PixelButton>
+                <PixelButton tone="emerald" type="submit">{t("💾 Save")}</PixelButton>
             </div>
         </form>
     );

@@ -3,16 +3,23 @@ import { createPlayerFishingAnimations } from "../game-objects/player/player-fis
 import { SCENE_KEYS } from "./scene-keys";
 import { createCatchingBugsAnimations } from "../activities/catching-bugs/catching-bugs-assets";
 import Phaser from "phaser";
+import { WORLD_MAPS } from "../world/maps/map-registry";
+import type { GameEvent } from "../game-options";
 
 export class PreloadScene extends Phaser.Scene {
-    constructor() {
+    constructor(private emit?: (event: GameEvent) => void) {
         super({
             key: SCENE_KEYS.PRELOAD_SCENE,
         });
     }
 
     public preload(): void {
+        this.load.on(Phaser.Loader.Events.PROGRESS, (progress: number) => this.emit?.({ type: "game:loading", progress }));
         this.load.pack(ASSET_PACK_KEYS.MAIN, 'assets/data/assets.json');
+        const queued = new Set<string>();
+        Object.values(WORLD_MAPS).forEach(({ soundtrack }) => {
+            if (soundtrack && !queued.has(soundtrack.key)) { queued.add(soundtrack.key); this.load.audio(soundtrack.key, soundtrack.urls); }
+        });
     }
 
     public create(): void {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import type { ActivityController, VirtualDirection } from "@/game/game-options";
 
 type TouchAction = {
@@ -20,6 +21,7 @@ type TouchControlsProps = {
  * Buttons never take focus, so arrow keys keep driving the game.
  */
 export default function TouchControls({ controller, action }: TouchControlsProps) {
+    const { t } = useI18n();
     const press = (dir: VirtualDirection, pressed: boolean) => {
         controller?.setVirtualDirection(dir, pressed);
     };
@@ -37,7 +39,7 @@ export default function TouchControls({ controller, action }: TouchControlsProps
             onPointerLeave={() => press(dir, false)}
             onPointerCancel={() => press(dir, false)}
             onContextMenu={(e) => e.preventDefault()}
-            aria-label={`Move ${dir}`}
+            aria-label={t("Move {value0}", { value0: t(dir) })}
         >
             {label}
         </button>

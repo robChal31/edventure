@@ -9,6 +9,7 @@ import { signOutStaff } from "@/lms/session/staff-session";
 import { ROLE_LABELS, type StaffUser } from "@/lms/types";
 import StaffGate from "@/components/staff/staff-gate";
 import PixelButton from "@/components/ui/pixel-button";
+import { LanguageSwitcher, useI18n } from "@/i18n/provider";
 
 type NavItem = { href: string; label: string; icon: string; visible: (user: StaffUser) => boolean };
 
@@ -36,6 +37,7 @@ export default function TeacherShell({ children }: { children: ReactNode }) {
 }
 
 function Shell({ children }: { children: ReactNode }) {
+    const { t } = useI18n();
     const pathname = usePathname();
     const router = useRouter();
     const staff = useSignedInStaff();
@@ -44,12 +46,12 @@ function Shell({ children }: { children: ReactNode }) {
     if (!staff) return null;
 
     const schoolName =
-        isSuperAdmin(staff) ? "All schools" : schools.find((s) => s.id === staff.schoolId)?.name ?? "";
+        isSuperAdmin(staff) ? t("All schools") : schools.find((s) => s.id === staff.schoolId)?.name ?? "";
     const items = NAV.filter((item) => item.visible(staff));
 
     return (
-        <div className="flex min-h-dvh flex-1 flex-col bg-slate-950 text-slate-100 lg:flex-row">
-            <aside className="border-b-4 border-slate-900 bg-slate-900/80 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:border-b-0 lg:border-r-4">
+        <div className="staff-theme flex min-h-dvh flex-1 flex-col bg-slate-950 text-slate-100 lg:flex-row">
+            <aside className="staff-sidebar border-b-4 border-slate-900 bg-slate-900/80 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:border-b-0 lg:border-r-4">
                 <div className="flex items-center justify-between gap-3 px-4 py-4">
                     <Link href="/" className="flex items-center gap-2">
                         <span className="text-2xl" aria-hidden>📚</span>
@@ -63,7 +65,7 @@ function Shell({ children }: { children: ReactNode }) {
 
                 <div className="mx-4 mb-3 rounded-lg bg-slate-800/60 p-3 text-xs">
                     <p className="font-semibold text-slate-100">{staff.name}</p>
-                    <p className="mt-0.5 text-slate-400">{ROLE_LABELS[staff.role]}</p>
+                    <p className="mt-0.5 text-slate-400">{t(ROLE_LABELS[staff.role])}</p>
                     <p className="mt-0.5 truncate text-slate-500">{schoolName}</p>
                 </div>
 
@@ -77,28 +79,27 @@ function Shell({ children }: { children: ReactNode }) {
                                 aria-current={active ? "page" : undefined}
                                 className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
                                     active
-                                        ? "bg-amber-400 text-amber-950 shadow-[0_3px_0_#0b1020]"
+                                        ? "bg-amber-400 text-amber-950 shadow-[0_3px_0_#b5ccd3]"
                                         : "text-slate-300 hover:bg-slate-800 hover:text-white"
                                 }`}
                             >
                                 <span aria-hidden>{item.icon}</span>
-                                {item.label}
+                                {t(item.label)}
                             </Link>
                         );
                     })}
                 </nav>
 
-                <div className="hidden px-4 pt-4 lg:block">
-                    <div className="rounded-lg border-2 border-slate-800 p-3 text-xs text-slate-400">
+                <div className="px-4 pb-4 lg:pt-4">
+                    <LanguageSwitcher />
+                    <div className="mt-3 hidden rounded-lg border-2 border-slate-800 p-3 text-xs text-slate-400 lg:block">
                         {canManageRoster(staff) ? (
-                            <>Students play at{" "}
+                            <>{t("Students play at")}{" "}
                                 <Link href="/student" className="font-semibold text-sky-300 hover:underline">
                                     /student
-                                </Link>{" "}
-                                with their login codes.
-                            </>
+                                </Link>{" "}{t("with their login codes.")}</>
                         ) : (
-                            <>Your students&apos; login codes are managed by your school admin.</>
+                            <>{t("Your students' login codes are managed by your school admin.")}</>
                         )}
                     </div>
                     <PixelButton
@@ -109,9 +110,7 @@ function Shell({ children }: { children: ReactNode }) {
                             signOutStaff();
                             router.replace("/login");
                         }}
-                    >
-                        ⎋ Sign out
-                    </PixelButton>
+                    >{t("⎋ Sign out")}</PixelButton>
                 </div>
             </aside>
 

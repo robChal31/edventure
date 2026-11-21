@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAttempts, useHydrated, useLmsReady, useQuestions, useQuizzes, useSignedInStudent } from "@/lms/hooks";
@@ -13,6 +14,7 @@ import type { QuestionType, QuizSummary } from "@/quiz/types";
 import GameScreen from "./game-screen";
 import QuestBoard, { type QuestInfo } from "./hub/quest-board";
 import StudentBadge from "./hub/student-badge";
+import WorldLoading from "@/components/ui/world-loading";
 
 /**
  * Student experience: arrive in the village, pick a quest on the quest
@@ -20,6 +22,7 @@ import StudentBadge from "./hub/student-badge";
  * Completed attempts are saved for the teacher's reports.
  */
 export default function StudentPlay() {
+    const { t } = useI18n();
     const router = useRouter();
     // Wait for the one-time data upgrade before reading any LMS data.
     const mounted = useHydrated();
@@ -67,9 +70,9 @@ export default function StudentPlay() {
     }, []);
 
     const handleComplete = useCallback(
-        (summary: QuizSummary, startedAt: string) => {
+        (summary: QuizSummary, startedAt: string, runId: string) => {
             if (!student) return;
-            recordAttempt({ student, summary, startedAt });
+            recordAttempt({ student, summary, startedAt, runId });
         },
         [student]
     );
@@ -80,11 +83,7 @@ export default function StudentPlay() {
     }, [router]);
 
     if (!hydrated || !student) {
-        return (
-            <div className="flex h-full items-center justify-center bg-slate-950">
-                <p className="font-pixel text-[10px] text-sky-300">LOADING…</p>
-            </div>
-        );
+        return <WorldLoading />;
     }
 
     const pending = quests.some((quest) => quest.attempts === 0);
@@ -94,8 +93,9 @@ export default function StudentPlay() {
             playerName={student.name}
             badge={<StudentBadge student={student} onSignOut={signOut} />}
             exit={{ label: "SIGN OUT", onExit: signOut }}
+            progress={{ studentId: student.id, canResumeQuiz: (id) => quests.some((quest) => quest.quizId === id), buildQuiz }}
             onQuizComplete={handleComplete}
-            resultsNote="Saved! Your teacher can see how you did."
+            resultsNote={t("Saved! Your teacher can see how you did.")}
             renderHub={(controls) => (
                 <QuestBoard
                     controls={controls}

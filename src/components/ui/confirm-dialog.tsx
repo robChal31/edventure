@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import type { ReactNode } from "react";
 import Modal from "./modal";
 import PixelButton from "./pixel-button";
@@ -23,6 +24,7 @@ export default function ConfirmDialog({
     onConfirm,
     onCancel,
 }: ConfirmDialogProps) {
+    const { t } = useI18n();
     return (
         <Modal
             open={open}
@@ -30,11 +32,9 @@ export default function ConfirmDialog({
             onClose={onCancel}
             footer={
                 <>
-                    <PixelButton tone="slate" onClick={onCancel}>
-                        Cancel
-                    </PixelButton>
+                    <PixelButton tone="slate" onClick={onCancel}>{t("Cancel")}</PixelButton>
                     <PixelButton tone={danger ? "rose" : "emerald"} onClick={onConfirm} autoFocus>
-                        {confirmLabel}
+                        {t(confirmLabel)}
                     </PixelButton>
                 </>
             }

@@ -6,8 +6,10 @@ import type {
     QuizSummary,
     QuizMode,
 } from "@/quiz/types";
+import type { ActivityProgress } from "@/quiz/progress";
 import type { MapId } from "./world/maps/map-registry";
 
+import type { MusicState } from "./common/audio/map-music";
 import type { EquipmentId, EquipmentState } from "./equipment/equipment";
 
 export type { MapId };
@@ -53,6 +55,9 @@ export type ActivityHudState = {
 
 export type GameEvent =
     | { type: "game:ready" }
+    | { type: "game:loading"; progress: number }
+    | { type: "progress"; progress: ActivityProgress }
+    | ({ type: "music" } & MusicState)
     | ({ type: "equipment" } & EquipmentState)
     | { type: "question:close"; requestId: number }
     /** A map finished loading (first boot or after travelling). */
@@ -94,7 +99,9 @@ export type VirtualDirection = "up" | "down" | "left" | "right";
 /** Imperative handle the React shell uses to talk to the running game. */
 export type ActivityController = {
     /** Travel to the map that hosts the quiz's activity and start it. */
-    startQuiz(quiz: PlayableQuiz): void;
+    startQuiz(quiz: PlayableQuiz, progress?: ActivityProgress): void;
+    getProgress(): ActivityProgress | null;
+    setMusicEnabled(enabled: boolean): void;
     /** Travel back to the village hub. */
     returnToHub(): void;
     /** One action for keyboard, touch and the current equipment. */

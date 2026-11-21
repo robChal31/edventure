@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useState } from "react";
 import type { QuizAttempt, Student } from "@/lms/types";
@@ -23,11 +24,12 @@ export default function AttemptsTable({
     showQuiz = true,
     emptyText = "No attempts yet.",
 }: AttemptsTableProps) {
+    const { t } = useI18n();
     const [open, setOpen] = useState<QuizAttempt | null>(null);
     const byId = new Map(students.map((student) => [student.id, student]));
 
     if (attempts.length === 0) {
-        return <p className="rounded-lg border-2 border-dashed border-slate-800 p-4 text-sm text-slate-500">{emptyText}</p>;
+        return <p className="rounded-lg border-2 border-dashed border-slate-800 p-4 text-sm text-slate-500">{t(emptyText)}</p>;
     }
 
     return (
@@ -36,12 +38,12 @@ export default function AttemptsTable({
                 <table className="w-full min-w-[560px] text-left text-sm">
                     <thead className="bg-slate-900 text-[11px] uppercase tracking-wide text-slate-400">
                         <tr>
-                            {showStudent && <th className="px-4 py-2.5">Student</th>}
-                            {showQuiz && <th className="px-4 py-2.5">Quiz</th>}
-                            <th className="px-4 py-2.5">Score</th>
-                            <th className="px-4 py-2.5">Correct</th>
-                            <th className="px-4 py-2.5">Time</th>
-                            <th className="px-4 py-2.5">Finished</th>
+                            {showStudent && <th className="px-4 py-2.5">{t("Student")}</th>}
+                            {showQuiz && <th className="px-4 py-2.5">{t("Quiz")}</th>}
+                            <th className="px-4 py-2.5">{t("Score")}</th>
+                            <th className="px-4 py-2.5">{t("Correct")}</th>
+                            <th className="px-4 py-2.5">{t("Time")}</th>
+                            <th className="px-4 py-2.5">{t("Finished")}</th>
                             <th className="px-4 py-2.5" />
                         </tr>
                     </thead>
@@ -57,7 +59,7 @@ export default function AttemptsTable({
                                                     {student.avatar} {student.name}
                                                 </Link>
                                             ) : (
-                                                <span className="text-slate-400">{attempt.studentName} (removed)</span>
+                                                <span className="text-slate-400">{attempt.studentName}{" "}{t("(removed)")}</span>
                                             )}
                                         </td>
                                     )}
@@ -85,9 +87,7 @@ export default function AttemptsTable({
                                             type="button"
                                             onClick={() => setOpen(attempt)}
                                             className="rounded-md px-2 py-1 text-xs font-semibold text-sky-300 hover:bg-slate-800"
-                                        >
-                                            Answers →
-                                        </button>
+                                        >{t("Answers →")}</button>
                                     </td>
                                 </tr>
                             );

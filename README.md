@@ -89,9 +89,10 @@ beach map) and **Catching Bugs** (on the farm map).
   untuk membuka mini picker di atasnya. Di portrait sempit, slot berada di atas
   baris D-pad/aksi agar tidak menutupi tombol. Ikon kapak, pancing, jaring, sekop
   dan kayu semuanya dari sprite pack asli.
-- Default desa = kapak, fishing = pancing, Catching Bugs = jaring. Kapak, pancing
-  dan jaring bisa dipilih sendiri; sekop/kayu jelas **belum tersedia**. Tidak ada
-  gameplay gali tanah/bangun pagar palsu.
+- Di desa, tangan pemain awalnya **kosong** (tanpa alat). Fishing mulai dengan
+  pancing; Catching Bugs dengan jaring. Kapak, pancing dan jaring dapat dipilih;
+  **Lepas alat / Unequip** mengembalikan tangan kosong. Sekop/kayu masih jelas
+  **belum tersedia**; tidak ada gameplay gali tanah/bangun pagar palsu.
 - **F / Space / tombol aksi** adalah satu intent. Kapak menebas pohon di depan;
   pancing menjalankan cast/reel yang sudah ada di fishing; jaring memilih cricket
   terdekat di farm. Alat salah konteks memberi petunjuk, bukan menjalankan kuis
@@ -108,6 +109,74 @@ beach map) and **Catching Bugs** (on the farm map).
   travel dan shutdown; menahan F/Space tidak mengulang atau menyimpan aksi.
 - Nama akun tampil di atas karakter hanya saat berjalan/idle; hilang saat aksi,
   soal, hasil, guide atau overlay lain terbuka.
+
+### Bahasa, gambar, dan progres tersimpan
+
+- UI tersedia dalam **Bahasa Indonesia** (default) dan **English** melalui pilihan
+  bahasa di halaman masuk, panel staf, dan game. Pilihan menetap di browser.
+  Teks soal, opsi, nama siswa dan isi buatan guru tidak diterjemahkan otomatis.
+  Katalog UI ada di `src/i18n/messages-id.json`.
+- Editor soal menyediakan **Insert image** (PNG/JPEG/WebP, berkas asli maksimal
+  5 MB). Gambar diperkecil secara lokal hingga sisi terpanjang 1440 px dan sekitar
+  250 KB; deskripsi gambar wajib diisi. Prompt dapat berupa teks, gambar, atau
+  keduanya. Gambar ikut dalam preview, permainan, hasil dan detail laporan.
+  SVG dan URL gambar eksternal tidak diterima. Kapasitas tetap mengikuti batas
+  penyimpanan browser; kegagalan simpan ditampilkan, tidak dianggap berhasil.
+- Jawaban final, urutan/snapshot soal, run ID dan miss latihan otomatis disimpan
+  pada checkpoint per siswa/kuis. **Save / exit** juga menyediakan **Save & keep
+  playing**. **Resume**, **Start over** dan **Not now** tersedia untuk progres
+  yang masih ditugaskan/dipublikasikan kepada siswa tersebut.
+- **F5 / Ctrl-R / Cmd-R** menawarkan dialog save/reload. Tombol refresh/close milik
+  browser hanya mengizinkan konfirmasi native (teks/tombolnya tidak dapat
+  dikustomisasi aplikasi); checkpoint disimpan dulu. Perangkat/browser dapat
+  membatasi dialog native. Progres tersimpan pada browser ini, bukan lintas perangkat.
+- Resume mengulang aksi yang belum selesai dengan aman, bukan menyimpan posisi
+  pixel/animasi atau teks jawaban yang belum dikirim. Soal yang sudah selesai tidak
+  diulang; miss latihan tetap ada. Hasil disimpan **sekali per run** sebelum
+  checkpoint dihapus. Jika gagal, halaman hasil menyediakan retry dan tidak
+  meninggalkan hasil yang belum tersimpan.
+- Progres **pengerjaan** memakai jumlah soal yang diselesaikan, terpisah dari
+  tangkapan/skor. Semua soal selesai tetap mempunyai ending, termasuk skor 0%.
+  Dorongan “tinggal sedikit” hanya muncul dekat akhir, bukan sepanjang permainan.
+- Tombol **Help** menggantikan petunjuk gerak permanen. Tema terang dibatasi ke
+  workspace guru/admin; kartu/game siswa tetap memakai gaya pixel semula.
+
+### Pohon, render, dan soundtrack per map
+
+- Definisi mahogany, maple, birch dan pine ada di
+  `public/assets/data/object/tree/`, memakai atlas **Shadow** asli. Pohon berdiri
+  mempertahankan 5 tebasan awal; tunggul/kayu yang sudah terpotong perlu **3**
+  tebasan tambahan, mengeluarkan log berskala 0.5 lalu hilang beserta collider-nya.
+- Objek tree/wood di map desa dan farm sekarang punya class/properties Tiled.
+  Import `tree/tiled-classes.json` ke Custom Types di proyek Tiled bila diperlukan.
+  Contoh: class `tree`, properties `species: maple`, `variant: large`,
+  `stage: standing`; class `wood` + `species: birch` membuat tunggul. Property
+  `treeVariant` dapat mempertahankan varian warna bernama. Layer legacy tetap
+  didukung. Tidak ada pohon baru yang dipaksakan ke tata letak map.
+- Angin hanya mengenai cluster kecil yang tampak di kamera, maksimal 7 pohon
+  dengan jeda 6.5–13 detik dan stagger; bukan seluruh map sekaligus. Pangkal,
+  bayangan dan collider tetap diam. Kelapa memakai potongan kanopi asli.
+  Reduced-motion mematikan gerakan angin/awan.
+- `CLOUDS` mempunyai depth world tertinggi (di atas objek, efek tangkap dan name
+  tag), termasuk tile/object yang diberi class/property clouds di layer campuran.
+  Map tanpa awan memakai dua sprite awan asli yang ringan. Shadow atlas/tile
+  asli tidak digandakan; pemain, cricket dan objek darat yang memerlukan mendapat
+  contact shadow. Ketiga map aktif: desa, farm dan pantai.
+- Ketiga `src/game/world/maps/*-map.ts` punya `soundtrack: null` sampai track
+  dipilih. **Belum ada lagu yang ditambahkan/dipilih.** Untuk mengaktifkan map,
+  simpan audio berlisensi di `public/assets/music/`, lalu ganti `null` dengan:
+
+  ```ts
+  soundtrack: {
+      key: "music-village", // unik untuk setiap track
+      urls: ["/assets/music/village.ogg", "/assets/music/village.mp3"],
+      volume: 0.25,
+  },
+  ```
+
+  Preloader menangani cache; controller menunggu audio unlock, loop per map,
+  menyimpan preferensi on/off, serta membersihkan track saat travel/shutdown.
+  Tombol musik hanya tampil jika track tersedia. SFX fishing/tebang tidak diubah.
 
 Validasi: jalankan `npm ci`, `npm test`, `npm run lint`, lalu `npm run build`.
 Tes mencakup batch/ronde, latihan vs asesmen, soal tak berurutan, hitungan miss,

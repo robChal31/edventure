@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
+import QuestionSnippet from "@/components/ui/question-snippet";
 import { useMemo, useState } from "react";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import {
@@ -41,6 +43,7 @@ type TypeFilter = QuestionType | "all";
 type OwnerFilter = "all" | "global" | "school";
 
 export default function QuestionBank() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const actor = useSignedInStaff();
     const allQuestions = useQuestions();
@@ -78,6 +81,7 @@ export default function QuestionBank() {
                 (q) =>
                     !needle ||
                     q.text.toLowerCase().includes(needle) ||
+                    (q.image?.alt ?? "").toLowerCase().includes(needle) ||
                     (q.topic ?? "").toLowerCase().includes(needle) ||
                     (q.tags ?? []).some((tag) => tag.includes(needle)) ||
                     describeCorrectAnswer(q).toLowerCase().includes(needle)
@@ -103,13 +107,11 @@ export default function QuestionBank() {
     return (
         <>
             <PageHeader
-                title="Question bank"
-                description="Questions are labelled by grade, subject, topic, curriculum and difficulty, so they are easy to find and report on. The global bank is shared by everyone."
+                title={t("Question bank")}
+                description={t("Questions are labelled by grade, subject, topic, curriculum and difficulty, so they are easy to find and report on. The global bank is shared by everyone.")}
                 actions={
                     canAuthor ? (
-                        <PixelButton tone="sky" onClick={newQuestion}>
-                            + New question
-                        </PixelButton>
+                        <PixelButton tone="sky" onClick={newQuestion}>{t("+ New question")}</PixelButton>
                     ) : null
                 }
             />
@@ -125,8 +127,8 @@ export default function QuestionBank() {
                             : "border-amber-700/60 bg-amber-950/30 text-amber-200 hover:border-amber-600"
                     }`}
                 >
-                    ⚠ {unlabelledCount} question{unlabelledCount === 1 ? " is" : "s are"} missing labels (grade, subject, topic or curriculum).{" "}
-                    <span className="underline">{onlyUnlabelled ? "Show all" : "Show them"}</span>
+                    ⚠ {t("{count} question{suffix} missing labels (grade, subject, topic or curriculum).", { count: unlabelledCount, suffix: unlabelledCount === 1 ? " is" : "s are" })}{" "}
+                    <span className="underline">{onlyUnlabelled ? t("Show all") : t("Show them")}</span>
                 </button>
             )}
 
@@ -134,9 +136,9 @@ export default function QuestionBank() {
                 <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder="🔎 Search text, topic, tag or answer…"
+                    placeholder={t("🔎 Search text, topic, tag or answer…")}
                     className={`${inputClass} lg:max-w-sm`}
-                    aria-label="Search questions"
+                    aria-label={t("Search questions")}
                 />
                 <div className="flex flex-wrap gap-1.5">
                     {(["all", ...QUESTION_TYPE_ORDER] as TypeFilter[]).map((type) => (
@@ -149,7 +151,7 @@ export default function QuestionBank() {
                                 typeFilter === type ? "bg-amber-400 text-amber-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                             }`}
                         >
-                            {type === "all" ? "All" : `${QUESTION_TYPES[type].icon} ${QUESTION_TYPES[type].shortLabel}`}{" "}
+                            {type === "all" ? t("All") : t("{value0} {value1}", { value0: QUESTION_TYPES[type].icon, value1: t(QUESTION_TYPES[type].shortLabel) })}{" "}
                             <span className="opacity-70">({countFor(type)})</span>
                         </button>
                     ))}
@@ -157,29 +159,29 @@ export default function QuestionBank() {
             </div>
 
             <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-                <FilterSelect label="Grade" value={grade} onChange={setGrade}>
+                <FilterSelect label={t("Grade")} value={grade} onChange={setGrade}>
                     {GRADES.map((g) => (
-                        <option key={g} value={g}>Grade {g}</option>
+                        <option key={g} value={g}>{t("Grade")}{" "}{g}</option>
                     ))}
                 </FilterSelect>
-                <FilterSelect label="Subject" value={subject} onChange={setSubject}>
+                <FilterSelect label={t("Subject")} value={subject} onChange={setSubject}>
                     {subjects.map((s) => (
                         <option key={s} value={s}>{s}</option>
                     ))}
                 </FilterSelect>
-                <FilterSelect label="Curriculum" value={curriculum} onChange={(v) => setCurriculum(v as CurriculumId | "")}>
+                <FilterSelect label={t("Curriculum")} value={curriculum} onChange={(v) => setCurriculum(v as CurriculumId | "")}>
                     {CURRICULUM_ORDER.map((c) => (
-                        <option key={c} value={c}>{CURRICULA[c].label}</option>
+                        <option key={c} value={c}>{t(CURRICULA[c].label)}</option>
                     ))}
                 </FilterSelect>
-                <FilterSelect label="Difficulty" value={difficulty} onChange={(v) => setDifficulty(v as Difficulty | "")}>
+                <FilterSelect label={t("Difficulty")} value={difficulty} onChange={(v) => setDifficulty(v as Difficulty | "")}>
                     {(Object.keys(DIFFICULTIES) as Difficulty[]).map((d) => (
-                        <option key={d} value={d}>{DIFFICULTIES[d].label}</option>
+                        <option key={d} value={d}>{t(DIFFICULTIES[d].label)}</option>
                     ))}
                 </FilterSelect>
-                <FilterSelect label="Source" value={owner} onChange={(v) => setOwner(v as OwnerFilter)}>
-                    <option value="global">Global bank</option>
-                    <option value="school">{actor?.role === "super_admin" ? "Schools" : "My school"}</option>
+                <FilterSelect label={t("Source")} value={owner} onChange={(v) => setOwner(v as OwnerFilter)}>
+                    <option value="global">{t("Global bank")}</option>
+                    <option value="school">{actor?.role === "super_admin" ? t("Schools") : t("My school")}</option>
                 </FilterSelect>
                 <div className="flex items-end">
                     <button
@@ -195,9 +197,7 @@ export default function QuestionBank() {
                             setTypeFilter("all");
                         }}
                         className="w-full rounded-lg px-3 py-2 text-xs font-semibold text-slate-400 hover:bg-slate-800 hover:text-white"
-                    >
-                        Clear filters
-                    </button>
+                    >{t("Clear filters")}</button>
                 </div>
             </div>
 
@@ -206,21 +206,15 @@ export default function QuestionBank() {
             ) : questions.length === 0 ? (
                 <EmptyState
                     icon="❓"
-                    title="NO QUESTIONS YET"
+                    title={t("NO QUESTIONS YET")}
                     action={
                         canAuthor ? (
-                            <PixelButton tone="sky" onClick={newQuestion}>
-                                + Write your first question
-                            </PixelButton>
+                            <PixelButton tone="sky" onClick={newQuestion}>{t("+ Write your first question")}</PixelButton>
                         ) : undefined
                     }
-                >
-                    Questions you write here can be added to any quiz.
-                </EmptyState>
+                >{t("Questions you write here can be added to any quiz.")}</EmptyState>
             ) : filtered.length === 0 ? (
-                <p className="rounded-lg border-2 border-dashed border-slate-800 p-6 text-center text-sm text-slate-500">
-                    No questions match these filters.
-                </p>
+                <p className="rounded-lg border-2 border-dashed border-slate-800 p-6 text-center text-sm text-slate-500">{t("No questions match these filters.")}</p>
             ) : (
                 <ul className="flex flex-col gap-2">
                     {filtered.map((question) => {
@@ -235,50 +229,45 @@ export default function QuestionBank() {
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-1.5">
                                         <QuestionTypeBadge type={question.type} />
-                                        {question.grade !== undefined && <ChipTag tone="amber">Grade {question.grade}</ChipTag>}
+                                        {question.grade !== undefined && <ChipTag tone="amber">{t("Grade")}{" "}{question.grade}</ChipTag>}
                                         {question.subject && <ChipTag tone="sky">{question.subject}</ChipTag>}
                                         {question.topic && <ChipTag>{question.topic}</ChipTag>}
-                                        {question.curriculum && <ChipTag tone="violet">{CURRICULA[question.curriculum].label}</ChipTag>}
-                                        {question.difficulty && <ChipTag>{DIFFICULTIES[question.difficulty].icon} {DIFFICULTIES[question.difficulty].label}</ChipTag>}
-                                        {isUnlabelled(question) && <ChipTag tone="rose">Needs labels</ChipTag>}
-                                        <ChipTag tone={isGlobal ? "emerald" : "slate"}>{isGlobal ? "🌍 Global" : `🏫 ${ownerName(question)}`}</ChipTag>
+                                        {question.curriculum && <ChipTag tone="violet">{t(CURRICULA[question.curriculum].label)}</ChipTag>}
+                                        {question.difficulty && <ChipTag>{DIFFICULTIES[question.difficulty].icon} {t(DIFFICULTIES[question.difficulty].label)}</ChipTag>}
+                                        {isUnlabelled(question) && <ChipTag tone="rose">{t("Needs labels")}</ChipTag>}
+                                        <ChipTag tone={isGlobal ? "emerald" : "slate"}>{isGlobal ? t("🌍 Global") : t("🏫 {value0}", { value0: ownerName(question) })}</ChipTag>
                                         <span className="text-[11px] text-slate-500">
-                                            {usage === 0 ? "Not in a quiz" : `In ${usage} quiz${usage === 1 ? "" : "zes"}`}
+                                            {usage === 0 ? t("Not in a quiz") : t("In {value0} quiz{value1}", { value0: usage, value1: usage === 1 ? "" : "zes" })}
                                         </span>
                                     </div>
-                                    <p className="mt-2 font-semibold text-slate-100">{question.text}</p>
+                                    <QuestionSnippet question={question} className="mt-2 font-semibold text-slate-100" />
                                     <p className="mt-1 text-xs text-slate-400">
                                         {question.type === "multiple_choice" && (
                                             <>
-                                                {question.options.length} options · ✔{" "}
+                                                {question.options.length}{" "}{t("options · ✔")}{" "}
                                                 <span className="text-emerald-300">{describeCorrectAnswer(question)}</span>
                                             </>
                                         )}
                                         {question.type === "true_false" && (
-                                            <>✔ <span className="text-emerald-300">{describeCorrectAnswer(question)}</span></>
+                                            <>✔ <span className="text-emerald-300">{t(describeCorrectAnswer(question))}</span></>
                                         )}
                                         {question.type === "short_answer" && (
-                                            <>
-                                                Accepts: <span className="text-emerald-300">{describeCorrectAnswer(question)}</span>
-                                                {question.caseSensitive && " · strict"}
+                                            <>{t("Accepts:")}{" "}<span className="text-emerald-300">{describeCorrectAnswer(question)}</span>
+                                                {question.caseSensitive && t(" · strict")}
                                             </>
                                         )}
                                         {question.tags?.length ? <span className="ml-2 text-slate-500">#{question.tags.join(" #")}</span> : null}
                                     </p>
                                 </div>
                                 <div className="flex shrink-0 flex-wrap gap-1.5">
-                                    <PixelButton tone="violet" size="sm" onClick={() => setPreviewing(question)}>
-                                        👁 Try
-                                    </PixelButton>
+                                    <PixelButton tone="violet" size="sm" onClick={() => setPreviewing(question)}>{t("👁 Try")}</PixelButton>
                                     {editable ? (
                                         <>
-                                            <PixelButton tone="sky" size="sm" onClick={() => setEditing(draftFromQuestion(question))}>
-                                                ✎ Edit
-                                            </PixelButton>
-                                            <PixelButton tone="slate" size="sm" onClick={() => duplicateQuestion(question.id)} title="Duplicate">
+                                            <PixelButton tone="sky" size="sm" onClick={() => setEditing(draftFromQuestion(question))}>{t("✎ Edit")}</PixelButton>
+                                            <PixelButton tone="slate" size="sm" onClick={() => duplicateQuestion(question.id)} title={t("Duplicate")}>
                                                 ⧉
                                             </PixelButton>
-                                            <PixelButton tone="rose" size="sm" onClick={() => setDeleting(question)} title="Delete">
+                                            <PixelButton tone="rose" size="sm" onClick={() => setDeleting(question)} title={t("Delete")}>
                                                 🗑
                                             </PixelButton>
                                         </>
@@ -289,10 +278,8 @@ export default function QuestionBank() {
                                                 tone="emerald"
                                                 size="sm"
                                                 onClick={() => copyQuestionTo(question.id, authorSchool)}
-                                                title="Make a copy in your school's bank to edit"
-                                            >
-                                                ⧉ Copy to my school
-                                            </PixelButton>
+                                                title={t("Make a copy in your school's bank to edit")}
+                                            >{t("⧉ Copy to my school")}</PixelButton>
                                         )
                                     )}
                                 </div>
@@ -306,11 +293,11 @@ export default function QuestionBank() {
                 draft={editing}
                 subjects={subjects}
                 topics={topics}
-                ownerLabel={editing ? (editing.schoolId === null ? "Global bank" : schoolName(editing.schoolId)) : undefined}
+                ownerLabel={editing ? (editing.schoolId === null ? t("Global bank") : schoolName(editing.schoolId)) : undefined}
                 onClose={() => setEditing(null)}
             />
 
-            <Modal open={previewing !== null} title="Student view" onClose={() => setPreviewing(null)} size="lg">
+            <Modal open={previewing !== null} title={t("Student view")} onClose={() => setPreviewing(null)} size="lg">
                 {previewing && (
                     <>
                         <p className="mb-3 text-xs text-slate-400">
@@ -325,17 +312,14 @@ export default function QuestionBank() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete question?"
+                title={t("Delete question?")}
                 danger
-                confirmLabel="Delete"
+                confirmLabel={t("Delete")}
                 message={
                     <>
-                        <p>&ldquo;{deleting?.text}&rdquo; will be removed from the bank.</p>
+                        <p>{"“"}{deleting?.text}{t("” will be removed from the bank.")}</p>
                         {deletingUsage > 0 && (
-                            <p className="mt-2 text-amber-200">
-                                It is used in {deletingUsage} quiz{deletingUsage === 1 ? "" : "zes"} and will be
-                                removed from {deletingUsage === 1 ? "it" : "them"}. Past results are kept.
-                            </p>
+                            <p className="mt-2 text-amber-200">{t("Used in {count} quiz{suffix}. It will be removed from those quizzes; past results are kept.", { count: deletingUsage, suffix: deletingUsage === 1 ? "" : "zes" })}</p>
                         )}
                     </>
                 }
@@ -360,11 +344,12 @@ function FilterSelect({
     onChange: (value: string) => void;
     children: React.ReactNode;
 }) {
+    const { t } = useI18n();
     return (
         <label className="flex flex-col gap-1">
             <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>
-            <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass} aria-label={`Filter by ${label.toLowerCase()}`}>
-                <option value="">All</option>
+            <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass} aria-label={t("Filter by {value0}", { value0: label.toLowerCase() })}>
+                <option value="">{t("All")}</option>
                 {children}
             </select>
         </label>

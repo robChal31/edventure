@@ -1,3 +1,5 @@
+import { getLocale } from "@/i18n/locale";
+import { translate } from "@/i18n/translate";
 import { describeAnswer } from "@/quiz/grading";
 import type { Question, QuestionType } from "@/quiz/types";
 import { isQuizAssignedTo } from "../access";
@@ -233,7 +235,7 @@ export function formatScore(score: number | null): string {
 export function formatDateTime(iso: string): string {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "—";
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString(getLocale() === "id" ? "id-ID" : "en-GB", {
         day: "numeric",
         month: "short",
         hour: "2-digit",
@@ -242,18 +244,18 @@ export function formatDateTime(iso: string): string {
 }
 
 export function formatRelative(iso: string | null, now: number = Date.now()): string {
-    if (!iso) return "never";
+    if (!iso) return translate(getLocale(), "never");
     const then = new Date(iso).getTime();
     if (Number.isNaN(then)) return "—";
 
     const seconds = Math.round((now - then) / 1000);
-    if (seconds < 45) return "just now";
+    if (seconds < 45) return translate(getLocale(), "just now");
     const minutes = Math.round(seconds / 60);
-    if (minutes < 60) return `${minutes} min ago`;
+    if (minutes < 60) return translate(getLocale(), "{count} min ago", { count: minutes });
     const hours = Math.round(minutes / 60);
-    if (hours < 24) return `${hours} h ago`;
+    if (hours < 24) return translate(getLocale(), "{count} h ago", { count: hours });
     const days = Math.round(hours / 24);
-    if (days < 30) return `${days} d ago`;
+    if (days < 30) return translate(getLocale(), "{count} d ago", { count: days });
     return formatDateTime(iso);
 }
 

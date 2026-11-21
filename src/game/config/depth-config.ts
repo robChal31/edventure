@@ -18,5 +18,8 @@ export const DEPTH_CONFIG = {
     AIRBORNE: 9000,
     /** World-space UI: "!" bubbles, floating score text. */
     WORLD_UI: 10000,
+    /** Atmospheric artwork always sits above every world object and world-space label. */
+    CLOUDS: 20000,
+    SHADOW: 0.1,
     DEBUG: 99999,
 } as const;

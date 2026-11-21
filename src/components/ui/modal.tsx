@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useEffect, useId, type ReactNode } from "react";
 
 type ModalProps = {
@@ -29,6 +30,7 @@ export default function Modal({
     footer,
     size = "md",
 }: ModalProps) {
+    const { t } = useI18n();
     const titleId = useId();
 
     useEffect(() => {
@@ -51,7 +53,7 @@ export default function Modal({
 
     return (
         <div
-            className="lw-fade-in fixed inset-0 z-50 flex items-end justify-center bg-slate-950/75 p-2 sm:items-center sm:p-6"
+            className="modal-backdrop lw-fade-in fixed inset-0 z-50 flex items-end justify-center bg-slate-950/75 p-2 sm:items-center sm:p-6"
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) onClose();
             }}
@@ -69,7 +71,7 @@ export default function Modal({
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={t("Close")}
                         className="rounded px-2 py-1 text-lg leading-none text-slate-400 hover:bg-slate-800 hover:text-slate-100"
                     >
                         ✕

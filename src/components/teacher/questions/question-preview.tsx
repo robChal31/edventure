@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useState } from "react";
 import { describeCorrectAnswer, gradeAnswer } from "@/quiz/grading";
 import type { AnswerValue, Question } from "@/quiz/types";
@@ -11,6 +12,7 @@ import QuestionCard, { type AnswerReveal } from "@/components/student/questions/
  * Remount (change `key`) to reset.
  */
 export default function QuestionPreview({ question }: { question: Question }) {
+    const { t } = useI18n();
     const [reveal, setReveal] = useState<AnswerReveal | null>(null);
     const [attempt, setAttempt] = useState(0);
 
@@ -23,7 +25,7 @@ export default function QuestionPreview({ question }: { question: Question }) {
     };
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="student-preview flex flex-col gap-2">
             <QuestionCard
                 key={attempt}
                 layout="inline"
@@ -41,9 +43,7 @@ export default function QuestionPreview({ question }: { question: Question }) {
                         setAttempt((n) => n + 1);
                     }}
                     className="self-center text-xs font-semibold text-sky-300 hover:underline"
-                >
-                    ↺ Try again
-                </button>
+                >{t("↺ Try again")}</button>
             )}
         </div>
     );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { getActivity } from "@/quiz/activities";
@@ -36,6 +37,7 @@ import PixelButton, { pixelButtonClass } from "@/components/ui/pixel-button";
 import QuizEditor from "./quiz-editor";
 
 export default function QuizManager() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const actor = useSignedInStaff();
     const allQuizzes = useQuizzes();
@@ -77,13 +79,11 @@ export default function QuizManager() {
     return (
         <>
             <PageHeader
-                title="Quizzes"
-                description="A quiz is a set of questions played on a map (activity) you choose. Assign it to everyone, to whole classes, or to chosen students."
+                title={t("Quizzes")}
+                description={t("A quiz is a set of questions played on a map (activity) you choose. Assign it to everyone, to whole classes, or to chosen students.")}
                 actions={
                     canAuthor ? (
-                        <PixelButton tone="amber" onClick={newQuiz}>
-                            + New quiz
-                        </PixelButton>
+                        <PixelButton tone="amber" onClick={newQuiz}>{t("+ New quiz")}</PixelButton>
                     ) : null
                 }
             />
@@ -108,10 +108,10 @@ export default function QuizManager() {
                         {label}
                     </button>
                 ))}
-                <select value={grade} onChange={(e) => setGrade(e.target.value)} className={`${inputClass} w-auto`} aria-label="Filter by grade">
-                    <option value="">Any grade</option>
+                <select value={grade} onChange={(e) => setGrade(e.target.value)} className={`${inputClass} w-auto`} aria-label={t("Filter by grade")}>
+                    <option value="">{t("Any grade")}</option>
                     {GRADES.map((g) => (
-                        <option key={g} value={g}>Grade {g}</option>
+                        <option key={g} value={g}>{t("Grade")}{" "}{g}</option>
                     ))}
                 </select>
             </div>
@@ -121,21 +121,15 @@ export default function QuizManager() {
             ) : quizzes.length === 0 ? (
                 <EmptyState
                     icon="📜"
-                    title="NO QUIZZES YET"
+                    title={t("NO QUIZZES YET")}
                     action={
                         canAuthor ? (
-                            <PixelButton tone="amber" onClick={newQuiz}>
-                                + Create a quiz
-                            </PixelButton>
+                            <PixelButton tone="amber" onClick={newQuiz}>{t("+ Create a quiz")}</PixelButton>
                         ) : undefined
                     }
-                >
-                    Bundle questions from the bank into a quest for your students.
-                </EmptyState>
+                >{t("Bundle questions from the bank into a quest for your students.")}</EmptyState>
             ) : shown.length === 0 ? (
-                <p className="rounded-lg border-2 border-dashed border-slate-800 p-6 text-center text-sm text-slate-500">
-                    No quizzes match these filters.
-                </p>
+                <p className="rounded-lg border-2 border-dashed border-slate-800 p-6 text-center text-sm text-slate-500">{t("No quizzes match these filters.")}</p>
             ) : (
                 <div className="grid gap-4 xl:grid-cols-2">
                     {shown.map((quiz) => {
@@ -162,81 +156,71 @@ export default function QuizManager() {
 
                                 <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
                                     <ChipTag tone={isGlobal ? "emerald" : "slate"}>
-                                        {isGlobal ? "🌍 Global" : `🏫 ${schoolName(quiz.schoolId)}`}
+                                        {isGlobal ? t("🌍 Global") : t("🏫 {value0}", { value0: schoolName(quiz.schoolId) })}
                                     </ChipTag>
-                                    {quiz.grade !== undefined && <ChipTag tone="amber">Grade {quiz.grade}</ChipTag>}
+                                    {quiz.grade !== undefined && <ChipTag tone="amber">{t("Grade")}{" "}{quiz.grade}</ChipTag>}
                                     {quiz.subject && <ChipTag tone="sky">{quiz.subject}</ChipTag>}
                                     {quiz.topic && <ChipTag>{quiz.topic}</ChipTag>}
-                                    {quiz.curriculum && <ChipTag tone="violet">{CURRICULA[quiz.curriculum].label}</ChipTag>}
-                                    {quiz.difficulty && <ChipTag>{DIFFICULTIES[quiz.difficulty].icon} {DIFFICULTIES[quiz.difficulty].label}</ChipTag>}
+                                    {quiz.curriculum && <ChipTag tone="violet">{t(CURRICULA[quiz.curriculum].label)}</ChipTag>}
+                                    {quiz.difficulty && <ChipTag>{DIFFICULTIES[quiz.difficulty].icon} {t(DIFFICULTIES[quiz.difficulty].label)}</ChipTag>}
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
                                     <span className="rounded-md bg-sky-500/15 px-2 py-0.5 text-sky-300 ring-1 ring-sky-500/40">
-                                        {activity.icon} {activity.label} · {activity.location}
+                                        {activity.icon} {t(activity.label)} · {t(activity.location)}
                                     </span>
                                     <span className="rounded-md bg-slate-800 px-2 py-0.5">
-                                        {resolved.length} question{resolved.length === 1 ? "" : "s"}{" "}
+                                        {t("{count} question{suffix}", { count: resolved.length, suffix: resolved.length === 1 ? "" : "s" })}{" "}
                                         {types.map((t) => QUESTION_TYPES[t].icon).join(" ")}
                                     </span>
                                     <span className="rounded-md bg-slate-800 px-2 py-0.5">
                                         🎯 {assignmentLabel(quiz.assignment, classes, students)}
                                     </span>
-                                    {quiz.shuffleQuestions && <span className="rounded-md bg-slate-800 px-2 py-0.5">🔀 Shuffled</span>}
+                                    {quiz.shuffleQuestions && <span className="rounded-md bg-slate-800 px-2 py-0.5">{t("🔀 Shuffled")}</span>}
                                     {unlabelled > 0 && (
                                         <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-amber-300">
-                                            ⚠ {unlabelled} unlabelled question{unlabelled === 1 ? "" : "s"}
+                                            ⚠ {unlabelled}{" "}{t("unlabelled question")}{unlabelled === 1 ? "" : "s"}
                                         </span>
                                     )}
                                 </div>
 
                                 <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-                                    <span>
-                                        Completed by{" "}
+                                    <span>{t("Completed by")}{" "}
                                         <strong className="text-slate-200">
                                             {completion.completed}/{completion.assigned}
                                         </strong>
                                     </span>
                                     <span>
-                                        {stats.count} attempt{stats.count === 1 ? "" : "s"}
+                                        {stats.count}{" "}{t("attempt")}{stats.count === 1 ? "" : "s"}
                                     </span>
-                                    <span className="flex items-center gap-1">
-                                        Avg <ScorePill score={stats.averageScore} />
+                                    <span className="flex items-center gap-1">{t("Avg")}{" "}<ScorePill score={stats.averageScore} />
                                     </span>
                                 </div>
 
                                 <div className="mt-4 flex flex-wrap gap-1.5">
                                     {editable ? (
                                         <>
-                                            <PixelButton tone="sky" size="sm" onClick={() => setEditing(draftFromQuiz(quiz))}>
-                                                ✎ Edit
-                                            </PixelButton>
+                                            <PixelButton tone="sky" size="sm" onClick={() => setEditing(draftFromQuiz(quiz))}>{t("✎ Edit")}</PixelButton>
                                             <PixelButton tone="slate" size="sm" onClick={() => setQuizPublished(quiz.id, !quiz.published)}>
-                                                {quiz.published ? "Unpublish" : "Publish"}
+                                                {quiz.published ? t("Unpublish") : t("Publish")}
                                             </PixelButton>
-                                            <PixelButton tone="slate" size="sm" onClick={() => duplicateQuiz(quiz.id)} title="Duplicate">
+                                            <PixelButton tone="slate" size="sm" onClick={() => duplicateQuiz(quiz.id)} title={t("Duplicate")}>
                                                 ⧉
                                             </PixelButton>
-                                            <PixelButton tone="rose" size="sm" onClick={() => setDeleting(quiz)} title="Delete">
+                                            <PixelButton tone="rose" size="sm" onClick={() => setDeleting(quiz)} title={t("Delete")}>
                                                 🗑
                                             </PixelButton>
                                         </>
                                     ) : (
                                         canAuthor &&
                                         authorSchool && (
-                                            <PixelButton tone="emerald" size="sm" onClick={() => adoptQuiz(quiz)} title="Copy this quiz and its global questions to your school">
-                                                ⧉ Copy to my school
-                                            </PixelButton>
+                                            <PixelButton tone="emerald" size="sm" onClick={() => adoptQuiz(quiz)} title={t("Copy this quiz and its global questions to your school")}>{t("⧉ Copy to my school")}</PixelButton>
                                         )
                                     )}
                                     {resolved.length > 0 && (
-                                        <Link href={`/teacher/preview/${quiz.id}`} className={pixelButtonClass("violet", "sm")}>
-                                            ▶ Preview
-                                        </Link>
+                                        <Link href={`/teacher/preview/${quiz.id}`} className={pixelButtonClass("violet", "sm")}>{t("▶ Preview")}</Link>
                                     )}
-                                    <Link href={`/teacher/reports/${quiz.id}`} className={pixelButtonClass("emerald", "sm")}>
-                                        📊 Report
-                                    </Link>
+                                    <Link href={`/teacher/reports/${quiz.id}`} className={pixelButtonClass("emerald", "sm")}>{t("📊 Report")}</Link>
                                 </div>
                             </article>
                         );
@@ -248,14 +232,11 @@ export default function QuizManager() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete quiz?"
+                title={t("Delete quiz?")}
                 danger
-                confirmLabel="Delete"
+                confirmLabel={t("Delete")}
                 message={
-                    <p>
-                        &ldquo;{deleting?.name}&rdquo; disappears from every quest board. Questions stay in the bank and
-                        past results stay in the reports.
-                    </p>
+                    <p>{"“"}{deleting?.name}{t("” disappears from every quest board. Questions stay in the bank and past results stay in the reports.")}</p>
                 }
                 onCancel={() => setDeleting(null)}
                 onConfirm={() => {

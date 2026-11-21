@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useMemo, useState } from "react";
 import { canEditStaff, canManageStaff, isSuperAdmin } from "@/lms/access";
 import { useClasses, useHydrated, useSchools, useSignedInStaff, useStaff } from "@/lms/hooks";
@@ -23,6 +24,7 @@ const ROLE_TONE: Record<StaffRole, string> = {
 };
 
 export default function StaffManager() {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const actor = useSignedInStaff();
     const staff = useStaff();
@@ -44,7 +46,7 @@ export default function StaffManager() {
 
     if (!hydrated || !actor) return <Skeleton rows={3} />;
     if (!canManageStaff(actor)) {
-        return <NoAccess>Teachers can&apos;t manage staff accounts. Ask your school admin.</NoAccess>;
+        return <NoAccess>{t("Teachers can't manage staff accounts. Ask your school admin.")}</NoAccess>;
     }
 
     const schoolName = (id: string | null) =>
@@ -53,11 +55,9 @@ export default function StaffManager() {
     return (
         <>
             <PageHeader
-                title="Staff accounts"
+                title={t("Staff accounts")}
                 description={
-                    isSuperAdmin(actor)
-                        ? "Create developer, school admin and teacher accounts for every school."
-                        : "Create teacher accounts for your school and choose which classes they teach."
+                    isSuperAdmin(actor) ? t("Create developer, school admin and teacher accounts for every school.") : t("Create teacher accounts for your school and choose which classes they teach.")
                 }
                 actions={
                     <PixelButton
@@ -72,26 +72,22 @@ export default function StaffManager() {
                                 classIds: [],
                             })
                         }
-                    >
-                        + New account
-                    </PixelButton>
+                    >{t("+ New account")}</PixelButton>
                 }
             />
 
             {visible.length === 0 ? (
-                <EmptyState icon="🧑‍💼" title="NO STAFF YET">
-                    Add the teachers who will use the LMS.
-                </EmptyState>
+                <EmptyState icon="🧑‍💼" title={t("NO STAFF YET")}>{t("Add the teachers who will use the LMS.")}</EmptyState>
             ) : (
                 <div className="overflow-x-auto rounded-xl border-2 border-slate-800">
                     <table className="w-full min-w-[640px] text-left text-sm">
                         <thead className="bg-slate-900 text-[11px] uppercase tracking-wide text-slate-400">
                             <tr>
-                                <th className="px-4 py-2.5">Name</th>
-                                <th className="px-4 py-2.5">Role</th>
-                                <th className="px-4 py-2.5">School</th>
-                                <th className="px-4 py-2.5">Classes</th>
-                                <th className="px-4 py-2.5">Username</th>
+                                <th className="px-4 py-2.5">{t("Name")}</th>
+                                <th className="px-4 py-2.5">{t("Role")}</th>
+                                <th className="px-4 py-2.5">{t("School")}</th>
+                                <th className="px-4 py-2.5">{t("Classes")}</th>
+                                <th className="px-4 py-2.5">{t("Username")}</th>
                                 <th className="px-4 py-2.5" />
                             </tr>
                         </thead>
@@ -107,12 +103,12 @@ export default function StaffManager() {
                                         <td className="px-4 py-2.5 font-semibold text-slate-100">
                                             {user.name}
                                             {user.id === actor.id && (
-                                                <span className="ml-2 text-xs font-normal text-slate-500">(you)</span>
+                                                <span className="ml-2 text-xs font-normal text-slate-500">{t("(you)")}</span>
                                             )}
                                         </td>
                                         <td className="px-4 py-2.5">
                                             <span className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ${ROLE_TONE[user.role]}`}>
-                                                {ROLE_LABELS[user.role]}
+                                                {t(ROLE_LABELS[user.role])}
                                             </span>
                                         </td>
                                         <td className="px-4 py-2.5 text-slate-300">{schoolName(user.schoolId)}</td>
@@ -125,17 +121,13 @@ export default function StaffManager() {
                                                         type="button"
                                                         onClick={() => setEditing({ ...user, password: user.password })}
                                                         className="rounded px-2 py-1 text-xs font-semibold text-slate-300 hover:bg-slate-800"
-                                                    >
-                                                        Edit
-                                                    </button>
+                                                    >{t("Edit")}</button>
                                                     {user.id !== actor.id && (
                                                         <button
                                                             type="button"
                                                             onClick={() => setDeleting(user)}
                                                             className="rounded px-2 py-1 text-xs font-semibold text-rose-300 hover:bg-slate-800"
-                                                        >
-                                                            Delete
-                                                        </button>
+                                                        >{t("Delete")}</button>
                                                     )}
                                                 </div>
                                             )}
@@ -152,10 +144,10 @@ export default function StaffManager() {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete account?"
+                title={t("Delete account?")}
                 danger
-                confirmLabel="Delete"
-                message={<p>{deleting?.name} will no longer be able to sign in.</p>}
+                confirmLabel={t("Delete")}
+                message={<p>{deleting?.name}{" "}{t("will no longer be able to sign in.")}</p>}
                 onCancel={() => setDeleting(null)}
                 onConfirm={() => {
                     if (deleting) deleteStaff(deleting.id);
@@ -175,8 +167,9 @@ function StaffEditor({
     onClose: () => void;
     actor: StaffUser;
 }) {
+    const { t } = useI18n();
     return (
-        <Modal open={draft !== null} title={draft?.id ? "Edit account" : "New account"} onClose={onClose} size="lg">
+        <Modal open={draft !== null} title={draft?.id ? t("Edit account") : t("New account")} onClose={onClose} size="lg">
             {draft && <StaffForm key={draft.id ?? "new"} initial={draft} onClose={onClose} actor={actor} />}
         </Modal>
     );
@@ -191,6 +184,7 @@ function StaffForm({
     onClose: () => void;
     actor: StaffUser;
 }) {
+    const { t } = useI18n();
     const schools = useSchools();
     const classes = useClasses();
     const [draft, setDraft] = useState(initial);
@@ -224,10 +218,10 @@ function StaffForm({
             }}
         >
             <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Full name">
+                <Field label={t("Full name")}>
                     <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} className={inputClass} autoFocus />
                 </Field>
-                <Field label="Role">
+                <Field label={t("Role")}>
                     <select
                         value={draft.role}
                         onChange={(e) => patch({ role: e.target.value as StaffRole })}
@@ -236,26 +230,26 @@ function StaffForm({
                     >
                         {roles.map((role) => (
                             <option key={role} value={role}>
-                                {ROLE_LABELS[role]}
+                                {t(ROLE_LABELS[role])}
                             </option>
                         ))}
                     </select>
                 </Field>
-                <Field label="Username" hint="Lowercase, used to sign in">
+                <Field label={t("Username")} hint={t("Lowercase, used to sign in")}>
                     <input value={draft.username} onChange={(e) => patch({ username: e.target.value })} className={`${inputClass} font-mono`} />
                 </Field>
-                <Field label="Password" hint="At least 6 characters">
+                <Field label={t("Password")} hint={t("At least 6 characters")}>
                     <input value={draft.password} onChange={(e) => patch({ password: e.target.value })} className={`${inputClass} font-mono`} />
                 </Field>
                 {draft.role !== "super_admin" && (
-                    <Field label="School">
+                    <Field label={t("School")}>
                         <select
                             value={draft.schoolId ?? ""}
                             onChange={(e) => patch({ schoolId: e.target.value || null, classIds: [] })}
                             className={inputClass}
                             disabled={!superAdmin}
                         >
-                            <option value="">Choose a school…</option>
+                            <option value="">{t("Choose a school…")}</option>
                             {schools.map((s) => (
                                 <option key={s.id} value={s.id}>
                                     {s.name}
@@ -268,11 +262,9 @@ function StaffForm({
 
             {draft.role === "teacher" && (
                 <fieldset>
-                    <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Classes this teacher sees
-                    </legend>
+                    <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("Classes this teacher sees")}</legend>
                     {schoolClasses.length === 0 ? (
-                        <p className="text-sm text-slate-500">This school has no classes yet.</p>
+                        <p className="text-sm text-slate-500">{t("This school has no classes yet.")}</p>
                     ) : (
                         <div className="flex flex-wrap gap-2">
                             {schoolClasses.map((klass) => {
@@ -293,7 +285,7 @@ function StaffForm({
                                             on ? "bg-emerald-400 text-emerald-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                                         }`}
                                     >
-                                        {klass.name} · Grade {klass.grade}
+                                        {klass.name}{" "}{t("· Grade")}{" "}{klass.grade}
                                     </button>
                                 );
                             })}
@@ -304,8 +296,8 @@ function StaffForm({
 
             <ErrorList errors={errors} />
             <div className="flex justify-end gap-2">
-                <PixelButton tone="slate" onClick={onClose}>Cancel</PixelButton>
-                <PixelButton tone="emerald" type="submit">💾 Save account</PixelButton>
+                <PixelButton tone="slate" onClick={onClose}>{t("Cancel")}</PixelButton>
+                <PixelButton tone="emerald" type="submit">{t("💾 Save account")}</PixelButton>
             </div>
         </form>
     );

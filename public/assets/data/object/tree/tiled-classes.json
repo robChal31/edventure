@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "name": "tree",
+    "type": "class",
+    "color": "#ff56a578",
+    "drawFill": true,
+    "useAs": ["object"],
+    "members": [
+      { "name": "species", "type": "string", "value": "mahogany" },
+      { "name": "variant", "type": "string", "value": "large" },
+      { "name": "stage", "type": "string", "value": "standing" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "wood",
+    "type": "class",
+    "color": "#ffb18359",
+    "drawFill": true,
+    "useAs": ["object"],
+    "members": [ { "name": "species", "type": "string", "value": "mahogany" } ]
+  }
+]
