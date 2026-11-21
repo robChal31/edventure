@@ -31,6 +31,8 @@ export type LocalCollection<T extends Entity> = {
 export type LocalCollectionOptions<T extends Entity> = {
     /** localStorage key. Version it (".v1") so the shape can evolve. */
     key: string;
+    /** Opt into atomic persistent writes (e.g. image-bearing questions). */
+    requirePersistence?: boolean;
     /** Validates one stored item; return null to drop it. */
     sanitize: (raw: unknown) => T | null;
     /** Initial content, used only when the key has never been written. */
@@ -49,11 +51,12 @@ export function createLocalCollection<T extends Entity>(
 
     const hasWindow = () => typeof window !== "undefined";
 
-    const write = (items: readonly T[]): void => {
+    const write = (items: readonly T[], strict = false): void => {
         try {
             window.localStorage.setItem(key, JSON.stringify(items));
-        } catch {
-            // Storage full / unavailable — keep working in memory.
+        } catch (error) {
+            if (strict) throw error;
+            // Optional collections can keep working in memory.
         }
     };
 
@@ -85,8 +88,8 @@ export function createLocalCollection<T extends Entity>(
     };
 
     const commit = (next: readonly T[]): void => {
+        if (hasWindow()) write(next, options.requirePersistence);
         cache = next;
-        if (hasWindow()) write(next);
         emit();
     };
 

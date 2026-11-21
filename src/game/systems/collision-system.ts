@@ -42,10 +42,8 @@ export class CollisionSystem {
         const fenceLayer = this.worldMap.map.getLayer("fence")
             ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
 
-        if (!fenceLayer) {
-            console.warn("Fence layer not found");
-            return;
-        }
+        // Some maps (e.g. the beach) deliberately have no fence.
+        if (!fenceLayer) return;
 
         // Semua tile yang bukan -1 (empty) collidable
         fenceLayer.setCollisionByExclusion([-1]);
@@ -57,37 +55,14 @@ export class CollisionSystem {
     }
 
     #setupHigherGroundEdgeCollision(): void {
-        const higherGroundEdge = this.worldMap.map.getLayer("higher_ground_edge")
-            ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
-            console.log("higherGroundEdge", higherGroundEdge);
-
-        const groundCliffEdge = this.worldMap.map.getLayer("ground_cliff")
-            ?.tilemapLayer as Phaser.Tilemaps.TilemapLayer | undefined;
-
-        if (!higherGroundEdge) {
-            console.warn("Higher ground edge layer not found");
-            return;
+        // Boundary layers are optional and independent. A map with only a cliff
+        // must still collide with it, even when it has no higher-ground layer.
+        for (const name of ["higher_ground_edge", "ground_cliff"]) {
+            const layer = this.worldMap.getLayer(name);
+            if (!layer) continue;
+            layer.setCollisionByExclusion([-1]);
+            this.scene.physics.add.collider(this.player, layer);
         }
-
-        if (!groundCliffEdge) {
-            console.warn("Ground cliff edge layer not found");
-            return;
-        }
-
-        // Semua tile yang bukan -1 (empty) collidable
-        higherGroundEdge.setCollisionByExclusion([-1]);
-
-        groundCliffEdge.setCollisionByExclusion([-1]);
-
-        this.scene.physics.add.collider(
-            this.player,
-            higherGroundEdge
-        );
-
-        this.scene.physics.add.collider(
-            this.player,
-            groundCliffEdge
-        );
     }
 
     #setupAnimationCollision(): void {
@@ -95,6 +70,7 @@ export class CollisionSystem {
             if (!sprite.getData("collidable")) return;
 
             const collisionBody = this.#createCollisionBody(sprite);
+            sprite.setData("collisionFootprint", collisionBody);
 
             this.scene.physics.add.collider(
                 this.player,
@@ -106,12 +82,11 @@ export class CollisionSystem {
     #setupObjectCollision(): void {
         this.objects.forEach((object) => {
             const gameObject = object.gameObject;
+            if (gameObject.getData("atmosphere")) return;
 
             if (object.collidable?.collisionBody) {
-                this.scene.physics.add.collider(
-                    this.player,
-                    object.collidable.collisionBody
-                );
+                const collider = this.scene.physics.add.collider(this.player, object.collidable.collisionBody);
+                object.collidable.collisionBody.once("destroy", () => collider.destroy());
                 return;
             }
 
@@ -122,6 +97,7 @@ export class CollisionSystem {
             const collisionBody = this.#createCollisionBody(gameObject);
 
             object.collidable = { collisionBody };
+            gameObject.once("destroy", () => collisionBody.destroy());
 
             this.scene.physics.add.collider(
                 this.player,

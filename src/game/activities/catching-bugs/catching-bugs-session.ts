@@ -1,3 +1,4 @@
+import type { ActivityProgress } from "@/quiz/progress";
 import { QuizSession, type AnswerOutcome } from "@/quiz/quiz-session";
 import type { AnswerValue, PlayableQuiz, QuizMode, QuizSummary } from "@/quiz/types";
 
@@ -13,14 +14,19 @@ export class CatchingBugsSession {
     #roundIndex = 0;
     #misses = 0;
 
-    constructor(quiz: PlayableQuiz, capacity = CRICKETS_PER_ROUND) {
+    constructor(quiz: PlayableQuiz, capacity = CRICKETS_PER_ROUND, progress?: ActivityProgress) {
         if (!Number.isSafeInteger(capacity) || capacity < 1) {
             throw new RangeError("A cricket round needs a positive integer capacity.");
         }
         this.mode = quiz.mode ?? "assessment";
         this.capacity = capacity;
-        this.quiz = new QuizSession(quiz);
+        this.quiz = new QuizSession(quiz, progress?.quiz);
+        this.#misses = Math.max(this.quiz.incorrectCount, progress?.misses ?? 0);
+        while (!this.quiz.isComplete && this.questionIndices.length === 0) this.#roundIndex += 1;
+        if (this.quiz.isComplete) this.#roundIndex = Math.max(0, this.roundCount - 1);
     }
+
+    snapshot(): ActivityProgress { return { quiz: this.quiz.snapshot(), misses: this.#misses }; }
 
     get misses(): number {
         return this.#misses;

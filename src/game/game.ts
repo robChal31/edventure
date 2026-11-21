@@ -37,14 +37,14 @@ export function createGame(
                 debug: false,
             },
         },
-        backgroundColor: "#1a1a2e",
+        backgroundColor: "#edf9fb",
         // Asset paths (assets/data/assets.json and its pack entries) are
         // relative; resolve them from the site root so the game also loads
         // on nested routes like /student/play and /teacher/preview/[id].
         loader: {
             baseURL: "/",
         },
-        scene: [new PreloadScene(), gameScene],
+        scene: [new PreloadScene(options?.onEvent), gameScene],
     });
 
     if (DEBUG_CONFIG.enabled) {

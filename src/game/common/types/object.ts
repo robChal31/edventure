@@ -1,21 +1,15 @@
-import { MAHOGANY_ANIMATION_KEYS } from "../assets";
 import { FootprintConfig } from "../types";
 
 export type TreeDefinition = {
+    /** Stumps require three additional chops and are then removed. */
+    stage?: "standing" | "stump";
     chopCount: number;
     dropCount: number;
     tiles: number[][];
     footprint: FootprintConfig;
 }
 
-export type TreeDefinitions = {
-    mahogany_tree_small: TreeDefinition;
-    mahogany_tree_medium: TreeDefinition;
-    mahogany_tree_large: TreeDefinition;
-    chopped_mahogany_tree: TreeDefinition;
-    no_leaf_mahogany: TreeDefinition;
-    dark_green_mahogany_tree_large: TreeDefinition;
-};
+export type TreeDefinitions = Record<string, TreeDefinition>;
 
 
 export type TiledObject = {
@@ -31,9 +25,4 @@ export type TiledObject = {
     y: number;
 }
 
-export type TreeAnimationKey =
-    | typeof MAHOGANY_ANIMATION_KEYS.MAHOGANY_TREE_SMALL_ANIMATION
-    | typeof MAHOGANY_ANIMATION_KEYS.MAHOGANY_TREE_MEDIUM_ANIMATION
-    | typeof MAHOGANY_ANIMATION_KEYS.MAHOGANY_TREE_LARGE_ANIMATION
-    | typeof MAHOGANY_ANIMATION_KEYS.MAHOGANY_NO_LEAF_ANIMATION
-    | typeof MAHOGANY_ANIMATION_KEYS.MAHOGANY_DARK_GREEN_TREE_LARGE_ANIMATION
+export type TreeAnimationKey = string;

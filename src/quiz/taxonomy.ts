@@ -1,3 +1,6 @@
+import { getLocale } from "@/i18n/locale";
+import { translate } from "@/i18n/translate";
+
 /**
  * Classification labels for questions and quizzes. These make the question
  * bank searchable and give the data a structure reports can group by:
@@ -25,7 +28,7 @@ export function stageOfGrade(grade: number): GradeStage {
 }
 
 export function gradeLabel(grade: number | null | undefined): string {
-    return typeof grade === "number" ? `Grade ${grade}` : "No grade";
+    return typeof grade === "number" ? translate(getLocale(), "Grade {grade}", { grade }) : translate(getLocale(), "No grade");
 }
 
 export const SUBJECTS = [
@@ -108,7 +111,7 @@ export function classificationSummary(parts: {
         typeof parts.grade === "number" ? gradeLabel(parts.grade) : null,
         parts.subject || null,
         parts.topic || null,
-        isCurriculumId(parts.curriculum) ? CURRICULA[parts.curriculum].label : null,
+        isCurriculumId(parts.curriculum) ? translate(getLocale(), CURRICULA[parts.curriculum].label) : null,
     ]
         .filter(Boolean)
         .join(" · ");

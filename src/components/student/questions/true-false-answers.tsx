@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
 import { useEffect, useState } from "react";
 import type { AnswerValue, TrueFalseQuestion } from "@/quiz/types";
 import { isTypingTarget } from "./keyboard";
@@ -33,6 +34,7 @@ const CHOICES = [
 ] as const;
 
 export default function TrueFalseAnswers({ question, reveal, onAnswer, keyboardShortcuts = true }: Props) {
+    const { t } = useI18n();
     const [picked, setPicked] = useState<boolean | null>(null);
     const locked = picked !== null || reveal !== null;
     const selected = reveal?.answer.type === "true_false" ? reveal.answer.value : picked;
@@ -92,7 +94,7 @@ export default function TrueFalseAnswers({ question, reveal, onAnswer, keyboardS
                             disabled={locked}
                             onClick={() => choose(choice.value)}
                             className={`relative flex min-h-36 flex-col items-center justify-center gap-2 rounded-2xl border-b-[6px] px-3 py-4 transition duration-150 disabled:cursor-default ${choice.tile} ${state}`}
-                            aria-label={choice.label}
+                            aria-label={t(choice.label)}
                         >
                             <span
                                 className={`flex h-14 w-14 items-center justify-center rounded-full font-pixel text-2xl text-white drop-shadow ${choice.badge}`}
@@ -100,15 +102,14 @@ export default function TrueFalseAnswers({ question, reveal, onAnswer, keyboardS
                             >
                                 {choice.icon}
                             </span>
-                            <span className="font-pixel text-base sm:text-lg">{choice.label}</span>
+                            <span className="font-pixel text-base sm:text-lg">{t(choice.label)}</span>
                             {mark ? (
                                 <span className="lw-stamp absolute -top-2 rounded bg-slate-950 px-2 py-1 font-pixel text-[8px] text-amber-200">
-                                    {mark}
+                                    {t(mark)}
                                 </span>
                             ) : (
                                 !locked && keyboardShortcuts && (
-                                    <span className="hidden font-pixel text-[9px] opacity-70 sm:block">
-                                        PRESS {choice.keys}
+                                    <span className="hidden font-pixel text-[9px] opacity-70 sm:block">{t("PRESS")}{" "}{choice.keys}
                                     </span>
                                 )
                             )}

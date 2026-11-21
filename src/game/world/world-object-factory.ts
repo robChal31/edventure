@@ -5,6 +5,8 @@ import {
     TreeDefinitions,
 } from "../common/types/object";
 import { WORLD_CONFIG } from "../config/world-config";
+import { isCloudLayer, isCloudTile } from "./render-layers";
+import { DEPTH_CONFIG } from "../config/depth-config";
 import { Tree } from "../game-objects/tree";
 import { WorldObject } from "./world-object";
 
@@ -20,73 +22,20 @@ export class WorldObjectFactory {
         gid?: number,
         map?: Phaser.Tilemaps.Tilemap
     ): WorldObject | null {
-        switch (type) {
-            case "mahogany_tree_small":
-            case "mahogany_tree_medium":
-            case "mahogany_tree_large":
-            case "no_leaf_mahogany":
-            case "dark_green_mahogany_tree_large":
-            case "orange_mahogany_tree_large":
-            case "chopped_mahogany_tree":
-                return this.#createTree(
-                    x,
-                    y,
-                    type as keyof TreeDefinitions,
-                    type as TreeAnimationKey
-                );
-
-            default:
-                if (gid == null || !map) {
-                    return null;
-                }
-                return this.#createStaticObject(
-                    type,
-                    x,
-                    y,
-                    gid,
-                    map
-                );
+        const species = /mahogany/.test(type) ? "mahogany" : /maple/.test(type) ? "maple" : /birch/.test(type) ? "birch" : /pine/.test(type) ? "pine" : null;
+        if (species) {
+            const definitions: TreeDefinitions | undefined = this.scene.cache.json.get(`${species.toUpperCase()}_TREE_DEFINITIONS`);
+            const definition = definitions?.[type];
+            if (definition) {
+                const texture = ASSET_KEYS[`${species.toUpperCase()}_TREE` as keyof typeof ASSET_KEYS];
+                const tree = new Tree(this.scene, texture, x * WORLD_CONFIG.scale, y * WORLD_CONFIG.scale,
+                    WORLD_CONFIG.scale, definition, species === "mahogany" ? type as TreeAnimationKey : undefined,
+                    definitions?.[`chopped_${species}_tree`]);
+                tree.setName(type);
+                return { gameObject: tree, interactable: tree, collidable: tree, visible: tree, depthSortable: tree };
+            }
         }
-    }
-
-    #createTree(
-        x: number,
-        y: number,
-        variant: keyof TreeDefinitions,
-        animationKey: TreeAnimationKey
-    ): WorldObject | null {
-        const definitions: TreeDefinitions =
-            this.scene.cache.json.get(
-                "MAHOGANY_TREE_DEFINITIONS"
-            );
-
-        const treeDefinition = definitions[variant];
-
-        if (!treeDefinition) {
-            console.error(
-                `Tree definition not found: ${variant}`
-            );
-            return null;
-        }
-
-        const tree = new Tree(
-            this.scene,
-            ASSET_KEYS.MAHOGANY_TREE,
-            x * WORLD_CONFIG.scale,
-            y * WORLD_CONFIG.scale,
-            WORLD_CONFIG.scale,
-            treeDefinition,
-            animationKey,
-            definitions.chopped_mahogany_tree
-        );
-
-        return {
-            gameObject: tree,
-            interactable: tree,
-            collidable: tree,
-            visible: tree,
-            depthSortable: tree,
-        };
+        return gid == null || !map ? null : this.#createStaticObject(type, x, y, gid, map);
     }
 
     #createStaticObject(
@@ -128,6 +77,8 @@ export class WorldObjectFactory {
         image.setScale(WORLD_CONFIG.scale);
         // The Tiled object layer name, e.g. "fishman_house".
         image.setName(layerName);
+
+        if (isCloudLayer(layerName) || isCloudTile(gid, map.tilesets)) return { gameObject: image.setDepth(DEPTH_CONFIG.CLOUDS).setData("atmosphere", true) };
 
         return {
             gameObject: image,

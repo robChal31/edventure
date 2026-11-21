@@ -56,7 +56,7 @@ export class FishingActivity implements Activity {
 
     constructor(ctx: ActivityContext) {
         this.#ctx = ctx;
-        this.#session = new QuizSession(ctx.quiz);
+        this.#session = new QuizSession(ctx.quiz, ctx.progress?.quiz);
         this.#surface = new WaterSurface(ctx.worldMap, ctx.mapObjects);
         this.#water = new WaterEffects(ctx.scene);
         this.#feedback = new FeedbackEffects(ctx.scene);
@@ -97,8 +97,11 @@ export class FishingActivity implements Activity {
 
         this.#school = new AmbientFishSchool(this.scene, this.#surface);
 
-        this.#toIdle();
+        if (this.#session.isComplete) { this.#emitHud(); this.#complete(); }
+        else this.#toIdle();
     }
+
+    public snapshot() { return { quiz: this.#session.snapshot() }; }
 
     public handlePrimaryAction(): void {
         switch (this.#phase) {
@@ -477,6 +480,7 @@ export class FishingActivity implements Activity {
     }
 
     #emitHud(questionNumber: number = this.#session.currentNumber): void {
+        this.emit({ type: "progress", progress: this.snapshot() });
         this.emit({
             type: "hud",
             caught: this.#session.correctCount,

@@ -4,6 +4,7 @@ import type { WorldMapDefinition } from "../world-map-definition";
 /** Existing 40 × 20 Tiled farm. Question counts never resize this map. */
 export const FARM_MAP: WorldMapDefinition = {
     key: ASSET_KEYS.FARM_MAP,
+    soundtrack: null,
     tilesets: [
         { name: "summer_grass", assetKey: ASSET_KEYS.WORLD_SUMMER_GRASS },
         { name: "summer_grass_water", assetKey: ASSET_KEYS.WORLD_SUMMER_GRASS_WATER },

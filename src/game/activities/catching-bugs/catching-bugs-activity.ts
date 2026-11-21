@@ -10,6 +10,7 @@ import type { PreparedAction } from "@/game/equipment/targeting";
 import type { Activity, ActivityContext } from "../activity";
 import { CRICKET_MOVE } from "./catching-bugs-assets";
 import { CatchingBugsSession, type BugAnswerOutcome } from "./catching-bugs-session";
+import { CapturePopups } from "../capture-popup";
 import { CatchingNet } from "./catching-net";
 import { QuestionCloseGate } from "./question-close-gate";
 import {
@@ -22,6 +23,8 @@ type Cricket = {
     motion: CricketMotion;
     sprite: Phaser.GameObjects.Sprite;
     label: Phaser.GameObjects.Text;
+    footprint: Phaser.GameObjects.Rectangle;
+    shadow: Phaser.GameObjects.Ellipse;
     state: "idle" | "question" | "released" | "captured";
 };
 
@@ -30,6 +33,9 @@ export class CatchingBugsActivity implements Activity {
     #session: CatchingBugsSession;
     #field: CricketField;
     #net: CatchingNet;
+    #popups: CapturePopups;
+    #bodies: Phaser.Physics.Arcade.StaticGroup;
+    #collider: Phaser.Physics.Arcade.Collider;
     #crickets: Cricket[] = [];
     #resolving = new Set<Cricket>();
     #target: Cricket | null = null;
@@ -43,9 +49,12 @@ export class CatchingBugsActivity implements Activity {
     #spawn: { x: number; y: number };
 
     constructor(private ctx: ActivityContext) {
-        this.#session = new CatchingBugsSession(ctx.quiz);
+        this.#session = new CatchingBugsSession(ctx.quiz, undefined, ctx.progress);
         this.#field = readCricketField(ctx.worldMap.map.getObjectLayer("catching_bugs")?.objects ?? [], WORLD_CONFIG.scale);
         this.#net = new CatchingNet(ctx.scene);
+        this.#popups = new CapturePopups(ctx.scene);
+        this.#bodies = ctx.scene.physics.add.staticGroup();
+        this.#collider = ctx.scene.physics.add.collider(ctx.player, this.#bodies);
         this.#spawn = { x: ctx.player.x, y: ctx.player.y };
     }
 
@@ -55,6 +64,8 @@ export class CatchingBugsActivity implements Activity {
             this.#complete();
         } else this.#spawnRound();
     }
+
+    snapshot() { return this.#session.snapshot(); }
 
     preparePrimaryAction(): PreparedAction {
         const cricket = this.#phase === "idle"
@@ -137,13 +148,20 @@ export class CatchingBugsActivity implements Activity {
             moveCricket(cricket.motion, this.#field, delta);
             const { x, y, vx } = cricket.motion;
             cricket.sprite.setPosition(x, y).setDepth(y + CRICKET_RADIUS);
+            cricket.footprint.setPosition(x - 6, y);
+            (cricket.footprint.body as Phaser.Physics.Arcade.StaticBody).updateFromGameObject();
+            cricket.shadow.setPosition(x, y + 3);
             if (vx !== 0) cricket.sprite.setFlipX(vx < 0);
             // Only the playful question mark bobs. Idle cricket coordinates never change.
             cricket.label.setPosition(x, y - 13 + Math.sin(time / 260 + cricket.questionIndex) * 1.5);
         }
     }
 
-    destroy(): void { this.#destroyed = true; this.#clearRun(); }
+    destroy(): void {
+        if (this.#destroyed) return;
+        this.#destroyed = true; this.#clearRun();
+        this.#collider.destroy(); this.#bodies.destroy(true);
+    }
 
     #spawnRound(): void {
         const indices = this.#session.questionIndices;
@@ -158,7 +176,13 @@ export class CatchingBugsActivity implements Activity {
                 fontFamily: '"Press Start 2P"', fontSize: "8px", color: "#fff3b0",
                 stroke: "#173b25", strokeThickness: 3,
             }).setName("cricket-question-mark").setOrigin(0.5).setDepth(DEPTH_CONFIG.WORLD_UI);
-            return { questionIndex, motion, sprite, label, state: "idle" };
+            // Small feet collider: it stops walking through a cricket without blocking net reach (28px).
+            const footprint = this.ctx.scene.add.rectangle(motion.x - 6, motion.y, 12, 7).setOrigin(0, 0)
+                .setName(`cricket-feet-${questionIndex}`).setVisible(false);
+            this.#bodies.add(footprint);
+            const shadow = this.ctx.scene.add.ellipse(motion.x, motion.y + 3, 14, 5, 0x304b45, 0.2)
+                .setName("cricket-contact-shadow").setDepth(DEPTH_CONFIG.SHADOW);
+            return { questionIndex, motion, sprite, label, footprint, shadow, state: "idle" };
         });
         this.#toIdle(`Ronde ${this.#session.roundNumber}/${this.#session.roundCount} · ${indices.length} cricket. Cari tanda ? dan pakai jaring!`);
     }
@@ -171,6 +195,9 @@ export class CatchingBugsActivity implements Activity {
             sfx.correct();
             this.#prompt("Dapat! Cricket masuk ke jaring ✨");
             target.state = "captured";
+            (target.footprint.body as Phaser.Physics.Arcade.StaticBody).enable = false;
+            target.footprint.destroy(); target.shadow.destroy();
+            this.#popups.show(this.ctx.player.x, this.ctx.player.y - 25);
             this.#crickets = this.#crickets.filter((cricket) => cricket !== target);
             this.#resolving.add(target);
             target.sprite.setDepth(DEPTH_CONFIG.AIRBORNE);
@@ -240,6 +267,7 @@ export class CatchingBugsActivity implements Activity {
     }
 
     #emitHud(questionNumber = this.#session.quiz.currentNumber): void {
+        this.ctx.emit({ type: "progress", progress: this.snapshot() });
         this.ctx.emit({
             type: "hud", caught: this.#session.quiz.correctCount, answered: this.#session.quiz.answeredCount,
             total: this.#session.quiz.total, questionNumber, misses: this.#session.misses,
@@ -266,7 +294,9 @@ export class CatchingBugsActivity implements Activity {
         });
         this.#timers.add(timer);
     }
-    #destroyCricket(cricket: Cricket): void { cricket.sprite.destroy(); cricket.label.destroy(); }
+    #destroyCricket(cricket: Cricket): void {
+        cricket.sprite.destroy(); cricket.label.destroy(); cricket.footprint.destroy(); cricket.shadow.destroy();
+    }
     #clearRun(): void {
         this.#generation += 1;
         this.#closeGate.cancel();
@@ -275,6 +305,7 @@ export class CatchingBugsActivity implements Activity {
         this.#tweens.forEach((tween) => tween.remove());
         this.#tweens.clear();
         this.#net.cancel();
+        this.#popups.clear();
         this.#crickets.forEach((cricket) => this.#destroyCricket(cricket));
         this.#resolving.forEach((cricket) => this.#destroyCricket(cricket));
         this.#resolving.clear();

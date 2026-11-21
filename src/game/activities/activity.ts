@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { AnswerValue, PlayableQuiz } from "@/quiz/types";
+import type { ActivityProgress } from "@/quiz/progress";
 import type { PreparedAction } from "../equipment/targeting";
 import type { GameEvent } from "../game-options";
 import type { Player } from "../game-objects/player/player";
@@ -15,6 +16,7 @@ export type ActivityContext = {
     /** Everything placed on the map: static props + animated sprites. */
     mapObjects: readonly MapObject[];
     quiz: PlayableQuiz;
+    progress?: ActivityProgress;
     emit: (event: GameEvent) => void;
 };
 
@@ -24,6 +26,7 @@ export type ActivityContext = {
  */
 export interface Activity {
     create(): void;
+    snapshot(): ActivityProgress;
     /** The activity key was pressed (F / Space) or the touch button tapped. */
     handlePrimaryAction(): void;
     /** Preview and execution share the exact resolved target snapshot. */

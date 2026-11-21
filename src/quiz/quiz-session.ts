@@ -1,4 +1,5 @@
 import { gradeAnswer } from "./grading";
+import { sanitizeProgress, type QuizProgress } from "./progress";
 import type {
     AnswerRecord,
     AnswerValue,
@@ -24,8 +25,17 @@ export class QuizSession {
     private index = 0;
     private records = new Map<number, AnswerRecord>();
 
-    constructor(quiz: PlayableQuiz) {
+    constructor(quiz: PlayableQuiz, progress?: QuizProgress) {
         this.quiz = quiz;
+        const restored = progress ? sanitizeProgress({ quiz: progress }, quiz.questions) : null;
+        restored?.quiz.answers.forEach(({ questionIndex, answer }) => this.submitAnswerFor(questionIndex, answer, {
+            retryIncorrect: quiz.activityId === "catching_bugs" && quiz.mode === "practice",
+        }));
+    }
+
+    public snapshot(): QuizProgress {
+        return { version: 1, answers: Array.from(this.records.entries())
+            .sort(([a], [b]) => a - b).map(([questionIndex, record]) => ({ questionIndex, answer: { ...record.answer } })) };
     }
 
     public get total(): number {

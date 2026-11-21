@@ -3,6 +3,7 @@ import { WorldMapDefinition } from "../world-map-definition";
 
 export const BEACH_MAP: WorldMapDefinition = {
     key: ASSET_KEYS.BEACH_MAP,
+    soundtrack: null,
 
     tilesets: [
         { name: "beach", assetKey: ASSET_KEYS.WORLD_BEACH },

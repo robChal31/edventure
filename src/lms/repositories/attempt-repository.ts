@@ -79,6 +79,8 @@ function sanitizeAttempt(raw: unknown): QuizAttempt | null {
 export const attemptStore = createLocalCollection<QuizAttempt>({
     key: "learning-world.lms.attempts.v1",
     sanitize: sanitizeAttempt,
+    // Never clear a durable checkpoint after an in-memory-only result write.
+    requirePersistence: true,
 });
 
 export function recordAttempt(input: {
@@ -86,12 +88,17 @@ export function recordAttempt(input: {
     summary: QuizSummary;
     startedAt: string;
     completedAt?: string;
+    /** Stable across reload/resume so one run can be recorded only once. */
+    runId?: string;
 }): QuizAttempt {
     const { student, summary } = input;
     const total = summary.total;
+    const id = input.runId ? `attempt-${student.id}-${input.runId}` : createId("attempt");
+    const existing = attemptStore.get(id);
+    if (existing) return existing;
 
     return attemptStore.upsert({
-        id: createId("attempt"),
+        id,
         quizId: summary.quizId,
         quizName: summary.quizName,
         studentId: student.id,

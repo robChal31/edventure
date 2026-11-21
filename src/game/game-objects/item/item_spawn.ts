@@ -1,5 +1,6 @@
 import { ASSET_KEYS, WOOD_LOG_ANIMATION_KEYS } from "@/game/common/assets";
 import Phaser from "phaser";
+import { LOG_SCALE } from "../tree-lifecycle";
 
 export class ItemSpawn extends Phaser.Physics.Arcade.Sprite {
     constructor(
@@ -21,7 +22,8 @@ export class ItemSpawn extends Phaser.Physics.Arcade.Sprite {
 
         this.setScale(0);
         this.setAlpha(0);
-        this.setDepth(10);
+        this.setName("dropped-log");
+        this.setDepth(targetY);
         this.play({
             key: WOOD_LOG_ANIMATION_KEYS.LIGHT_ROUND_LOG,
             repeat: -1
@@ -31,7 +33,7 @@ export class ItemSpawn extends Phaser.Physics.Arcade.Sprite {
             targets: this,
             x: targetX,
             y: targetY,
-            scale: 1,
+            scale: LOG_SCALE,
             alpha: 1,
             angle: Phaser.Math.Between(-20, 20),
             duration: 350,

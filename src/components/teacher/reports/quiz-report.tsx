@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n/provider";
+import QuestionSnippet from "@/components/ui/question-snippet";
 import Link from "next/link";
 import { useMemo } from "react";
 import { describeCorrectAnswer } from "@/quiz/grading";
@@ -19,6 +21,7 @@ import PixelButton, { pixelButtonClass } from "@/components/ui/pixel-button";
 import AttemptsTable from "./attempts-table";
 
 export default function QuizReport({ quizId }: { quizId: string }) {
+    const { t } = useI18n();
     const hydrated = useHydrated();
     const quizzes = useQuizzes();
     const students = useStudents();
@@ -39,11 +42,9 @@ export default function QuizReport({ quizId }: { quizId: string }) {
         return (
             <EmptyState
                 icon="🔍"
-                title="QUIZ NOT FOUND"
+                title={t("QUIZ NOT FOUND")}
                 action={
-                    <Link href="/teacher/reports" className={pixelButtonClass("sky")}>
-                        ← All reports
-                    </Link>
+                    <Link href="/teacher/reports" className={pixelButtonClass("sky")}>{t("← All reports")}</Link>
                 }
             />
         );
@@ -55,49 +56,43 @@ export default function QuizReport({ quizId }: { quizId: string }) {
 
     return (
         <>
-            <Link href="/teacher/reports" className="mb-3 inline-block text-xs font-semibold text-sky-300 hover:underline">
-                ← All reports
-            </Link>
+            <Link href="/teacher/reports" className="mb-3 inline-block text-xs font-semibold text-sky-300 hover:underline">{t("← All reports")}</Link>
             <PageHeader
                 title={title}
-                description={quiz ? <StatusPill published={quiz.published} /> : "This quiz was deleted — showing saved results."}
+                description={quiz ? <StatusPill published={quiz.published} /> : t("This quiz was deleted — showing saved results.")}
                 actions={
                     <>
                         {quiz && (
-                            <Link href={`/teacher/preview/${quiz.id}`} className={pixelButtonClass("violet", "md")}>
-                                ▶ Preview
-                            </Link>
+                            <Link href={`/teacher/preview/${quiz.id}`} className={pixelButtonClass("violet", "md")}>{t("▶ Preview")}</Link>
                         )}
                         <PixelButton
                             tone="emerald"
                             disabled={attempts.length === 0}
                             onClick={() => downloadCsv(`${title.replace(/[^\w-]+/g, "_")}-results.csv`, attemptsToCsv(attempts))}
-                        >
-                            ⬇ CSV
-                        </PixelButton>
+                        >{t("⬇ CSV")}</PixelButton>
                     </>
                 }
             />
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <StatCard icon="🎯" label="Average" value={stats.averageScore === null ? "—" : `${stats.averageScore}%`} tone="violet" />
-                <StatCard icon="🏆" label="Best" value={stats.bestScore === null ? "—" : `${stats.bestScore}%`} tone="amber" />
+                <StatCard icon="🎯" label={t("Average")} value={stats.averageScore === null ? "—" : `${stats.averageScore}%`} tone="violet" />
+                <StatCard icon="🏆" label={t("Best")} value={stats.bestScore === null ? "—" : `${stats.bestScore}%`} tone="amber" />
                 <StatCard
                     icon="✅"
-                    label="Completed"
+                    label={t("Completed")}
                     value={completion ? `${completion.completed}/${completion.assigned}` : "—"}
-                    hint="assigned students"
+                    hint={t("assigned students")}
                     tone="emerald"
                 />
-                <StatCard icon="🔁" label="Attempts" value={stats.count} hint={`last ${formatRelative(stats.lastCompletedAt)}`} tone="sky" />
+                <StatCard icon="🔁" label={t("Attempts")} value={stats.count} hint={t("last {value0}", { value0: formatRelative(stats.lastCompletedAt) })} tone="sky" />
             </div>
 
             <div className="mt-8 grid gap-6 xl:grid-cols-2">
                 <section>
-                    <h2 className="mb-1 font-pixel text-xs text-sky-300">QUESTIONS — HARDEST FIRST</h2>
-                    <p className="mb-3 text-xs text-slate-500">The most common wrong answer often reveals a misconception.</p>
+                    <h2 className="mb-1 font-pixel text-xs text-sky-300">{t("QUESTIONS — HARDEST FIRST")}</h2>
+                    <p className="mb-3 text-xs text-slate-500">{t("The most common wrong answer often reveals a misconception.")}</p>
                     {breakdown.length === 0 ? (
-                        <p className="rounded-lg border-2 border-dashed border-slate-800 p-4 text-sm text-slate-500">No answers yet.</p>
+                        <p className="rounded-lg border-2 border-dashed border-slate-800 p-4 text-sm text-slate-500">{t("No answers yet.")}</p>
                     ) : (
                         <ul className="flex flex-col gap-2">
                             {breakdown.map((row) => (
@@ -105,7 +100,7 @@ export default function QuizReport({ quizId }: { quizId: string }) {
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0">
                                             <QuestionTypeBadge type={row.question.type} compact />
-                                            <p className="mt-1.5 text-sm font-semibold text-slate-100">{row.question.text}</p>
+                                            <QuestionSnippet question={row.question} className="mt-1.5 text-sm font-semibold text-slate-100" />
                                         </div>
                                         <ScorePill score={row.correctRate} />
                                     </div>
@@ -117,14 +112,11 @@ export default function QuizReport({ quizId }: { quizId: string }) {
                                     </div>
                                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
                                         <span>
-                                            {row.correct}/{row.answered} correct
-                                        </span>
-                                        <span>
-                                            Answer: <span className="text-emerald-300">{describeCorrectAnswer(row.question)}</span>
+                                            {row.correct}/{row.answered}{" "}{t("correct")}</span>
+                                        <span>{t("Answer:")}{" "}<span className="text-emerald-300">{row.question.type === "true_false" ? t(describeCorrectAnswer(row.question)) : describeCorrectAnswer(row.question)}</span>
                                         </span>
                                         {row.commonWrongAnswer && (
-                                            <span>
-                                                Common mistake: <span className="text-rose-300">&ldquo;{row.commonWrongAnswer.label}&rdquo;</span> ×
+                                            <span>{t("Common mistake:")}{" "}<span className="text-rose-300">{"“"}{row.question.type === "true_false" ? t(row.commonWrongAnswer.label) : row.commonWrongAnswer.label}{"”"}</span> ×
                                                 {row.commonWrongAnswer.count}
                                             </span>
                                         )}
@@ -136,9 +128,9 @@ export default function QuizReport({ quizId }: { quizId: string }) {
                 </section>
 
                 <section>
-                    <h2 className="mb-3 font-pixel text-xs text-sky-300">STUDENTS</h2>
+                    <h2 className="mb-3 font-pixel text-xs text-sky-300">{t("STUDENTS")}</h2>
                     {rows.length === 0 ? (
-                        <p className="rounded-lg border-2 border-dashed border-slate-800 p-4 text-sm text-slate-500">No students assigned.</p>
+                        <p className="rounded-lg border-2 border-dashed border-slate-800 p-4 text-sm text-slate-500">{t("No students assigned.")}</p>
                     ) : (
                         <div className="pixel-panel divide-y divide-slate-800 rounded-xl bg-slate-900">
                             {rows.map((row) => (
@@ -150,13 +142,13 @@ export default function QuizReport({ quizId }: { quizId: string }) {
                                     </Link>
                                     <div className="flex shrink-0 items-center gap-3 text-xs text-slate-400">
                                         {row.attempts === 0 ? (
-                                            <span className="rounded-md bg-slate-800 px-2 py-0.5">Not started</span>
+                                            <span className="rounded-md bg-slate-800 px-2 py-0.5">{t("Not started")}</span>
                                         ) : (
                                             <>
                                                 <span>
                                                     {row.attempts}× · {formatRelative(row.latest?.completedAt ?? null)}
                                                 </span>
-                                                <ScorePill score={row.bestScore} label="best" />
+                                                <ScorePill score={row.bestScore} label={t("best")} />
                                             </>
                                         )}
                                     </div>
@@ -168,7 +160,7 @@ export default function QuizReport({ quizId }: { quizId: string }) {
             </div>
 
             <section className="mt-8">
-                <h2 className="mb-3 font-pixel text-xs text-sky-300">ATTEMPTS</h2>
+                <h2 className="mb-3 font-pixel text-xs text-sky-300">{t("ATTEMPTS")}</h2>
                 <AttemptsTable attempts={attempts} students={students} showQuiz={false} />
             </section>
         </>

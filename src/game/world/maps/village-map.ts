@@ -8,6 +8,7 @@ import { WorldMapDefinition } from "../world-map-definition";
 
 export const VILLAGE_MAP: WorldMapDefinition = {
     key: ASSET_KEYS.WORLD_MAP,
+    soundtrack: null,
 
     tilesets: [
         {

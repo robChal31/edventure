@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { useI18n } from "@/i18n/provider";
 import { describeAnswer, describeCorrectAnswer } from "@/quiz/grading";
 import type { QuizAttempt } from "@/lms/types";
 import { formatDateTime, formatDuration } from "@/lms/services/reports";
@@ -14,10 +16,11 @@ export default function AttemptDetail({
     attempt: QuizAttempt | null;
     onClose: () => void;
 }) {
+    const { t } = useI18n();
     return (
         <Modal
             open={attempt !== null}
-            title={attempt ? `${attempt.studentName} · ${attempt.quizName}` : ""}
+            title={attempt ? t("{value0} · {value1}", { value0: attempt.studentName, value1: attempt.quizName }) : ""}
             onClose={onClose}
             size="lg"
         >
@@ -26,8 +29,7 @@ export default function AttemptDetail({
                     <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-slate-300">
                         <ScorePill score={attempt.score} />
                         <span>
-                            {attempt.correct}/{attempt.total} correct
-                        </span>
+                            {attempt.correct}/{attempt.total}{" "}{t("correct")}</span>
                         <span className="text-slate-500">·</span>
                         <span>{formatDateTime(attempt.completedAt)}</span>
                         <span className="text-slate-500">·</span>
@@ -36,8 +38,8 @@ export default function AttemptDetail({
 
                     {attempt.activityId === "catching_bugs" && (
                         <p className="mb-4 rounded-lg border border-amber-700/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-                            {attempt.mode === "practice" ? "Latihan" : "Asesmen"} · Miss: {attempt.misses ?? attempt.total - attempt.correct}
-                            {attempt.mode === "practice" && " · Skor memakai hasil akhir tiap soal; miss menghitung setiap percobaan salah."}
+                            {attempt.mode === "practice" ? t("Practice") : t("Assessment")}{" "}{t("· Miss:")}{" "}{attempt.misses ?? attempt.total - attempt.correct}
+                            {attempt.mode === "practice" && t(" · Scores use each question’s final answer; misses count every wrong attempt.")}
                         </p>
                     )}
 
@@ -55,22 +57,22 @@ export default function AttemptDetail({
                                     <span className="font-pixel text-[10px] text-slate-500">#{index + 1}</span>
                                     <QuestionTypeBadge type={record.question.type} compact />
                                     <span className={`ml-auto font-bold ${record.correct ? "text-emerald-300" : "text-rose-300"}`}>
-                                        {record.correct ? "✔ Correct" : "✘ Incorrect"}
+                                        {record.correct ? t("✔ Correct") : t("✘ Incorrect")}
                                     </span>
                                 </div>
                                 <p className="mt-2 text-sm text-slate-100">{record.question.text}</p>
+                                {record.question.image && <Image src={record.question.image.src} alt={record.question.image.alt}
+                                    width={record.question.image.width} height={record.question.image.height} unoptimized className="mt-2 max-h-32 w-auto max-w-full rounded bg-white object-contain" />}
                                 <div className="mt-1 grid gap-1 text-xs sm:grid-cols-2">
-                                    <span className="text-slate-400">
-                                        Answer:{" "}
+                                    <span className="text-slate-400">{t("Answer:")}{" "}
                                         <strong className={record.correct ? "text-emerald-200" : "text-rose-200"}>
-                                            {describeAnswer(record.question, record.answer)}
+                                            {record.question.type === "true_false" ? t(describeAnswer(record.question, record.answer)) : describeAnswer(record.question, record.answer)}
                                         </strong>
                                     </span>
                                     {!record.correct && (
-                                        <span className="text-slate-400">
-                                            Expected:{" "}
+                                        <span className="text-slate-400">{t("Expected:")}{" "}
                                             <strong className="text-emerald-200">
-                                                {describeCorrectAnswer(record.question)}
+                                                {record.question.type === "true_false" ? t(describeCorrectAnswer(record.question)) : describeCorrectAnswer(record.question)}
                                             </strong>
                                         </span>
                                     )}
