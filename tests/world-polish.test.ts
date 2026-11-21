@@ -9,6 +9,8 @@ import { isCloudLayer, isCloudObject, isCloudTile, normalizeTiledClasses } from 
 import { DEPTH_CONFIG } from "../src/game/config/depth-config";
 import { WorldObjectRegistry } from "../src/game/world/world-object-registry";
 import { completionProgress } from "../src/quiz/completion-progress";
+import { FARM_MAP } from "../src/game/world/maps/farm-map";
+import { VILLAGE_MAP } from "../src/game/world/maps/village-map";
 import type { TreeDefinitions } from "../src/game/common/types/object";
 
 test("trees: preserve five initial chops, then three more chops clear the wood exactly once", () => {
@@ -122,5 +124,35 @@ test("maps: all authored choppable tree/wood objects declare resolvable Tiled cl
             }
         }
         assert.ok(count > 0);
+    }
+});
+
+test("map integration: authored shadows and cloud tiles keep valid preloaded atlas data", () => {
+    const pack = JSON.parse(readFileSync("public/assets/data/assets.json", "utf8")) as {
+        path: string; files: { key: string; type: string; url?: string; frameConfig?: { frameWidth: number; frameHeight: number } }[];
+    }[];
+    const assets = pack.flatMap((group) => group.files.map((file) => ({ ...file, path: group.path })));
+    const clouds = assets.filter((file) => file.key === "CLOUDS");
+    // The incoming image and the PR's spritesheet must never race for the same cache key.
+    assert.equal(clouds.length, 1);
+    assert.equal(clouds[0].type, "spritesheet");
+    assert.deepEqual(clouds[0].frameConfig, { frameWidth: 48, frameHeight: 32 });
+    const png = readFileSync(`public/${clouds[0].path}/${clouds[0].url}`);
+    const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+    for (const [path, definition] of [["world/system_map", VILLAGE_MAP], ["farm/barn", FARM_MAP]] as const) {
+        const raw = JSON.parse(readFileSync(`public/assets/images/levels/${path}.json`, "utf8"));
+        const shadow = raw.layers.find((layer: { name: string }) => layer.name === "shadow");
+        assert.ok(shadow?.data.some((index: number) => index > 0));
+        assert.equal(shadow.data.length, raw.width * raw.height);
+        assert.ok(definition.tilesets.some((tileset) => tileset.name === "shadow" && assets.some((asset) => asset.key === tileset.assetKey)));
+        for (const layer of raw.layers.filter((layer: { name: string }) => isCloudLayer(layer.name))) {
+            const tileset = raw.tilesets.find((tileset: { name: string }) => isCloudLayer(tileset.name));
+            assert.ok(definition.tilesets.some((entry) => entry.name === tileset.name && entry.assetKey === "CLOUDS"));
+            assert.equal(tileset.imagewidth, width); assert.equal(tileset.imageheight, height);
+            assert.equal(tileset.tilecount, Math.floor(width / tileset.tilewidth) * Math.floor(height / tileset.tileheight));
+            const indices = layer.data.filter((index: number) => index > 0);
+            assert.ok(indices.length > 0);
+            for (const index of indices) assert.ok(isCloudTile(index, [{ ...tileset, total: tileset.tilecount }]));
+        }
     }
 });

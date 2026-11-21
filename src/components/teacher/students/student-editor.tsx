@@ -100,7 +100,7 @@ function Form({
                     <input
                         value={draft.name}
                         onChange={(event) => patch({ name: event.target.value })}
-                        placeholder={t("e.g. Ani")}
+                        placeholder={t("e.g. Josh")}
                         className={inputClass}
                         autoFocus
                     />

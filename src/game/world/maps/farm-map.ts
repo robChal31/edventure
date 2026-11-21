@@ -17,6 +17,7 @@ export const FARM_MAP: WorldMapDefinition = {
         { name: "all_ props_seasons", assetKey: ASSET_KEYS.ALL_PROPS_SEASON },
         { name: "road", assetKey: ASSET_KEYS.ROAD },
         { name: "shadow", assetKey: ASSET_KEYS.FARM_SHADOW },
+        { name: "clouds", assetKey: ASSET_KEYS.CLOUDS },
         { name: "hay_bales", assetKey: ASSET_KEYS.HAY_BALES },
         { name: "soil", assetKey: ASSET_KEYS.SOIL_AND_WET_SOIL },
         { name: "wheat", assetKey: ASSET_KEYS.WHEAT },
