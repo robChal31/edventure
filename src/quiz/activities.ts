@@ -42,6 +42,8 @@ export type ActivityDefinition = {
     available: boolean;
     copy: ActivityCopy;
     guide: ActivityGuide;
+    /** One short, replayable in-game introduction; detailed reference remains optional. */
+    quickInstruction: string;
 };
 
 /**
@@ -54,6 +56,7 @@ export type ActivityDefinition = {
 export const ACTIVITIES: ActivityDefinition[] = [
     {
         id: "fishing",
+        quickInstruction: "Choose the rod by the water. Press F / Space or CAST, then answer to catch a fish.",
         label: "Fishing",
         icon: "🎣",
         location: "Beach",
@@ -96,50 +99,53 @@ export const ACTIVITIES: ActivityDefinition[] = [
     },
     {
         id: "catching_bugs",
+        quickInstruction: "Choose the net and approach a cricket. Press F / Space or CATCH, then answer. Practice allows retries.",
         label: "Catching Bugs",
         icon: "🦗",
         location: "Farm",
-        tagline: "Dekati cricket di ladang, ayunkan net, lalu jawab soal untuk menangkapnya.",
+        tagline: "Approach a cricket in the field, swing the net, then answer to catch it.",
         available: true,
         copy: {
             startLabel: "Play",
-            actionLabel: "TANGKAP",
-            waitingActionLabel: "TANGKAP",
-            questionCue: "🦗 CRICKET DALAM JANGKAUAN!",
-            shortAnswerHint: "TEKAN ENTER UNTUK MENJAWAB",
-            playAgainLabel: "TANGKAP LAGI",
+            actionLabel: "CATCH",
+            waitingActionLabel: "CATCH",
+            questionCue: "🦗 CRICKET IN REACH!",
+            shortAnswerHint: "PRESS ENTER TO ANSWER",
+            playAgainLabel: "CATCH AGAIN",
             scoreIcon: "🦗",
-            scoreLabel: "tertangkap",
+            scoreLabel: "caught",
+            answerFeedback: { correct: "✔ CRICKET CAUGHT!", incorrect: "✘ THE CRICKET GOT AWAY…", retry: "Practice: cricket escaped, miss +1. Approach and catch it again to retry the same question." },
             status: {
-                netting: "Mengayunkan net…",
-                catching: "Cricket tertangkap!",
-                escaped: "Cricket lepas…",
-                "round-transition": "Bersiap untuk ronde berikutnya…",
+                netting: "Swinging the net…",
+                catching: "Cricket caught!",
+                escaped: "Cricket escaped…",
+                "round-transition": "Getting ready for the next round…",
             },
         },
         guide: {
-            goal: "Satu cricket = satu soal, dari mapel apa pun. Selesaikan semua soal di ladang tanpa sistem nyawa barn.",
+            goal: "One cricket = one question, from any subject. Complete every question in the field, without barn lives.",
             steps: [
-                "Masuk ke ladang dalam pagar. Cricket tersebar acak, beranimasi di tempat, dan ditandai ? — bukan nomor soal.",
-                "Pilih jaring lewat slot alat di bawah-tengah. Dekati cricket: sudut putih = kandidat, kuning = dalam jangkauan. Tekan F / Spasi atau TANGKAP.",
-                "Soal milik cricket itu akan muncul. Baca hasil jawaban dahulu; animasi tangkap atau lepas baru berjalan setelah panel soal tertutup.",
-                "Mode latihan: salah = miss +1. Cricket bergerak sebentar lalu berhenti, tidak menghilang. Tangkap lagi untuk mengulang soal yang sama; skor memakai hasil akhirnya.",
-                "Mode asesmen: satu percobaan per soal. Jika salah, cricket bergerak dan memudar keluar; miss +1 dan soal tersebut selesai.",
-                "Total cricket mengikuti jumlah soal, maksimal 5 aktif per ronde. Ronde terakhir menyesuaikan sisa soal; ukuran farm tidak berubah.",
-                "Tidak ada HP barn, penalti waktu atau kabur otomatis. Alat bisa diganti saat bebas, bukan saat aksi atau panel sedang terbuka.",
+                "Enter the fenced field. Crickets are randomly scattered, animate in place and are marked ? — not question numbers.",
+                "Choose the net from the equipment slot. Approach a cricket: white corners = candidate, yellow = in reach. Press F / Space or CATCH.",
+                "That cricket's question appears. Read the feedback first; capture or escape plays only after the question card closes.",
+                "Practice: wrong = miss +1. The cricket moves briefly then stops, without disappearing. Catch it again to retry the same question; only the final answer is scored.",
+                "Assessment: one attempt per question. A wrong answer makes the cricket move and fade away; miss +1 and that question is completed.",
+                "Cricket count follows the quiz, with up to 5 active each round. The last round uses the remaining questions; the farm size does not change.",
+                "No barn HP, time penalties or automatic escapes. Switch tools while free, not during actions or open panels.",
             ],
             controls: [
-                ["Tombol panah / D-pad", "Berjalan mendekati cricket"],
-                ["F / Spasi / tombol aksi", "Gunakan alat aktif (jaring: cricket terdekat)"],
-                ["Slot alat", "Choose a tool or empty hands"],
-                ["1–6 atau A–F", "Pilih jawaban"],
-                ["T / F", "Benar / salah"],
-                ["Enter", "Kirim jawaban singkat"],
-                ["Q", "Quest board (di desa)"],
+                ["Arrow keys / D-pad", "Walk towards a cricket"],
+                ["F / Space / action button", "Use equipped tool (net: nearest cricket)"],
+                ["Equipment slot", "Choose a tool or empty hands"],
+                ["1–6 or A–F", "Choose an answer"],
+                ["T / F", "True / false"],
+                ["Enter", "Submit a short answer"],
+                ["Q", "Quest board (in the village)"],
             ],
         },
     },
     {
+        quickInstruction: "Stand on F by the altar with the flute. Press F / Space or PLAY, then answer to invite a frog.",
         id: "forest_serenade", label: "Forest Serenade", icon: "🪈", location: "Deep Forest",
         tagline: "One frog per question waits near the altar hill. Play your flute to gather them around it.", available: true,
         copy: {

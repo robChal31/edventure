@@ -1,3 +1,4 @@
+import { CORRECT_REVEAL_MS } from "@/quiz/reward-feedback";
 import type { Facing } from "@/game/common/types";
 
 /**
@@ -48,7 +49,7 @@ export const FISHING_CONFIG = {
         nibbles: 2,
         biteToQuestion: 450,
         /** The question card stays up this long to show right / wrong. */
-        revealDuration: 1500,
+        revealDuration: CORRECT_REVEAL_MS,
         /** Bait lies on the sand this long before it is reeled back. */
         missPause: 300,
         catchDuration: 900,

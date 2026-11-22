@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { getActivity } from "@/quiz/activities";
 import { ActivityGuideDetails } from "@/components/ui/activity-guide";
@@ -151,9 +152,9 @@ function QuestCard({
             )}
             <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                    <h3 className="font-pixel text-[11px] leading-relaxed">{quest.name}</h3>
+                    <h3 className="font-pixel text-[11px] leading-relaxed">{systemQuestText(quest.quizId, "name", quest.name, t)}</h3>
                     {quest.description && (
-                        <p className="mt-1 text-sm text-amber-900/80">{quest.description}</p>
+                        <p className="mt-1 text-sm text-amber-900/80">{systemQuestText(quest.quizId, "description", quest.description, t)}</p>
                     )}
                     <div className="mt-2">
                         <ActivityGuideDetails activity={activity} />

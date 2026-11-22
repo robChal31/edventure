@@ -107,6 +107,19 @@ export const sfx = {
         tone(659, 659, 0.1, "triangle", 0.06, 0.1);
         tone(784, 784, 0.16, "triangle", 0.07, 0.2);
     },
+    /** A light net whoosh and bright capture chirps, separate from the generic answer chord. */
+    capture(): void {
+        noise(0.12, 0.025);
+        tone(340, 1100, 0.14, "sine", 0.045);
+        tone(1318, 1568, 0.11, "triangle", 0.045, 0.12);
+        tone(1568, 2093, 0.18, "triangle", 0.035, 0.24);
+    },
+    /** Wet pop + upward glissando follows the fish's original leap animation. */
+    fishLeap(): void {
+        noise(0.2, 0.045);
+        tone(190, 880, 0.28, "sine", 0.06);
+        tone(880, 1318, 0.16, "triangle", 0.035, 0.22);
+    },
     wrong(): void {
         tone(220, 160, 0.16, "sawtooth", 0.05);
         tone(160, 110, 0.22, "sawtooth", 0.05, 0.14);

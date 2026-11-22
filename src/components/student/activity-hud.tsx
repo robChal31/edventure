@@ -14,10 +14,10 @@ export default function ActivityHud({ roomName, questionNumber, total, caught, a
     const { t } = useI18n();
     const progress = completionProgress(answered, total);
     return <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2 sm:p-3">
-        <div className="pixel-panel max-w-[62vw] rounded-lg bg-slate-900/85 px-3 py-2">
+        <div className="pixel-panel world-hud-panel max-w-[62vw] rounded-lg px-3 py-2">
             <div className="break-words font-pixel text-[9px] leading-relaxed text-amber-300 sm:text-[10px]">{roomName}</div>
-            <div className="mt-1 font-pixel text-[8px] leading-relaxed text-sky-300">{t("Question {value0} of {value1}", { value0: Math.min(questionNumber, total), value1: total })}</div>
-            <div className="mt-1 flex flex-wrap gap-x-2 text-[10px] text-amber-100">
+            <div className="mt-1 font-pixel text-[9px] leading-relaxed text-sky-200">{t("Question {value0} of {value1}", { value0: Math.min(questionNumber, total), value1: total })}</div>
+            <div className="mt-1 flex flex-wrap gap-x-2 text-[11px] text-amber-100">
                 {mode && <span>{mode === "practice" ? t("Practice") : t("Assessment")}{rounds !== undefined && <> · {t("Round {round}/{rounds}", { round: round ?? 1, rounds })}</>}</span>}
                 <span>{t("Completed {answered}/{total}", { answered: progress.completed, total })}</span>
             </div>
@@ -27,7 +27,7 @@ export default function ActivityHud({ roomName, questionNumber, total, caught, a
             </div>
             {progress.nearFinish && <p className="mt-1 text-[10px] text-teal-200" aria-live="polite">{t("Only {count} left — keep going!", { count: progress.remaining })}</p>}
         </div>
-        <div className="pixel-panel shrink-0 rounded-lg bg-slate-900/85 px-3 py-2 text-right">
+        <div className="pixel-panel world-hud-panel shrink-0 rounded-lg px-3 py-2 text-right">
             <div className="flex items-center justify-end gap-2"><CharacterPortrait size={30} /><span className="font-pixel text-[10px] text-emerald-300">{caught}/{total}</span></div>
             <div className="mt-1 text-[10px] text-emerald-200">{t(scoreLabel)}</div>
             {misses !== undefined && <div className="mt-1 font-pixel text-[9px] text-rose-300" aria-live="polite">{t("Miss:")} {misses}</div>}

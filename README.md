@@ -42,24 +42,34 @@ registry, and set `available: true`.
 Students who play a quiz travel to its activity map. Currently available: **fishing** (on the
 beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
 
-### Activity instruction dialogues
+### System language, quick guides and feedback
 
-- Awal misi baru dan **Help** di dalam aktivitas memakai percakapan RPG di **bawah
-  layar**: frame `ui/dialog_ui.png` asli dengan portrait NPC Jack (fishing), Gaston
-  (farm), atau Elyria (forest). Portrait mengambil satu frame 64×64 dari sheet asli,
-  bukan menampilkan seluruh atlas atau membuat artwork pengganti.
-- Tujuan, setiap langkah dan semua kontrol tetap bersumber dari
-  `src/quiz/activities.ts`. Kontrol dibagi maksimal tiga per halaman; Help juga
-  mempertahankan tips kapak, tas dan penyimpanan browser. Referensi lipat di quest
-  board/editor guru serta Help desa tetap seperti sebelumnya.
-- **Enter / Spasi** atau tombol utama menampilkan teks langsung saat sedang diketik,
-  lalu berpindah ke halaman berikutnya. Ada **Kembali**, **Lewati panduan**, dan
-  **Esc**; tidak ada perpindahan otomatis, countdown atau penalti membaca. Help
-  membuka ulang panduan dari awal. Reduced motion menampilkan teks lengkap langsung.
-- Native modal dialog menahan fokus dan input dunia; soal di belakang Help tetap
-  menyimpan isian dan tidak menerima shortcut jawaban. Pilihan simpan saat F5 /
-  Ctrl+R sementara menyembunyikan percakapan, lalu mengembalikan halaman yang sama.
-  Layout mendukung layar kecil/landscape, safe area, dan teks yang bisa digulir.
+- Toggle **EN / ID** mengatur copy sistem, termasuk judul/deskripsi misi demo,
+  quest board, HUD, tombol, label aktivitas dan petunjuk. `src/i18n/system-quests.ts`
+  mengenali **ID + teks bawaan yang belum diedit** (termasuk data browser lama).
+  Nama/deskripsi kustom guru, soal, pilihan jawaban dan penjelasan tidak diterjemahkan,
+  tidak ditulis ulang, dan tetap tersimpan dalam bahasa aslinya.
+- Awal misi menampilkan **satu pesan singkat** lewat percakapan RPG **bawah layar**:
+  frame `ui/dialog_ui.png` asli + portrait NPC Jack, Gaston atau Elyria. Tombol
+  **Panduan / Guide** membuka ulang pesan singkat; **Detail / Details** secara
+  opsional membuka seluruh langkah/kontrol dan tips dunia. Referensi lengkap
+  di quest board/editor tetap tersedia. Tidak ada countdown/penalti membaca.
+- **Enter / Spasi** menampilkan teks langsung saat sedang diketik, lalu lanjut/main;
+  **Esc / Lewati panduan** langsung menutup. Reduced motion menampilkan teks lengkap.
+  Dialog menahan fokus/input dunia, mempertahankan isian soal, dan mengalah sementara
+  ke pilihan simpan saat F5/Ctrl+R tanpa kehilangan posisi referensi.
+- HUD memakai latar solid gelap dan tepi pixel ganda. D-pad **dan** tombol aksi hanya
+  muncul untuk input sentuh/pena; keyboard/mouse menyembunyikannya otomatis, termasuk
+  perpindahan input di perangkat hybrid. Melepas pointer, blur, overlay dan unmount
+  selalu membersihkan arah yang ditahan.
+- Cap jawaban benar terbaca selama 2,2 detik. Sesudahnya, reward dunia menampilkan
+  **+1** dekat karakter dan bintang dari `Character/Character/Others/Shine.png` asli,
+  disertai suara tangkap jaring / lompatan ikan / seruling sesuai aktivitas. Momen
+  reward minimal 1,8 detik juga berlaku sebelum hasil jawaban terakhir. Reduced motion
+  mengurangi bintang dan menghilangkan gerak terbang; semua efek dibersihkan saat
+  restart/pindah map. Penilaian, retry latihan dan finalitas asesmen tidak berubah.
+- Fishing dimulai di depan pintu rumah nelayan pada dermaga, `(456, 536)` dalam
+  piksel map. Geometri Tiled dan gabungan collision otomatis + authored tetap utuh.
 
 ### Catching Bugs — farm
 
@@ -356,7 +366,7 @@ layers: {
     deep_water: "deep_water",
     bridge: "bridge",
 },
-spawn: { x: 392, y: 280, facing: "down" }, // optional, map pixels
+spawn: { x: 456, y: 536, facing: "down" }, // optional, map pixels (fisherman’s pier)
 ```
 
 and register the map in `src/game/world/maps/map-registry.ts`. Which map hosts an activity

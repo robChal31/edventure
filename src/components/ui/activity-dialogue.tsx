@@ -3,7 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type RefObject } from "react";
 import { useI18n } from "@/i18n/provider";
 import type { ActivityDefinition } from "@/quiz/activities";
-import { activityDialoguePages, dialogueGraphemes, DIALOGUE_HEADINGS, DIALOGUE_SPEAKERS, type DialoguePage } from "@/quiz/activity-dialogue";
+import { activityDialoguePages, activityReferencePages, dialogueGraphemes, DIALOGUE_HEADINGS, DIALOGUE_SPEAKERS, type DialoguePage } from "@/quiz/activity-dialogue";
 
 const MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 function subscribeMotion(callback: () => void) {
@@ -57,7 +57,8 @@ export default function ActivityDialogue({ open, ...props }: ActivityDialoguePro
 
 function DialogueSession({ activity, onClose, suspended = false, includeWorldTips = false, finishLabel = "Let's go!" }: Omit<ActivityDialogueProps, "open">) {
     const { t, locale } = useI18n();
-    const pages = useMemo(() => activityDialoguePages(activity, includeWorldTips), [activity, includeWorldTips]);
+    const [detailed, setDetailed] = useState(false);
+    const pages = useMemo(() => detailed ? activityReferencePages(activity, includeWorldTips) : activityDialoguePages(activity), [activity, detailed, includeWorldTips]);
     const [index, setIndex] = useState(0);
     const dialog = useRef<HTMLDialogElement>(null);
     const primary = useRef<HTMLButtonElement>(null);
@@ -83,15 +84,17 @@ function DialogueSession({ activity, onClose, suspended = false, includeWorldTip
         <p id={textId} className="sr-only" role="status" aria-live="polite" aria-atomic="true">{pageLabel}. {heading}. {text}</p>
         <DialoguePageView key={`${page.id}-${locale}`} activity={activity} page={page} heading={heading} pageLabel={pageLabel}
             index={index} total={pages.length} suspended={suspended} primary={primary}
-            finishLabel={finishLabel} onClose={onClose}
+            finishLabel={finishLabel} onClose={onClose} detailed={detailed}
+            onToggleDetails={() => { setIndex(0); setDetailed(value => !value); }}
             onBack={() => setIndex(value => Math.max(0, value - 1))}
             onNext={() => { if (index === pages.length - 1) onClose(); else setIndex(value => value + 1); }} />
     </dialog>;
 }
 
-function DialoguePageView({ activity, page, heading, pageLabel, index, total, suspended, primary, finishLabel, onClose, onBack, onNext }: {
+function DialoguePageView({ activity, page, heading, pageLabel, index, total, suspended, primary, finishLabel, onClose, onBack, onNext, detailed, onToggleDetails }: {
     activity: ActivityDefinition; page: DialoguePage; heading: string; pageLabel: string;
     index: number; total: number; suspended: boolean; primary: RefObject<HTMLButtonElement | null>;
+    detailed: boolean; onToggleDetails: () => void;
     finishLabel: string; onClose: () => void; onBack: () => void; onNext: () => void;
 }) {
     const { t } = useI18n();
@@ -146,12 +149,13 @@ function DialoguePageView({ activity, page, heading, pageLabel, index, total, su
         </div>
         <footer className="activity-dialogue-footer">
             <div className="activity-dialogue-info">
-                <span className="activity-dialogue-counter font-pixel" aria-label={pageLabel}>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>
-                <span className="activity-dialogue-pace">{t("Read at your own pace.")}</span>
+                {detailed && <span className="activity-dialogue-counter font-pixel" aria-label={pageLabel}>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>}
+                <span className="activity-dialogue-pace">{t(detailed ? "Read at your own pace." : "Guide available any time.")}</span>
                 <kbd className="activity-dialogue-shortcut">{t("Enter / Space")}</kbd>
             </div>
             <div className="activity-dialogue-actions">
-                <button type="button" className="activity-dialogue-button" disabled={index === 0} onClick={onBack}>{t("Back")}</button>
+                <button type="button" className="activity-dialogue-button" onClick={onToggleDetails}>{t(detailed ? "Quick guide" : "Details")}</button>
+                {detailed && <button type="button" className="activity-dialogue-button" disabled={index === 0} onClick={onBack}>{t("Back")}</button>}
                 <button ref={primary} type="button" className="activity-dialogue-button activity-dialogue-primary" onClick={advance}>
                     {typed.typing ? t("Show text") : index === total - 1 ? t(finishLabel) : t("Next")}<span className="activity-dialogue-arrow" aria-hidden="true" />
                 </button>

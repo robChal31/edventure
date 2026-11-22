@@ -10,6 +10,7 @@ import type { ActivityProgress } from "@/quiz/progress";
 import { checkpointId, checkpointStore, removeCheckpoint, saveCheckpoint, type QuizCheckpoint } from "@/lms/repositories/checkpoint-repository";
 import { createId } from "@/lms/ids";
 import { LanguageSwitcher, useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import { ActivityGuideDialog } from "@/components/ui/activity-guide";
 import Modal from "@/components/ui/modal";
 import PixelButton from "@/components/ui/pixel-button";
@@ -298,29 +299,29 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
             </div>
         </>}
         {activityId && !travelling && <>
-            <ActivityHud roomName={activeQuiz?.name ?? t(activity.label)} questionNumber={hud.questionNumber} total={hud.total} caught={hud.caught} answered={hud.answered}
+            <ActivityHud roomName={activeQuiz ? systemQuestText(activeQuiz.id, "name", activeQuiz.name, t) : t(activity.label)} questionNumber={hud.questionNumber} total={hud.total} caught={hud.caught} answered={hud.answered}
                 scoreLabel={activity.copy.scoreLabel} misses={hud.misses} round={hud.round} rounds={hud.rounds} mode={hud.mode} />
             {!summary && <div className="activity-menu absolute right-2 top-24 flex flex-col items-end gap-1.5 sm:right-3">
                 <LanguageSwitcher compact onOpenChange={setLanguageOpen} />
                 {musicButton}
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setHelpOpen(true)} className="pixel-btn rounded-lg bg-sky-700/90 px-3 py-2 font-pixel text-[9px] text-sky-50">❔ {t("Help")}</button>
+                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setHelpOpen(true)} aria-label={t("Replay instructions")} className="pixel-btn rounded-lg bg-sky-700 px-3 py-2 font-pixel text-[9px] text-sky-50">? {t("Guide")}</button>
                 <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setLeaveAction(hasHub ? "hub" : "exit")}
                     className="pixel-btn rounded-lg bg-slate-800/90 px-3 py-2 font-pixel text-[9px] text-slate-100">{progress ? t("Save / exit") : t(exit.label)}</button>
                 {saveError && <span role="status" className="max-w-40 rounded bg-rose-950/90 p-2 text-xs text-rose-100">{t("Progress not saved")}</span>}
             </div>}
         </>}
         {prompt && !summary && !current && !travelling && <div className="equipment-prompt pointer-events-none absolute inset-x-0 z-10 flex justify-center px-3">
-            <div className="lw-pop-in pixel-panel max-w-[92vw] rounded-lg bg-slate-900/90 px-4 py-2 text-center text-sm text-amber-200">{t(prompt)}</div>
+            <div className="lw-pop-in pixel-panel world-hud-panel max-w-[92vw] rounded-lg bg-slate-900 px-4 py-2 text-center text-sm text-amber-200">{t(prompt)}</div>
         </div>}
         {statusLine && !summary && !current && <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center">
-            <span className="font-pixel rounded bg-slate-900/70 px-3 py-1 text-[10px] text-sky-200">{t(statusLine)}</span>
+            <span className="font-pixel world-hud-panel rounded px-3 py-1 text-[10px] text-sky-200">{t(statusLine)}</span>
         </div>}
         {activityId && current && !summary && <QuestionCard key={`${current.questionNumber}-${current.question.id}`} cue={activity.copy.questionCue} shortAnswerHint={activity.copy.shortAnswerHint} feedbackCopy={activity.copy.answerFeedback}
             question={current.question} questionNumber={current.questionNumber} total={current.total} reveal={reveal} closing={closeRequest !== null}
             onExited={finishQuestionExit} celebrate={activityId === "fishing"} suspended={Boolean(leaveAction) || helpOpen || guideOpen} onAnswer={handleAnswer} />}
+        <TouchControls controller={controller} hidden={!mapId || overlayOpen || travelling} action={{ label: t(equipment.equipped === "rod" && phase === "waiting" ? activity.copy.waitingActionLabel : EQUIPMENT[equipment.equipped].actionLabel),
+            enabled: equipment.actionEnabled, onPress: () => controller?.primaryAction() }} />
         {mapId && !overlayOpen && !travelling && <>
-            <TouchControls controller={controller} action={{ label: t(equipment.equipped === "rod" && phase === "waiting" ? activity.copy.waitingActionLabel : EQUIPMENT[equipment.equipped].actionLabel),
-                enabled: equipment.actionEnabled, onPress: () => controller?.primaryAction() }} />
             <EquipmentPicker key={`${mapId}-${equipment.locked}`} state={equipment} onEquip={(id) => controller?.equip(id)} onOpenChange={setEquipmentPickerOpen} />
         </>}
         {mapId && !travelling && !summary && <InventoryPanel items={items} open={inventoryOpen} onOpenChange={setInventoryOpen}
@@ -354,7 +355,7 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
                 }}>{t("Start over")}</PixelButton>
                 <PixelButton tone="emerald" onClick={() => { if (resumeCandidate && progress?.canResumeQuiz(resumeCandidate.quiz.id)) startRun(resumeCandidate.quiz, resumeCandidate); }}>{t("Resume")}</PixelButton>
             </>}>
-            {resumeCandidate && <div className="space-y-2 text-sm text-slate-200"><p className="font-bold text-amber-200">{resumeCandidate.quiz.name}</p>
+            {resumeCandidate && <div className="space-y-2 text-sm text-slate-200"><p className="font-bold text-amber-200">{systemQuestText(resumeCandidate.quiz.id, "name", resumeCandidate.quiz.name, t)}</p>
                 <p>{t("{answered} of {total} questions completed", { answered: resumeCandidate.progress.quiz.answers.length, total: resumeCandidate.quiz.questions.length })}</p>
                 <p className="text-xs text-slate-400">{t("Saved on this browser. Question order and previous answers will be preserved.")}</p>
                 {saveError && <p role="alert" className="text-rose-300">{t(saveError)}</p>}

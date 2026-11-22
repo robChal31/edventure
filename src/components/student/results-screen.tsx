@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import { describeAnswer, describeCorrectAnswer } from "@/quiz/grading";
 import { QUESTION_TYPES } from "@/quiz/question-types";
 import type { QuizSummary } from "@/quiz/types";
@@ -41,7 +42,7 @@ export default function ResultsScreen({ summary, primary, secondary, note, saveE
                 {pct >= 80 && <Confetti pieces={36} />}
 
                 <h2 className="text-center font-pixel text-lg text-amber-300">{t("QUEST COMPLETE")}</h2>
-                <p className="mt-1 text-center text-xs text-slate-400">{summary.quizName}</p>
+                <p className="mt-1 text-center text-xs text-slate-400">{systemQuestText(summary.quizId, "name", summary.quizName, t)}</p>
                 <p className="mt-2 text-center text-sm text-sky-200">{t(verdict)}</p>
 
                 <div className="mt-5 grid grid-cols-3 gap-2 text-center">

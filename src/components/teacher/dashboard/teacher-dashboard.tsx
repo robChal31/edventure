@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import Link from "next/link";
 import { useAttempts, useHydrated, useQuestions, useQuizzes, useStudents } from "@/lms/hooks";
 import { attemptStats, completionForQuiz, sortByNewest } from "@/lms/services/reports";
@@ -95,7 +96,7 @@ export default function TeacherDashboard() {
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <div className="truncate font-semibold text-slate-100">{quiz.name}</div>
+                                            <div className="truncate font-semibold text-slate-100">{systemQuestText(quiz.id, "name", quiz.name, t)}</div>
                                             <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
                                                 <StatusPill published={quiz.published} />
                                                 <span>{resolveQuizQuestions(quiz, questions).length}{" "}{t("questions")}</span>

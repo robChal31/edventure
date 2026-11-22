@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { CORRECT_REVEAL_MS, WORLD_REWARD_MS } from "@/quiz/reward-feedback";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import type { AnswerValue } from "@/quiz/types";
 import { ASSET_KEYS } from "@/game/common/assets";
@@ -86,7 +87,7 @@ export class CatchingBugsActivity implements Activity {
     #catch(target: Cricket | null): void {
         if (this.#destroyed || this.#phase !== "idle") return;
         if (!target || target.state !== "idle" || !target.sprite.active || !this.#crickets.includes(target)) {
-            this.#prompt("Pakai jaring, dekati cricket bertanda ?, lalu tekan F / Spasi atau TANGKAP.");
+            this.#prompt("Equip the net, approach a cricket marked ?, then press F / Space or CATCH.");
             return;
         }
         this.#target = target;
@@ -118,11 +119,11 @@ export class CatchingBugsActivity implements Activity {
             type: "answer", correct: outcome.correct, question: outcome.question, answer: outcome.answer,
             correctAnswer: describeCorrectAnswer(outcome.question), caught: this.#session.quiz.correctCount,
             answered: this.#session.quiz.answeredCount, total: this.#session.quiz.total, retryable: outcome.retryable,
-            feedback: outcome.correct ? "Cricket tertangkap!" : outcome.retryable ? "Cricket lepas — coba lagi!" : "Cricket lepas dan dihitung miss.",
+            feedback: outcome.correct ? "Cricket caught!" : outcome.retryable ? "Cricket escaped — try again!" : "Cricket escaped and counts as a miss.",
         });
         this.#emitHud(target.questionIndex + 1);
         // Feedback can be read first; world effects MUST await the UI's unmount receipt.
-        this.#later(outcome.correct ? 1400 : 2800, () => {
+        this.#later(outcome.correct ? CORRECT_REVEAL_MS : 2800, () => {
             const requestId = this.#closeGate.request(() => this.#resolve(target, outcome));
             this.#setPhase("closing-question");
             this.ctx.emit({ type: "question:close", requestId });
@@ -184,7 +185,7 @@ export class CatchingBugsActivity implements Activity {
                 .setName("cricket-contact-shadow").setDepth(DEPTH_CONFIG.SHADOW);
             return { questionIndex, motion, sprite, label, footprint, shadow, state: "idle" };
         });
-        this.#toIdle(`Ronde ${this.#session.roundNumber}/${this.#session.roundCount} · ${indices.length} cricket. Cari tanda ? dan pakai jaring!`);
+        this.#toIdle(`Round ${this.#session.roundNumber}/${this.#session.roundCount} · ${indices.length} crickets. Find ? and use the net!`);
     }
 
     #resolve(target: Cricket, outcome: BugAnswerOutcome): void {
@@ -192,8 +193,8 @@ export class CatchingBugsActivity implements Activity {
         this.#setPhase(outcome.correct ? "catching" : "escaped");
         target.label.setVisible(false);
         if (outcome.correct) {
-            sfx.correct();
-            this.#prompt("Dapat! Cricket masuk ke jaring ✨");
+            sfx.capture();
+            this.#prompt("Got it! The cricket is in the net!");
             target.state = "captured";
             (target.footprint.body as Phaser.Physics.Arcade.StaticBody).enable = false;
             target.footprint.destroy(); target.shadow.destroy();
@@ -213,7 +214,7 @@ export class CatchingBugsActivity implements Activity {
                         .setScale(WORLD_CONFIG.scale * (1 + Math.sin(t * Math.PI) * 0.35)).setAlpha(1 - t * t * t);
                 },
             });
-            this.#later(920, () => this.#finishTarget(target, outcome));
+            this.#later(WORLD_REWARD_MS, () => this.#finishTarget(target, outcome));
         } else {
             sfx.wrong();
             target.state = "released";
@@ -231,7 +232,7 @@ export class CatchingBugsActivity implements Activity {
             target.motion.cooldown = target.motion.vx = target.motion.vy = 0;
             target.state = "idle";
             target.label.setVisible(true);
-            this.#toIdle("Miss +1. Cricket berhenti lagi — tangkap cricket yang sama untuk mengulang soal.");
+            this.#toIdle("Miss +1. The cricket stopped — catch the same cricket to retry its question.");
             return;
         }
         this.#crickets = this.#crickets.filter((cricket) => cricket !== target);
@@ -240,9 +241,9 @@ export class CatchingBugsActivity implements Activity {
         if (this.#session.quiz.isComplete) this.#complete();
         else if (this.#session.advanceRound()) {
             this.#setPhase("round-transition");
-            this.#prompt("Ronde selesai! Cricket berikutnya muncul di ladang yang sama.");
+            this.#prompt("Round complete! The next crickets appear in the same field.");
             this.#later(700, () => this.#spawnRound());
-        } else this.#toIdle(outcome.correct ? "Tertangkap! Cari tanda ? berikutnya." : "Miss +1. Cricket lepas — cari cricket berikutnya.");
+        } else this.#toIdle(outcome.correct ? "Caught! Find the next ?." : "Miss +1. The cricket escaped — find the next one.");
     }
 
     #complete(): void {

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import { describeAnswer, describeCorrectAnswer } from "@/quiz/grading";
 import type { QuizAttempt } from "@/lms/types";
 import { formatDateTime, formatDuration } from "@/lms/services/reports";
@@ -20,7 +21,7 @@ export default function AttemptDetail({
     return (
         <Modal
             open={attempt !== null}
-            title={attempt ? t("{value0} · {value1}", { value0: attempt.studentName, value1: attempt.quizName }) : ""}
+            title={attempt ? t("{value0} · {value1}", { value0: attempt.studentName, value1: systemQuestText(attempt.quizId, "name", attempt.quizName, t) }) : ""}
             onClose={onClose}
             size="lg"
         >
