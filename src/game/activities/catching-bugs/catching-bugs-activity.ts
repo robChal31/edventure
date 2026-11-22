@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { CORRECT_REVEAL_MS, WORLD_REWARD_MS } from "@/quiz/reward-feedback";
+import { CORRECT_REVEAL_MS } from "@/quiz/reward-feedback";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import type { AnswerValue } from "@/quiz/types";
 import { ASSET_KEYS } from "@/game/common/assets";
@@ -214,7 +214,7 @@ export class CatchingBugsActivity implements Activity {
                         .setScale(WORLD_CONFIG.scale * (1 + Math.sin(t * Math.PI) * 0.35)).setAlpha(1 - t * t * t);
                 },
             });
-            this.#later(WORLD_REWARD_MS, () => this.#finishTarget(target, outcome));
+            this.#later(920, () => this.#finishTarget(target, outcome));
         } else {
             sfx.wrong();
             target.state = "released";

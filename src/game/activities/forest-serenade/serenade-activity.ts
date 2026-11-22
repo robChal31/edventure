@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { CORRECT_REVEAL_MS, WORLD_REWARD_MS } from "@/quiz/reward-feedback";
+import { CORRECT_REVEAL_MS } from "@/quiz/reward-feedback";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import type { AnswerValue } from "@/quiz/types";
 import { sfx } from "@/game/common/audio/sfx";
@@ -122,7 +122,6 @@ export class SerenadeActivity implements Activity {
     #resolve(outcome: SerenadeOutcome): void {
         this.#setPhase("serenading");
         sfx.flute(outcome.correct);
-        if (outcome.correct) this.#popups.show(this.ctx.player.x, this.ctx.player.y - 28);
         let travel = 0;
         if (outcome.frogIndex !== null && !this.#landings.has(outcome.frogIndex)) {
             this.#altar?.play({ key: ALTAR_ANIMATIONS.FLOWER, repeat: -1 });
@@ -130,7 +129,7 @@ export class SerenadeActivity implements Activity {
         }
         this.#prompt(outcome.correct ? "Your frog is joining the altar circle!" : outcome.retryable ? "Your frog is waiting — play again to retry the same question." : "Your frog stays put. Play again for the next question.");
         // Let the supplied 600ms puffing cycle be visible before advancing, without any score gate.
-        this.#later(Math.max(outcome.correct ? WORLD_REWARD_MS : 1350, travel + 650), () => {
+        this.#later(Math.max(1350, travel + 650), () => {
             if (this.#session.quiz.isComplete) this.#finish();
             else this.#toIdle(outcome.retryable);
         });
@@ -182,7 +181,7 @@ export class SerenadeActivity implements Activity {
         const frog = this.#frogs.get(index), landing = this.#reserveLanding(index);
         if (!frog || !landing) return 0;
         const path = this.#ground.travelRoute(frog.sprite, landing);
-        if (!path.length) { this.#puff(frog, landing); this.#popups.sparkles(landing.x, landing.y - 8); return 0; }
+        if (!path.length) { this.#puff(frog, landing); return 0; }
         const duration = frogTravelDuration(path, this.#ground.tileSize), hop = { t: 0 };
         frog.sprite.setData({ state: "approaching", route: path, travelDuration: duration });
         this.#animate({ targets: hop, t: 1, duration, ease: "Sine.inOut",
@@ -198,7 +197,7 @@ export class SerenadeActivity implements Activity {
             onComplete: () => {
                 if (!frog.sprite.active) return;
                 this.#puff(frog, landing);
-                this.#popups.sparkles(frog.sprite.x, frog.sprite.y - 8);
+                this.#popups.show(frog.sprite.x, frog.sprite.y - 15);
             } });
         return duration;
     }
