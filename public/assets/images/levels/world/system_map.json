@@ -1120,24 +1120,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1155,24 +1154,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1190,24 +1188,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1225,24 +1222,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1260,24 +1256,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1295,24 +1290,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1330,24 +1324,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1365,24 +1358,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1400,24 +1392,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1435,24 +1426,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1470,24 +1460,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1505,24 +1494,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_medium"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"medium"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1551,24 +1539,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1586,24 +1573,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1621,24 +1607,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1656,24 +1641,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1691,24 +1675,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1726,24 +1709,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1761,24 +1743,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"stump"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"chopped_mahogany_tree"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"stump"
                         }],
                  "rotation":0,
-                 "class":"wood",
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -1807,24 +1788,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1842,24 +1822,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1877,24 +1856,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1912,24 +1890,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1947,24 +1924,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1982,24 +1958,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2017,24 +1992,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2052,24 +2026,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2087,24 +2060,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2122,24 +2094,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2157,24 +2128,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2192,24 +2162,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2227,24 +2196,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2262,24 +2230,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2297,24 +2264,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2332,24 +2298,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2367,24 +2332,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2402,24 +2366,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2437,24 +2400,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2472,24 +2434,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2507,24 +2468,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2542,24 +2502,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2577,24 +2536,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2612,24 +2570,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2647,24 +2604,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2682,24 +2638,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2717,24 +2672,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2752,24 +2706,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2787,24 +2740,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2822,24 +2774,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2857,24 +2808,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2892,24 +2842,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2927,24 +2876,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2962,24 +2910,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -2997,24 +2944,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3032,24 +2978,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3067,24 +3012,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3102,24 +3046,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3137,24 +3080,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3172,24 +3114,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3207,24 +3148,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3242,30 +3182,29 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
                  "x":897.2,
                  "y":406.266666666667
-                },
+                }, 
                 {
                  "gid":2612,
                  "height":48,
@@ -3277,24 +3216,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3312,24 +3250,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3347,24 +3284,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3382,24 +3318,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3417,24 +3352,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3452,24 +3386,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3487,24 +3420,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3522,24 +3454,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3557,24 +3488,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3592,24 +3522,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3627,24 +3556,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3662,24 +3590,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3697,24 +3624,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3743,24 +3669,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"orange_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3778,24 +3703,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"orange_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3813,24 +3737,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"orange_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3848,24 +3771,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"orange_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3883,24 +3805,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"orange_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3929,24 +3850,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3964,24 +3884,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -3999,24 +3918,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4034,24 +3952,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4069,24 +3986,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4104,24 +4020,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4139,24 +4054,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4174,24 +4088,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4209,24 +4122,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4244,24 +4156,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4279,24 +4190,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4314,24 +4224,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4349,24 +4258,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4384,24 +4292,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4419,24 +4326,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4454,24 +4360,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4489,24 +4394,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4524,24 +4428,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4559,24 +4462,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4594,24 +4496,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"dark_green_mahogany_tree_large"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4640,24 +4541,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"no_leaf_mahogany"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4675,24 +4575,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"no_leaf_mahogany"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -4710,24 +4609,23 @@
                          "name":"species",
                          "type":"string",
                          "value":"mahogany"
-                        },
+                        }, 
                         {
                          "name":"stage",
                          "type":"string",
                          "value":"standing"
-                        },
+                        }, 
                         {
                          "name":"treeVariant",
                          "type":"string",
                          "value":"no_leaf_mahogany"
-                        },
+                        }, 
                         {
                          "name":"variant",
                          "type":"string",
                          "value":"large"
                         }],
                  "rotation":0,
-                 "class":"tree",
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -6380,9 +6278,80 @@
          "width":60,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":88,
+         "name":"collision",
+         "objects":[
+                {
+                 "height":68,
+                 "id":461,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":206.4,
+                 "x":497.6,
+                 "y":198.4
+                }, 
+                {
+                 "height":32.8,
+                 "id":462,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":116.8,
+                 "x":732.8,
+                 "y":444.8
+                }, 
+                {
+                 "height":24.8,
+                 "id":463,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":59.2,
+                 "x":869.6,
+                 "y":451.2
+                }, 
+                {
+                 "height":42.4,
+                 "id":464,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":44,
+                 "x":473.6,
+                 "y":452.8
+                }, 
+                {
+                 "height":37.6,
+                 "id":467,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":57.6,
+                 "x":179.2,
+                 "y":202.6
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":88,
- "nextobjectid":461,
+ "nextlayerid":89,
+ "nextobjectid":468,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",

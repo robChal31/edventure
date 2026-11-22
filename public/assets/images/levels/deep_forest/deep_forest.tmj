@@ -1125,9 +1125,44 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":35,
+         "name":"collision",
+         "objects":[
+                {
+                 "height":40.5713167677558,
+                 "id":58,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":43.0757190373706,
+                 "x":467.822343963999,
+                 "y":81.1426335355116
+                }, 
+                {
+                 "height":28.5501858736059,
+                 "id":60,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":53.0933281158286,
+                 "x":151.265897084719,
+                 "y":224.895323811387
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":35,
- "nextobjectid":58,
+ "nextlayerid":36,
+ "nextobjectid":62,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",
