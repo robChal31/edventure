@@ -49,14 +49,16 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   mengenali **ID + teks bawaan yang belum diedit** (termasuk data browser lama).
   Nama/deskripsi kustom guru, soal, pilihan jawaban dan penjelasan tidak diterjemahkan,
   tidak ditulis ulang, dan tetap tersimpan dalam bahasa aslinya.
-  Di dunia game, pilihan **bendera + ID / EN** berada di panel **Pengaturan / Settings**
-  bersama toggle musik, bukan dropdown yang menumpuk di HUD. Tombol menu pixel asli
-  selalu sejajar dengan Bantuan/Panduan; pada misi, baris ini mengalir di bawah skor
-  (tanpa offset `top` tetap). Panel menahan input dunia/soal, menjaga draft, dan mendukung
-  Esc, Tab, serta pilihan simpan saat F5/Ctrl+R.
+  Di dunia game hanya ada **satu tombol menu pixel** di kanan atas. Panelnya tertutup
+  secara default; klik untuk membuka **Bantuan/Panduan**, pilihan **bendera + ID / EN**,
+  musik (jika tersedia), dan **Simpan / keluar** saat misi. Tidak ada lagi kartu
+  avatar/caught/miss atau tombol Panduan/Simpan terpisah di kanan. HUD kiri tetap
+  menampilkan nomor soal, mode/ronde, dan progres penyelesaian—bukan skor benar/salah.
+  Penilaian, hitungan miss, dan laporan hasil tetap utuh. Panel menahan input dunia/soal,
+  menjaga draft, dan mendukung Esc, backdrop, Tab/fokus, serta pilihan simpan saat F5/Ctrl+R.
 - Awal misi menampilkan **satu pesan singkat** lewat percakapan RPG **bawah layar**:
-  frame `ui/dialog_ui.png` asli + portrait NPC Jack, Gaston atau Elyria. Tombol
-  **Panduan / Guide** membuka ulang pesan singkat; **Detail / Details** secara
+  frame `ui/dialog_ui.png` asli + portrait NPC Jack, Gaston atau Elyria. Pilihan
+  **Panduan / Guide di menu** membuka ulang pesan singkat; **Detail / Details** secara
   opsional membuka seluruh langkah/kontrol dan tips dunia. Referensi lengkap
   di quest board/editor tetap tersedia. Tidak ada countdown/penalti membaca.
 - **Enter / Spasi** menampilkan teks langsung saat sedang diketik, lalu lanjut/main;

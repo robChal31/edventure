@@ -283,22 +283,25 @@ body {
 .select-choice-icon:has(.language-flag) { width: 26px; height: 18px; border-radius: 3px; overflow: hidden; background: transparent; box-shadow: 0 0 0 1px #24435826; }
 .language-flag { display: block; width: 100%; height: 100%; }
 
-/* Language/music are deliberately off the HUD, in one small settings panel.
+/* All utility actions live in one collapsed corner menu; no separate score card.
    The menu tile is the original cyan 16x16 button at (432,160), drawn at 2x. */
-.game-settings-icon {
+.game-menu-icon {
     display: block; flex: none; width: 32px; height: 32px;
     background: url("/assets/images/farm%20asset%20pack/UI/button.png") -864px -320px / 1696px 1088px no-repeat;
     image-rendering: pixelated;
 }
-.game-settings-trigger { cursor: pointer; touch-action: manipulation; }
-.game-settings-trigger:hover { filter: brightness(1.15); }
-.game-settings-dialog {
+.game-menu-trigger {
+    position: absolute; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px));
+    z-index: 30; cursor: pointer; touch-action: manipulation;
+}
+.game-menu-trigger:hover { filter: brightness(1.15); }
+.game-menu-dialog {
     position: fixed;
-    inset: 0;
-    margin: auto;
-    width: min(360px, calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+    inset: calc(64px + env(safe-area-inset-top, 0px)) max(8px, env(safe-area-inset-right, 0px)) auto auto;
+    margin: 0;
+    width: min(320px, calc(100% - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
     max-width: none;
-    max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 80px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -307,9 +310,13 @@ body {
     color: #e2e8f0;
     color-scheme: dark;
 }
-.game-settings-dialog::backdrop { background: #02061799; }
-.game-settings-dialog :focus-visible, .game-settings-trigger:focus-visible { outline: 3px solid #fcd34d; outline-offset: 3px; }
-.game-settings-flag { display: block; flex: none; width: 27px; height: 18px; overflow: hidden; border-radius: 2px; box-shadow: 0 0 0 1px #ffffff40; }
+.game-menu-dialog::backdrop { background: #02061766; }
+@media (min-width: 640px) {
+    .game-menu-trigger { top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); }
+    .game-menu-dialog { inset-block-start: calc(68px + env(safe-area-inset-top, 0px)); inset-inline-end: max(12px, env(safe-area-inset-right, 0px)); max-height: calc(100dvh - 84px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+}
+.game-menu-dialog :focus-visible, .game-menu-trigger:focus-visible { outline: 3px solid #fcd34d; outline-offset: 3px; }
+.game-menu-flag { display: block; flex: none; width: 27px; height: 18px; overflow: hidden; border-radius: 2px; box-shadow: 0 0 0 1px #ffffff40; }
 
 /* Activity instructions: original nine-slice RPG frame + one native portrait expression.
    Kept separate from staff panels, questions, results and the village Help modal. */
