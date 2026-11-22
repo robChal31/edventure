@@ -5,7 +5,7 @@ export const FLUTE_ANIMATION = "flute";
 export const ALTAR_ANIMATIONS = { IDLE: "idle_altar", FLOWER: "altar_flower_play" } as const;
 export type FrogColor = "red" | "blue";
 export const FROG_ASSETS = { red: ASSET_KEYS.FROG_RED, blue: ASSET_KEYS.FROG_BLUE } as const;
-export function frogAnimation(color: FrogColor, tag: "front_jump" | "front_idle" | "puffing"): string { return `${FROG_ASSETS[color]}:${tag}`; }
+export function frogAnimation(color: FrogColor, tag: "front_jump" | "side_jump" | "back_jump" | "front_idle" | "puffing"): string { return `${FROG_ASSETS[color]}:${tag}`; }
 
 type AsepriteExport = { frames: Record<string, { duration: number }>; meta: { frameTags: { name: string; from: number; to: number; direction: string }[] } };
 /** Both supplied frog exports use identical tags: namespace them instead of replacing one another. */

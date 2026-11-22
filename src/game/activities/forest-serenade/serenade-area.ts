@@ -10,11 +10,3 @@ export function readPerformanceArea(objects: readonly TiledArea[], scale = 1): P
 export function inPerformanceArea(point: { x: number; y: number }, area: PerformanceArea): boolean {
     return point.x >= area.x && point.x <= area.x + area.width && point.y >= area.y && point.y <= area.y + area.height;
 }
-
-/** A bounded decorative landing, independent of question count and completion. */
-export function frogLanding(index: number, altar: { x: number; y: number }, bounds: { width: number; height: number }): { x: number; y: number } {
-    const angle = index * 2.399963229728653;
-    const radius = 26 + Math.floor((index % 30) / 8) * 9;
-    return { x: Math.max(8, Math.min(bounds.width - 8, altar.x + Math.cos(angle) * radius)),
-        y: Math.max(8, Math.min(bounds.height - 8, altar.y + 12 + Math.sin(angle) * radius * 0.5)) };
-}

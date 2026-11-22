@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { SerenadeSession } from "../src/game/activities/forest-serenade/serenade-session";
-import { inPerformanceArea, readPerformanceArea, frogLanding } from "../src/game/activities/forest-serenade/serenade-area";
+import { inPerformanceArea, readPerformanceArea } from "../src/game/activities/forest-serenade/serenade-area";
 import { FLUTE_ANIMATION, ALTAR_ANIMATIONS, FROG_ASSETS, frogAnimation } from "../src/game/activities/forest-serenade/serenade-assets";
 import { DEEP_FOREST_MAP } from "../src/game/world/maps/deep-forest-map";
 import { WORLD_MAPS } from "../src/game/world/maps/map-registry";
@@ -17,14 +17,14 @@ import type { PlayableQuiz, Question } from "../src/quiz/types";
 autoTests();
 function autoTests(): void {
     for (const count of [1, 5, 7, 23]) {
-        test(`serenade: ${count} assessment questions finish at 0%, without frogs or resource gates`, () => {
+        test(`serenade: ${count} assessment questions finish at 0%, without befriending frogs or resource gates`, () => {
             const session = new SerenadeSession(makeQuiz(count));
-            let frogs = 0;
+            let invited = 0;
             for (let i = 0; i < count; i += 1) {
                 const result = session.answer({ type: "short_answer", text: "wrong" })!;
-                assert.equal(result.retryable, false); frogs += result.frogs;
+                assert.equal(result.retryable, false); invited += result.frogIndex === null ? 0 : 1;
             }
-            assert.equal(frogs, 0); assert.equal(session.quiz.isComplete, true);
+            assert.equal(invited, 0); assert.equal(session.quiz.isComplete, true);
             assert.equal(session.summary().total, count); assert.equal(session.summary().incorrect, count);
             assert.equal(session.summary().records.length, count); assert.equal(session.summary().correct, 0);
             assert.equal(session.misses, count); assert.equal(session.answer({ type: "short_answer", text: "yes" }), null);
@@ -36,22 +36,23 @@ function makeQuiz(count: number, mode: "practice" | "assessment" = "assessment")
         questions: Array.from({ length: count }, (_, i): Question => ({ id: `forest-${i}`, type: "short_answer", text: `Question ${i + 1}`, acceptedAnswers: ["yes"] })) };
 }
 
-test("serenade: each correct answer grants exactly one frog, wrong answers none, and counts remain independent", () => {
+test("serenade: each correct answer invites its own question frog, wrong answers none, and counts remain independent", () => {
     const session = new SerenadeSession(makeQuiz(7));
-    const grants = [true, false, true, false, true, true, false].map((correct) => session.answer({ type: "short_answer", text: correct ? "yes" : "no" })!.frogs);
-    assert.deepEqual(grants, [1, 0, 1, 0, 1, 1, 0]); assert.equal(session.quiz.isComplete, true);
+    const grants = [true, false, true, false, true, true, false].map((correct) => session.answer({ type: "short_answer", text: correct ? "yes" : "no" })!.frogIndex);
+    assert.deepEqual(grants, [0, null, 2, null, 4, 5, null]);
+    assert.deepEqual(session.befriendedQuestions, [0, 2, 4, 5]); assert.equal(session.quiz.isComplete, true);
     assert.equal(session.quiz.correctCount, 4); assert.equal(session.quiz.answeredCount, 7); assert.equal(session.misses, 3);
     assert.deepEqual(session.summary().records.map((record) => record.question.id), Array.from({ length: 7 }, (_, i) => `forest-${i}`));
 });
 
-test("serenade: practice retries the same question, retains every miss and never summons a frog for a miss", () => {
+test("serenade: practice retries the same question, retains every miss and leaves the same frog waiting after a miss", () => {
     const session = new SerenadeSession(makeQuiz(2, "practice"));
     for (let i = 0; i < 3; i += 1) {
         const result = session.answer({ type: "short_answer", text: "no" })!;
-        assert.equal(result.retryable, true); assert.equal(result.frogs, 0); assert.equal(session.quiz.currentQuestion?.id, "forest-0");
+        assert.equal(result.retryable, true); assert.equal(result.frogIndex, null); assert.equal(session.quiz.currentQuestion?.id, "forest-0");
     }
     assert.equal(session.quiz.answeredCount, 0); assert.equal(session.misses, 3);
-    assert.equal(session.answer({ type: "short_answer", text: "yes" })?.frogs, 1);
+    assert.equal(session.answer({ type: "short_answer", text: "yes" })?.frogIndex, 0);
     assert.equal(session.quiz.currentQuestion?.id, "forest-1");
     session.answer({ type: "short_answer", text: "yes" });
     assert.equal(session.summary().correct, 2); assert.equal(session.summary().misses, 3); assert.equal(session.quiz.isComplete, true);
@@ -97,7 +98,7 @@ test("serenade: the performance area is explicit, scaled, finite, visible and re
     const raw = JSON.parse(readFileSync("public/assets/images/levels/deep_forest/deep_forest.tmj", "utf8"));
     const objects = raw.layers.find((layer: { name: string }) => layer.name === "forest_serenade").objects;
     const area = readPerformanceArea(objects)!;
-    assert.ok(area); assert.ok(inPerformanceArea({ x: 488, y: 136 }, area));
+    assert.ok(area); assert.equal(area.width, 32); assert.equal(area.height, 32); assert.ok(inPerformanceArea({ x: 488, y: 136 }, area));
     assert.equal(inPerformanceArea({ x: 488, y: 184 }, area), false);
     assert.deepEqual(readPerformanceArea(objects, 2), { x: area.x * 2, y: area.y * 2, width: area.width * 2, height: area.height * 2 });
     for (const bad of [[], [{ name: "performance_area", x: 0, y: 0, width: 0, height: 1 }], [{ ...objects[0], visible: false }], [{ ...objects[0], x: NaN }]]) assert.equal(readPerformanceArea(bad), null);
@@ -111,7 +112,7 @@ test("serenade: both supplied frog palettes, flute and altar use actual Aseprite
     const pack = JSON.parse(readFileSync("public/assets/data/assets.json", "utf8")) as { path: string; files: { key: string; textureURL?: string; atlasURL?: string; url?: string }[] }[];
     const assets = pack.flatMap((group) => group.files.map((file) => ({ ...file, path: group.path })));
     for (const [key, tags] of [["PLAYER_FLUTE", [FLUTE_ANIMATION]], ["ALTAR_ANIMATION", Object.values(ALTAR_ANIMATIONS)],
-        [FROG_ASSETS.red, ["front_jump", "front_idle"]], [FROG_ASSETS.blue, ["front_jump", "front_idle"]]] as const) {
+        [FROG_ASSETS.red, ["front_jump", "side_jump", "back_jump", "front_idle", "puffing"]], [FROG_ASSETS.blue, ["front_jump", "side_jump", "back_jump", "front_idle", "puffing"]]] as const) {
         const matches = assets.filter((asset) => asset.key === key); assert.equal(matches.length, 1);
         const asset = matches[0]; assert.ok(existsSync(`public/${asset.path}/${asset.textureURL}`));
         const data = JSON.parse(readFileSync(`public/${asset.path}/${asset.atlasURL}`, "utf8"));
@@ -122,11 +123,7 @@ test("serenade: both supplied frog palettes, flute and altar use actual Aseprite
     for (const definition of DEEP_FOREST_MAP.tilesets) assert.ok(assets.some((asset) => asset.key === definition.assetKey), definition.name);
 });
 
-test("serenade: decorative landings stay bounded for large quizzes and all feedback has both locales", () => {
-    for (let i = 0; i < 2000; i += 1) {
-        const point = frogLanding(i, { x: 490, y: 123 }, { width: 640, height: 320 });
-        assert.ok(point.x >= 8 && point.x <= 632 && point.y >= 8 && point.y <= 312);
-    }
+test("serenade: all activity feedback has both locales", () => {
     const copy = getActivity("forest_serenade").copy;
     for (const message of [copy.questionCue, copy.actionLabel, copy.playAgainLabel, copy.scoreLabel, ...Object.values(copy.answerFeedback!)]) assert.ok(hasTranslation(message), message);
 });

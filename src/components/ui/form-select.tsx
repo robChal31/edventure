@@ -4,7 +4,7 @@ import { Children, Fragment, isValidElement, useId, useRef, type ReactNode } fro
 import Select, { type GroupBase, type StylesConfig } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
-export type SelectChoice = { value: string; label: string; icon?: string; description?: string; isDisabled?: boolean };
+export type SelectChoice = { value: string; label: string; icon?: ReactNode; accessibleLabel?: string; description?: string; isDisabled?: boolean };
 type ChoiceGroup = GroupBase<SelectChoice>;
 type OptionProps = { value?: string | number; children?: ReactNode; label?: string; disabled?: boolean };
 
@@ -83,9 +83,11 @@ export default function FormSelect({ value, onValueChange, children, options, cl
         onKeyDown={(event) => { if (event.key === "Escape" && menuOpen.current) event.stopPropagation(); }}
         placeholder={placeholder} menuPlacement="auto" menuPosition="fixed" menuShouldScrollIntoView={false}
         menuPortalTarget={typeof document === "undefined" ? undefined : document.body}
-        formatOptionLabel={(choice, meta) => choice.icon || choice.description ? <span className="select-choice">
+        getOptionLabel={(choice) => choice.accessibleLabel ?? choice.label}
+        formatOptionLabel={(choice, meta) => choice.icon || choice.description || choice.accessibleLabel ? <span className="select-choice" title={choice.accessibleLabel}>
             {choice.icon && <span className={`select-choice-icon choice-${choice.value}`} aria-hidden>{choice.icon}</span>}
-            <span><span className="select-choice-label">{choice.label}</span>
+            <span><span className="select-choice-label" aria-hidden={choice.accessibleLabel ? true : undefined}>{choice.label}</span>
+                {choice.accessibleLabel && <span className="sr-only">{choice.accessibleLabel}</span>}
                 {meta.context === "menu" && choice.description && <span className="select-choice-description">{choice.description}</span>}</span>
         </span> : choice.label}
         {...aria}

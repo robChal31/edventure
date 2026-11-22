@@ -3,9 +3,9 @@ import type { Point, TargetBounds } from "./targeting";
 export const TARGET_CORNER_SIZE = 8;
 
 /** Native 26px marker → 30px pulse, or wider bounds for a real object footprint. */
-export function targetCornerPositions(bounds: TargetBounds, expansion = 0): Point[] {
-    const width = Math.max(26, bounds.width + 6) + expansion * 2;
-    const height = Math.max(26, bounds.height + 6) + expansion * 2;
+export function targetCornerPositions(bounds: TargetBounds, expansion = 0, padding = 6): Point[] {
+    const width = Math.max(26, bounds.width + padding) + expansion * 2;
+    const height = Math.max(26, bounds.height + padding) + expansion * 2;
     const x = bounds.x + bounds.width / 2;
     const y = bounds.y + bounds.height / 2;
     const left = x - width / 2;
