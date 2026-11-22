@@ -141,24 +141,24 @@ export const ACTIVITIES: ActivityDefinition[] = [
     },
     {
         id: "forest_serenade", label: "Forest Serenade", icon: "🪈", location: "Deep Forest",
-        tagline: "One frog per question waits in the forest. Play your flute to invite it closer.", available: true,
+        tagline: "One frog per question waits near the altar hill. Play your flute to gather them around it.", available: true,
         copy: {
             startLabel: "Play", actionLabel: "PLAY", waitingActionLabel: "PLAY",
             questionCue: "A MELODY FOR THE FOREST", playAgainLabel: "PLAY ANOTHER MELODY",
             scoreIcon: "", scoreLabel: "frogs befriended",
             answerFeedback: { correct: "✔ LOVELY MELODY!", incorrect: "✘ THAT NOTE WAS OFF…", retry: "Practice: miss +1. Play again to retry this question with the same frog." },
-            status: { tuning: "Preparing your melody…", serenading: "Playing the flute…" },
+            status: { tuning: "Preparing your melody…", serenading: "Playing the flute…", finale: "A short song for the forest…" },
         },
         guide: {
-            goal: "Finish every question to complete the serenade, even if no frogs come closer. Each correct answer befriends its question's frog; collecting items is optional.",
+            goal: "Finish every question to complete the serenade. Correct answers bring their frogs around the altar hill; the closing song plays at any score.",
             steps: [
-                "Frogs are scattered and numbered in question order, one for every question.",
+                "Frogs wait nearby, scattered and numbered in question order, one for every question.",
                 "Choose the flute. Walk up the small stairs and stand in the marked clearing in front of the altar.",
-                "Press F / Space or PLAY. Your character plays the original flute animation, then a question appears.",
+                "Press F / Space or PLAY. Your character keeps playing the flute while you read and answer, with little musical notes.",
                 "Read and answer at your own pace. The feedback closes before your frog starts moving.",
-                "Correct: a pleasant melody, your question's frog comes closer and puffs, and the altar flowers. Wrong: a sour melody; that frog stays put.",
+                "Correct: your question's frog joins the circle around the altar hill and puffs with musical notes. Wrong: a sour melody; that frog stays put.",
                 "Practice lets you retry the same question. Assessment records each answer once, including wrong answers.",
-                "Finish all questions for your results. Frog count never blocks completion or changes your academic score.",
+                "Finish all questions, then enjoy a short closing song before your results. Frog count never blocks completion or changes your academic score.",
             ],
             controls: [
                 ["Arrow keys", "Walk"], ["F or Space", "Play the equipped flute in the clearing"],

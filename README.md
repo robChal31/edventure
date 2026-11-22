@@ -89,16 +89,30 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   tiga tipe soal dapat dipakai, dengan mode **Asesmen** atau **Latihan**.
 - Sejak awal ada **satu katak per soal**, tersebar dan bernomor sesuai urutan
   soal. Warna merah/biru memakai export asli. Spawn pada lantai yang terhubung,
-  bukan di cliff atau footprint objek padat; jumlah katak tidak dibatasi 30.
+  bukan di cliff atau footprint objek padat. Jarak sebar dibatasi **2–4 tile dari
+  bukit altar**, bukan ke ujung map; kuis panjang lebih padat, bukan lebih jauh.
+  Jumlah katak tetap mengikuti semua soal tanpa batas dekoratif 30.
 - Pemain masuk dengan **flute**. Naiki tangga asli map dan berdiri di area
   bertanda **F** di depan altar, lalu tekan **F / Spasi / MAIN**. Area dan outline
   marker saat idle berukuran **32 × 32 world px**, tanpa padding marker tambahan.
   Marker kuning berarti posisi valid; aksi dari luar area tidak memakai soal/miss.
+  **Animasi flute tetap berputar selama membaca, mengetik, menjawab dan feedback**;
+  tidak ada timer baca atau penalti waktu berpikir.
 - Jawaban benar → melodi merdu WebAudio; **katak milik soal itu** melompat mendekat
-  lewat jalur lantai, lalu memainkan `puffing` (6 frame asli, loop 600 ms). Altar
+  lewat jalur lantai ke titiknya **mengelilingi luar bukit altar**, bukan mengikuti
+  atau berkumpul di depan pemain. Titik ditentukan dari rim hill Tiled dan indeks
+  soal; area altar/tangga tetap kosong. Katak lalu memainkan `puffing` (6 frame
+  asli, loop 600 ms). Altar
   berubah dari `idle_altar` ke `altar_flower_play`. Tidak ada katak tambahan yang
   di-spawn. Jawaban salah → melodi sumbang; katak terkait tetap diam di tempatnya.
   Gerak dimulai setelah panel umpan balik selesai ditutup/di-unmount.
+- Pemain yang memainkan flute dan katak yang puffing menampilkan animasi not
+  dari **`Character/Character/PNG/22. Flute/Fx.png` asli**. Satu FX sprite per
+  sumber, dijeda saat di luar kamera; reduced motion menampilkan not statis.
+- Sesudah semua soal terjawab, dimainkan **lagu penutup flute orisinal ±4 detik**
+  sambil menampilkan pemain/katak, lalu hasil. WebAudio lokal, bukan track eksternal
+  atau loop tanpa henti; tetap selesai bila audio diblokir/tidak tersedia dan
+  tetap diputar pada nilai 0%. Replay/travel membatalkan semua suara yang terjadwal.
 - Latihan mengulang soal dan katak yang sama, serta menyimpan semua miss.
   Asesmen mencatat jawaban sekali. **Semua soal selesai = kuis selesai, termasuk
   0% / tidak ada katak yang mendekat.** Jumlah katak bersahabat terpisah dari
@@ -112,7 +126,7 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   `animations/object/altar/`. Kedua frog memiliki nama tag yang sama, sehingga
   key runtime diberi namespace palet agar animasinya tidak saling menimpa.
 - Checkpoint memulihkan jawaban, miss, bunga altar dan identitas setiap katak:
-  hanya katak yang soalnya benar berada dekat altar sambil puffing; lainnya
+  hanya katak yang soalnya benar berada di titik lingkar bukitnya sambil puffing; lainnya
   kembali ke posisi sebar yang stabil. Aksi/timer/receipt tidak disimpan.
   Replay/travel membatalkan efek lama. Animasi katak di luar kamera dijeda dan
   label kuis panjang dibatasi ke soal aktif, tanpa mengurangi jumlah kataknya.

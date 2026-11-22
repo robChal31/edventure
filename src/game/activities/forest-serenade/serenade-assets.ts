@@ -2,6 +2,7 @@ import type Phaser from "phaser";
 import { ASSET_KEYS } from "@/game/common/assets";
 
 export const FLUTE_ANIMATION = "flute";
+export const SERENADE_NOTES_ANIMATION = "serenade-original-notes";
 export const ALTAR_ANIMATIONS = { IDLE: "idle_altar", FLOWER: "altar_flower_play" } as const;
 export type FrogColor = "red" | "blue";
 export const FROG_ASSETS = { red: ASSET_KEYS.FROG_RED, blue: ASSET_KEYS.FROG_BLUE } as const;
@@ -12,6 +13,9 @@ type AsepriteExport = { frames: Record<string, { duration: number }>; meta: { fr
 export function createSerenadeAnimations(scene: Phaser.Scene): void {
     scene.anims.createFromAseprite(ASSET_KEYS.PLAYER_FLUTE);
     scene.anims.createFromAseprite(ASSET_KEYS.ALTAR_ANIMATION);
+    // First six-frame direction of the original Flute/Fx.png sheet (including its breath rests).
+    if (!scene.anims.exists(SERENADE_NOTES_ANIMATION)) scene.anims.create({ key: SERENADE_NOTES_ANIMATION,
+        frames: scene.anims.generateFrameNumbers(ASSET_KEYS.FLUTE_NOTES, { start: 0, end: 5 }), frameRate: 10 });
     Object.values(FROG_ASSETS).forEach((assetKey) => {
         const data: AsepriteExport = scene.cache.json.get(assetKey);
         data.meta.frameTags.forEach((tag) => {
