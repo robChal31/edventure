@@ -3,6 +3,7 @@ import { PLAYER_ANIMATION_KEYS, type FishingStateKey } from "@/game/common/asset
 import { Facing, PlayerDirection, Position } from "@/game/common/types";
 import { KeyboardComponent } from "@/game/components/input/keyboard-component";
 import Phaser from "phaser";
+import { FLUTE_ANIMATION } from "@/game/activities/forest-serenade/serenade-assets";
 import {
     FISHING_SHEET,
     fishingAnimationKey,
@@ -46,6 +47,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     #isWearingAxe = false;
     #isAxeActionPlaying = false;
     #isFishing = false;
+    #isPlayingFlute = false;
     #fishingFacing: Facing = "down";
     #cancelFishingAnimation?: () => void;
     #inputLocked = false;
@@ -92,7 +94,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         }
         if (this.#controlsPaused) (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
 
-        if (this.#isAxeActionPlaying || this.#isFishing) {
+        if (this.#isAxeActionPlaying || this.#isFishing || this.#isPlayingFlute) {
             return;
         }
 
@@ -232,7 +234,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         onHit();
     }
 
-    public get isActionBusy(): boolean { return this.#isAxeActionPlaying || this.#isFishing; }
+    public get isActionBusy(): boolean { return this.#isAxeActionPlaying || this.#isFishing || this.#isPlayingFlute; }
+
+    /** The supplied flute export has one front-facing tag, not invented directional tags. */
+    public playFlute(): void {
+        this.#isPlayingFlute = true;
+        (this.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+        this.#face("down");
+        this.play({ key: FLUTE_ANIMATION, repeat: -1 });
+    }
+    public stopFlute(): void {
+        if (!this.#isPlayingFlute) return;
+        this.#isPlayingFlute = false;
+        this.#playIdle();
+    }
     public get isInputLocked(): boolean { return this.#inputLocked; }
 
     public setControlsPaused(paused: boolean): void {

@@ -8,6 +8,7 @@ function EquipmentIcon({ id }: { id: EquipmentId }) {
     const icon = EQUIPMENT[id].icon;
     if (!icon) return <span aria-hidden className="text-lg text-amber-100">—</span>;
     return <span aria-hidden className="equipment-icon" style={{
+        ...(id === "flute" ? { backgroundColor: "#e6f3d9", borderRadius: 7, boxShadow: "inset 0 0 0 1px #90b28c" } : {}),
         backgroundImage: `url("${icon.url}")`,
         backgroundSize: `${icon.width * 2}px ${icon.height * 2}px`,
         backgroundPosition: `${-(icon.x ?? 0) * 2}px ${-(icon.y ?? 0) * 2}px`,

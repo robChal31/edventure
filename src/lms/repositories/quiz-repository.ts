@@ -178,7 +178,7 @@ export function saveQuiz(draft: QuizDraft): Quiz {
         name: draft.name.trim(),
         description: draft.description.trim(),
         activityId: draft.activityId,
-        ...(draft.activityId === "catching_bugs" ? { mode: draft.mode } : {}),
+        ...(draft.activityId === "catching_bugs" || draft.activityId === "forest_serenade" ? { mode: draft.mode } : {}),
         questionIds: Array.from(new Set(draft.questionIds)),
         shuffleQuestions: draft.shuffleQuestions,
         published: draft.published,

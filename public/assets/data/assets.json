@@ -492,6 +492,66 @@
           "frameWidth": 48,
           "frameHeight": 32
         }
+      },
+      {
+        "type": "image",
+        "key": "DEEP_FOREST_GRASS",
+        "url": "Tileset/Tileset Grass Deep Forest.png"
+      },
+      {
+        "type": "image",
+        "key": "DEEP_FOREST_CLIFF",
+        "url": "Tileset/Tileset Grass Cliff Tileset Deep Forest.png"
+      },
+      {
+        "type": "spritesheet",
+        "key": "WIZARD_HOUSE",
+        "url": "Objects/Exterior/Houses/NPCS houses/wizard's house.png",
+        "frameConfig": {
+          "frameWidth": 80,
+          "frameHeight": 144
+        }
+      },
+      {
+        "type": "spritesheet",
+        "key": "DEEP_FOREST_TREE",
+        "url": "Objects/Tree/Deep Forest/Tree.png",
+        "frameConfig": {
+          "frameWidth": 32,
+          "frameHeight": 48
+        }
+      },
+      {
+        "type": "spritesheet",
+        "key": "ALTAR",
+        "url": "Objects/Exterior/Deep Forest/Altar.png",
+        "frameConfig": {
+          "frameWidth": 48,
+          "frameHeight": 48
+        }
+      },
+      {
+        "type": "spritesheet",
+        "key": "STONE_COLUMN",
+        "url": "Objects/Exterior/Deep Forest/Stone Column.png",
+        "frameConfig": {
+          "frameWidth": 32,
+          "frameHeight": 64
+        }
+      },
+      {
+        "type": "image",
+        "key": "ROOT",
+        "url": "Objects/Tree/Deep Forest/Root.png"
+      },
+      {
+        "type": "spritesheet",
+        "key": "FANTASY_MUSHROOM",
+        "url": "Objects/Tree/Deep Forest/Fantasy Mushroom.png",
+        "frameConfig": {
+          "frameWidth": 32,
+          "frameHeight": 48
+        }
       }
     ]
   },
@@ -512,6 +572,11 @@
         "type": "tilemapTiledJSON",
         "key": "BEACH_MAP",
         "url": "beach/beach_map.json"
+      },
+      {
+        "type": "tilemapTiledJSON",
+        "key": "DEEP_FOREST_MAP",
+        "url": "deep_forest/deep_forest.tmj"
       }
     ]
   },
@@ -627,6 +692,12 @@
         "key": "WATER_FOUNTAIN_ANIMATION",
         "textureURL": "water_fountain/water_fountain_animation_sheet.png",
         "atlasURL": "water_fountain/water_fountain_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "ALTAR_ANIMATION",
+        "textureURL": "altar/altar_animation_sheet.png",
+        "atlasURL": "altar/altar_animation.json"
       }
     ]
   },
@@ -692,6 +763,12 @@
         "key": "PLAYER_FISHING_CAPTURED_NO_FISH",
         "textureURL": "fishing/captured_no_fish_animation_sheet.png",
         "atlasURL": "fishing/captured_no_fish_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "PLAYER_FLUTE",
+        "textureURL": "flute/flute_animation_sheet.png",
+        "atlasURL": "flute/flute_animation.json"
       }
     ]
   },
@@ -703,6 +780,23 @@
         "key": "CRICKET",
         "textureURL": "cricket_animation_sheet.png",
         "atlasURL": "cricket_animation.json"
+      }
+    ]
+  },
+  {
+    "path": "assets/animations/animal/frog",
+    "files": [
+      {
+        "type": "aseprite",
+        "key": "FROG_BLUE",
+        "textureURL": "blue_frog_animation_sheet.png",
+        "atlasURL": "blue_frog_animation.json"
+      },
+      {
+        "type": "aseprite",
+        "key": "FROG_RED",
+        "textureURL": "red_frog_animation_sheet.png",
+        "atlasURL": "red_frog_animation.json"
       }
     ]
   }

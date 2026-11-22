@@ -1,7 +1,8 @@
 "use client";
 
+import FormSelect, { CreatableField } from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
-import { useId } from "react";
 import {
     COGNITIVE_LEVELS,
     CURRICULA,
@@ -51,11 +52,11 @@ export function GradeSelect({
 }) {
     const { t } = useI18n();
     return (
-        <select
+        <FormSelect
             id={id}
             value={value ?? ""}
-            onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
-            className={inputClass}
+            onValueChange={(event) => onChange(event ? Number(event) : null)}
+            className="w-full"
         >
             <option value="">{t("Choose a grade…")}</option>
             {(Object.keys(GRADE_STAGES) as (keyof typeof GRADE_STAGES)[]).map((stage) => (
@@ -66,7 +67,7 @@ export function GradeSelect({
                     ))}
                 </optgroup>
             ))}
-        </select>
+        </FormSelect>
     );
 }
 
@@ -78,8 +79,6 @@ export default function ClassificationFields({
     compact = false,
 }: Props) {
     const { t } = useI18n();
-    const subjectListId = useId();
-    const topicListId = useId();
     const subjectOptions = Array.from(new Set([...SUBJECTS, ...knownSubjects])).sort((a, b) =>
         a.localeCompare(b)
     );
@@ -96,38 +95,18 @@ export default function ClassificationFields({
                     <GradeSelect value={value.grade} onChange={(grade) => onChange({ grade })} />
                 </Field>
                 <Field label={t("Subject")}>
-                    <input
-                        value={value.subject}
-                        onChange={(event) => onChange({ subject: event.target.value })}
-                        list={subjectListId}
-                        placeholder={t("e.g. Mathematics")}
-                        className={inputClass}
-                    />
-                    <datalist id={subjectListId}>
-                        {subjectOptions.map((subject) => (
-                            <option key={subject} value={subject} />
-                        ))}
-                    </datalist>
+                    <CreatableField value={value.subject} onValueChange={(subject) => onChange({ subject })}
+                        options={subjectOptions} placeholder={t("e.g. Mathematics")} aria-label={t("Subject")} />
                 </Field>
                 <Field label={t("Topic")}>
-                    <input
-                        value={value.topic}
-                        onChange={(event) => onChange({ topic: event.target.value })}
-                        list={topicListId}
-                        placeholder={t("e.g. Fractions")}
-                        className={inputClass}
-                    />
-                    <datalist id={topicListId}>
-                        {knownTopics.map((topic) => (
-                            <option key={topic} value={topic} />
-                        ))}
-                    </datalist>
+                    <CreatableField value={value.topic} onValueChange={(topic) => onChange({ topic })}
+                        options={knownTopics} placeholder={t("e.g. Fractions")} aria-label={t("Topic")} />
                 </Field>
                 <Field label={t("Curriculum")}>
-                    <select
+                    <FormSelect
                         value={value.curriculum}
-                        onChange={(event) => onChange({ curriculum: event.target.value as CurriculumId | "" })}
-                        className={inputClass}
+                        onValueChange={(event) => onChange({ curriculum: event as CurriculumId | "" })}
+                        className="w-full"
                     >
                         <option value="">{t("Choose a curriculum…")}</option>
                         {CURRICULUM_ORDER.map((id) => (
@@ -135,7 +114,7 @@ export default function ClassificationFields({
                                 {t(CURRICULA[id].label)} — {t(CURRICULA[id].hint)}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                 </Field>
             </div>
 
@@ -161,17 +140,17 @@ export default function ClassificationFields({
                         </div>
                     </Field>
                     <Field label={t("Thinking level")} hint={t(COGNITIVE_LEVELS[value.cognitiveLevel].hint)}>
-                        <select
+                        <FormSelect
                             value={value.cognitiveLevel}
-                            onChange={(event) => onChange({ cognitiveLevel: event.target.value as CognitiveLevel })}
-                            className={inputClass}
+                            onValueChange={(event) => onChange({ cognitiveLevel: event as CognitiveLevel })}
+                            className="w-full"
                         >
                             {(Object.keys(COGNITIVE_LEVELS) as CognitiveLevel[]).map((level) => (
                                 <option key={level} value={level}>
                                     {t(COGNITIVE_LEVELS[level].label)}
                                 </option>
                             ))}
-                        </select>
+                        </FormSelect>
                     </Field>
                 </div>
             )}

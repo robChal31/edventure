@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -32,7 +34,7 @@ import { attemptStats, completionForQuiz } from "@/lms/services/reports";
 import { resolveQuizQuestions } from "@/lms/services/playable-quiz";
 import { ChipTag, ScorePill, StatusPill } from "@/components/ui/badges";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
-import { EmptyState, inputClass, PageHeader, Skeleton } from "@/components/ui/panels";
+import { EmptyState, PageHeader, Skeleton } from "@/components/ui/panels";
 import PixelButton, { pixelButtonClass } from "@/components/ui/pixel-button";
 import QuizEditor from "./quiz-editor";
 
@@ -108,12 +110,12 @@ export default function QuizManager() {
                         {label}
                     </button>
                 ))}
-                <select value={grade} onChange={(e) => setGrade(e.target.value)} className={`${inputClass} w-auto`} aria-label={t("Filter by grade")}>
+                <FormSelect value={grade} onValueChange={(e) => setGrade(e)} className={`w-full w-auto`} aria-label={t("Filter by grade")}>
                     <option value="">{t("Any grade")}</option>
                     {GRADES.map((g) => (
                         <option key={g} value={g}>{t("Grade")}{" "}{g}</option>
                     ))}
-                </select>
+                </FormSelect>
             </div>
 
             {!hydrated ? (

@@ -20,6 +20,7 @@ export default function GameHelp({ open, onClose, activity }: { open: boolean; o
                 <dd>{t(label)}</dd>
             </div>)}</dl>
         </div>}
+        <p className="mt-4 text-sm text-amber-100">{t("Axe: trees take 5 chops, then 3 more to clear the wood. Bushes disappear after 3 chops without leaving a stump. Click dropped logs to collect them, then open Inventory to see your bag.")}</p>
         <p className="mt-4 text-xs leading-relaxed text-slate-400">{t("Progress is saved on this browser, not across devices. Refresh uses your browser's standard confirmation; use Save / exit for more choices.")}</p>
     </Modal>;
 }

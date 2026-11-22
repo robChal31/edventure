@@ -40,7 +40,7 @@ means: implement the activity, register it in `src/quiz/activities.ts` and the g
 registry, and set `available: true`.
 
 Students who play a quiz travel to its activity map. Currently available: **fishing** (on the
-beach map) and **Catching Bugs** (on the farm map).
+beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
 
 ### Catching Bugs — farm
 
@@ -83,6 +83,46 @@ beach map) and **Catching Bugs** (on the farm map).
   laporan guru. `QuizSummary.incorrect` tetap berarti jumlah soal final yang salah,
   bukan jumlah retry.
 
+### Forest Serenade — deep_forest
+
+- Pilih **Forest Serenade / Senandung Hutan** di editor kuis. Semua mapel dan
+  tiga tipe soal dapat dipakai, dengan mode **Asesmen** atau **Latihan**.
+- Pemain masuk dengan **flute**. Naiki tangga asli map dan berdiri di area
+  bertanda **F** di depan altar, lalu tekan **F / Spasi / MAIN**. Marker kuning
+  berarti posisi sudah valid; aksi dari luar area tidak memakai soal/miss.
+- Jawaban benar → melodi merdu WebAudio, **tepat satu katak** merah/biru, dan
+  altar berubah dari `idle_altar` ke `altar_flower_play`. Jawaban salah → melodi
+  sumbang dan **tanpa katak**. Umpan balik soal selesai ditutup/di-unmount dahulu.
+- Latihan mengulang soal yang sama dan menyimpan semua miss. Asesmen mencatat
+  jawaban sekali. **Semua soal selesai = kuis selesai, termasuk 0% / nol katak.**
+  Jumlah katak bukan syarat progres atau sumber daya untuk membuka soal.
+- Rectangle `performance_area` di object layer `forest_serenade` pada
+  `public/assets/images/levels/deep_forest/deep_forest.tmj` adalah area main.
+  Pindahkan lewat Tiled bila altar/platform diubah; tidak ada lokasi fallback.
+  Map 640 × 320 px, geometri, GID, dan objek asli dipertahankan. Cliff/platform
+  bertabrakan; celah tangga tetap dapat dilewati.
+- Export asli: `animations/player/flute/`, `animations/animal/frog/`, dan
+  `animations/object/altar/`. Kedua frog memiliki nama tag yang sama, sehingga
+  key runtime diberi namespace palet agar animasinya tidak saling menimpa.
+- Checkpoint memulihkan jawaban, miss, bunga altar dan jumlah keberhasilan;
+  aksi/timer/receipt tidak disimpan. Replay/travel membatalkan efek lama.
+  Untuk kuis panjang maksimal 30 katak dekoratif tampak sekaligus; setiap jawaban
+  benar tetap memberi satu keberhasilan dan total hasil tetap tepat.
+- Demo **Forest Serenade** (`quiz-sample-forest-serenade`) ditambahkan sekali ke
+  browser lama tanpa menimpa kuis guru. Tidak ada kebutuhan menulis cerita/soal khusus.
+
+### Tas dan pickup
+
+- Klik/tap log yang jatuh dari pohon/semak untuk memasukkannya ke **Tas / Inventory**
+  di samping slot alat. Satu log = satu item, termasuk jika diklik cepat dua kali.
+  Ikon kayu berasal dari RPG icons asli; profil memakai frame Josh asli, bukan ikan.
+- Tas disimpan per **ID siswa** pada `learning-world.lms.inventory.v1` dan ikut
+  berpindah map/reload pada browser yang sama. Pratinjau guru hanya punya tas
+  sementara. Jika storage penuh, pickup tidak hilang dan bisa dicoba lagi.
+- Semak memakai **3 tebasan**, lalu langsung hilang tanpa fase chopped-tree/stump;
+  body dan entry interaksi ikut dibersihkan. Semak mengeluarkan satu log.
+  Pengumpulan item opsional, tidak mengubah nilai atau mengunci soal.
+
 ### Equipment dan target bersama
 
 - Satu slot kayu dari `UI/Inventory/Slots.png` menampilkan alat aktif. Klik/tap
@@ -90,12 +130,13 @@ beach map) and **Catching Bugs** (on the farm map).
   baris D-pad/aksi agar tidak menutupi tombol. Ikon kapak, pancing, jaring, sekop
   dan kayu semuanya dari sprite pack asli.
 - Di desa, tangan pemain awalnya **kosong** (tanpa alat). Fishing mulai dengan
-  pancing; Catching Bugs dengan jaring. Kapak, pancing dan jaring dapat dipilih;
+  pancing; Catching Bugs dengan jaring; Forest Serenade dengan flute. Semua alat
+  tersebut dapat dipilih;
   **Lepas alat / Unequip** mengembalikan tangan kosong. Sekop/kayu masih jelas
   **belum tersedia**; tidak ada gameplay gali tanah/bangun pagar palsu.
-- **F / Space / tombol aksi** adalah satu intent. Kapak menebas pohon di depan;
+- **F / Space / tombol aksi** adalah satu intent. Kapak menebas pohon/semak di depan;
   pancing menjalankan cast/reel yang sudah ada di fishing; jaring memilih cricket
-  terdekat di farm. Alat salah konteks memberi petunjuk, bukan menjalankan kuis
+  terdekat di farm; flute memakai area altar yang ditulis di Tiled. Alat salah konteks memberi petunjuk, bukan menjalankan kuis
   lain. Tombol test khusus alat (T/H/X/Z) dihapus dari input game; T/F tetap sah
   untuk jawaban true/false di modal HTML.
 - `PreparedAction` menyimpan target dan eksekusinya dalam satu snapshot. Strategi
@@ -115,7 +156,11 @@ beach map) and **Catching Bugs** (on the farm map).
 - UI tersedia dalam **Bahasa Indonesia** (default) dan **English** melalui pilihan
   bahasa di halaman masuk, panel staf, dan game. Pilihan menetap di browser.
   Teks soal, opsi, nama siswa dan isi buatan guru tidak diterjemahkan otomatis.
-  Katalog UI ada di `src/i18n/messages-id.json`.
+  Katalog UI ada di `src/i18n/messages-id.json`. Semua dropdown form/filter memakai
+  **React Select**, termasuk pilihan bahasa dengan badge ID/EN. Grade tetap
+  dikelompokkan menurut jenjang; subject/topic memakai Creatable agar istilah
+  buatan guru tetap bisa diketik. Menu di-portal di atas dialog, mendukung
+  keyboard/search, dan Escape menutup menu dahulu tanpa membuang form.
 - Editor soal menyediakan **Insert image** (PNG/JPEG/WebP, berkas asli maksimal
   5 MB). Gambar diperkecil secara lokal hingga sisi terpanjang 1440 px dan sekitar
   250 KB; deskripsi gambar wajib diisi. Prompt dapat berupa teks, gambar, atau
@@ -153,16 +198,18 @@ beach map) and **Catching Bugs** (on the farm map).
   `stage: standing`; class `wood` + `species: birch` membuat tunggul. Property
   `treeVariant` dapat mempertahankan varian warna bernama. Layer legacy tetap
   didukung. Tidak ada pohon baru yang dipaksakan ke tata letak map.
-- Angin hanya mengenai cluster kecil yang tampak di kamera, maksimal 7 pohon
-  dengan jeda 6.5–13 detik dan stagger; bukan seluruh map sekaligus. Pangkal,
-  bayangan dan collider tetap diam. Kelapa memakai potongan kanopi asli.
-  Reduced-motion mematikan gerakan angin/awan.
+- Gust angin lebih sering: jeda **1.6–3 detik**, maksimal 20 target dengan
+  stagger 50 ms, hanya cluster yang tampak di kamera. Pohon, semak dan wheat
+  memakai art asli; akar, bayangan dan collider tetap diam. Wheat pada layer
+  campuran dipisahkan berdasarkan tileset aslinya, bukan digambar dua kali.
+  Reduced-motion mematikan gerakan angin.
 - `CLOUDS` mempunyai depth world tertinggi (di atas objek, efek tangkap dan name
   tag), termasuk tile/object yang diberi class/property clouds di layer campuran.
-  Map tanpa awan memakai dua sprite awan asli yang ringan. Shadow atlas/tile
-  asli tidak digandakan; pemain, cricket dan objek darat yang memerlukan mendapat
-  contact shadow. Ketiga map aktif: desa, farm dan pantai.
-- Ketiga `src/game/world/maps/*-map.ts` punya `soundtrack: null` sampai track
+  Awan **hanya** tampil jika tile/object-nya ditulis di Tiled; generator fallback
+  dihapus. Shadow atlas/tile asli tidak digandakan; pemain, cricket dan objek
+  darat yang memerlukan mendapat contact shadow. Empat map aktif: desa, farm,
+  pantai dan deep_forest.
+- Semua `src/game/world/maps/*-map.ts` punya `soundtrack: null` sampai track
   dipilih. **Belum ada lagu yang ditambahkan/dipilih.** Untuk mengaktifkan map,
   simpan audio berlisensi di `public/assets/music/`, lalu ganti `null` dengan:
 
@@ -177,6 +224,9 @@ beach map) and **Catching Bugs** (on the farm map).
   Preloader menangani cache; controller menunggu audio unlock, loop per map,
   menyimpan preferensi on/off, serta membersihkan track saat travel/shutdown.
   Tombol musik hanya tampil jika track tersedia. SFX fishing/tebang tidak diubah.
+  Frasa pendek flute benar/salah adalah synthesizer lokal WebAudio, bukan lagu
+  latar. Audio di-unlock oleh gesture pointer/key agar feedback tertunda bisa
+  terdengar di perangkat mobile.
 
 Validasi: jalankan `npm ci`, `npm test`, `npm run lint`, lalu `npm run build`.
 Tes mencakup batch/ronde, latihan vs asesmen, soal tak berurutan, hitungan miss,

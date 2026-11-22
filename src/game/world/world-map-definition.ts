@@ -21,7 +21,7 @@ export type WorldMapLayers = {
     shallow_water?: string;
     waterfall_stream?: string;
     bridge?: string;
-    collision?: string;
+    collision?: string | string[];
 };
 
 export type WorldMapObjectLayer = {

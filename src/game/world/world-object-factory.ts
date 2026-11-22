@@ -8,6 +8,7 @@ import { WORLD_CONFIG } from "../config/world-config";
 import { isCloudLayer, isCloudTile } from "./render-layers";
 import { DEPTH_CONFIG } from "../config/depth-config";
 import { Tree } from "../game-objects/tree";
+import { Bush } from "../game-objects/bush";
 import { WorldObject } from "./world-object";
 
 export class WorldObjectFactory {
@@ -64,6 +65,12 @@ export class WorldObjectFactory {
         if (!asset || !this.scene.textures.exists(asset)) {
             console.warn(`Texture not found for tileset: ${tileset.name}`);
             return null;
+        }
+
+        if (/bush/i.test(layerName) || /bush/i.test(tileset.name)) {
+            const bush = new Bush(this.scene, x * WORLD_CONFIG.scale, y * WORLD_CONFIG.scale,
+                asset, gid - tileset.firstgid, WORLD_CONFIG.scale).setName(layerName);
+            return { gameObject: bush, interactable: bush, collidable: bush, visible: bush, depthSortable: bush };
         }
 
         const image = this.scene.add.image(

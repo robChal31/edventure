@@ -168,6 +168,11 @@ export class WorldMap {
 
     public get hasAuthoredClouds(): boolean { return this.#hasClouds; }
 
+    public get collisionLayerNames(): readonly string[] {
+        const names = this.definition.layers.collision;
+        return typeof names === "string" ? [names] : names ?? [];
+    }
+
     public hasShadowAt(x: number, y: number): boolean {
         for (const [name, layer] of this.#layers) {
             if (/shadow/i.test(name) && (layer.getTileAtWorldXY(x, y)?.index ?? -1) >= 0) return true;

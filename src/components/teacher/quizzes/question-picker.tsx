@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import QuestionSnippet from "@/components/ui/question-snippet";
 import { useMemo, useState } from "react";
@@ -119,22 +121,22 @@ export default function QuestionPicker({ questions, selectedIds, onChange, onCre
                         aria-label={t("Search the question bank")}
                     />
                     <div className="grid grid-cols-3 gap-2">
-                        <select value={grade} onChange={(e) => setGrade(e.target.value)} className={inputClass} aria-label={t("Filter by grade")}>
+                        <FormSelect value={grade} onValueChange={(e) => setGrade(e)} className="w-full" aria-label={t("Filter by grade")}>
                             <option value="">{t("Any grade")}</option>
                             {GRADES.map((g) => (
                                 <option key={g} value={g}>{t("Grade")}{" "}{g}</option>
                             ))}
-                        </select>
-                        <select value={subject} onChange={(e) => setSubject(e.target.value)} className={inputClass} aria-label={t("Filter by subject")}>
+                        </FormSelect>
+                        <FormSelect value={subject} onValueChange={(e) => setSubject(e)} className="w-full" aria-label={t("Filter by subject")}>
                             <option value="">{t("Any subject")}</option>
                             {subjects.map((s) => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
-                        </select>
-                    <select
+                        </FormSelect>
+                    <FormSelect
                         value={type}
-                        onChange={(event) => setType(event.target.value as QuestionType | "all")}
-                        className={`${inputClass} sm:w-44`}
+                        onValueChange={(event) => setType(event as QuestionType | "all")}
+                        className={`w-full sm:w-44`}
                         aria-label={t("Filter by type")}
                     >
                         <option value="all">{t("All types")}</option>
@@ -143,7 +145,7 @@ export default function QuestionPicker({ questions, selectedIds, onChange, onCre
                                 {QUESTION_TYPES[typeId].icon} {t(QUESTION_TYPES[typeId].label)}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                     </div>
                 </div>
                 <ul className="flex max-h-72 flex-col gap-1.5 overflow-y-auto pr-1">

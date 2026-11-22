@@ -27,7 +27,9 @@ export class MapAnimationLoader {
                     return;
                 }
 
+                if (layer.visible === false) return;
                 layer.objects.forEach((object) => {
+                    if (object.visible === false) return;
                     if (
                         object.x == null ||
                         object.y == null ||
@@ -37,11 +39,14 @@ export class MapAnimationLoader {
                         return;
                     }
 
+                    const firstFrame = this.scene.anims.get(animationDefinition.animationKey)?.frames[0];
+                    if (!firstFrame) return;
                     const sprite =
                         this.scene.add.sprite(
                             object.x * WORLD_CONFIG.scale,
                             object.y * WORLD_CONFIG.scale,
-                            animationDefinition.animationKey
+                            firstFrame.textureKey,
+                            firstFrame.textureFrame
                         );
 
                     sprite.setScale(
@@ -53,7 +58,7 @@ export class MapAnimationLoader {
                     sprite.setName(animationDefinition.layer);
                     sprite.setData("collidable", animationDefinition.collidable ?? false);
                     sprite.setDepth(
-                        (object.y + object.height) * WORLD_CONFIG.scale
+                        object.y * WORLD_CONFIG.scale
                     );
                     sprite.play({
                         key: animationDefinition.animationKey,

@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import QuestionSnippet from "@/components/ui/question-snippet";
 import { useMemo, useState } from "react";
@@ -348,10 +350,10 @@ function FilterSelect({
     return (
         <label className="flex flex-col gap-1">
             <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>
-            <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass} aria-label={t("Filter by {value0}", { value0: label.toLowerCase() })}>
+            <FormSelect value={value} onValueChange={(e) => onChange(e)} className="w-full" aria-label={t("Filter by {value0}", { value0: label.toLowerCase() })}>
                 <option value="">{t("All")}</option>
                 {children}
-            </select>
+            </FormSelect>
         </label>
     );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import { useMemo, useState } from "react";
 import { canManageRoster, isSuperAdmin, visibleClasses, visibleStudents } from "@/lms/access";
@@ -75,10 +77,10 @@ export default function ClassesManager() {
             />
 
             {isSuperAdmin(actor) && schools.length > 0 && (
-                <select
+                <FormSelect
                     value={schoolFilter}
-                    onChange={(e) => setSchoolFilter(e.target.value)}
-                    className={`${inputClass} mb-4 sm:w-64`}
+                    onValueChange={(e) => setSchoolFilter(e)}
+                    className={`w-full mb-4 sm:w-64`}
                     aria-label={t("Filter by school")}
                 >
                     <option value="">{t("All schools")}</option>
@@ -87,7 +89,7 @@ export default function ClassesManager() {
                             {s.name}
                         </option>
                     ))}
-                </select>
+                </FormSelect>
             )}
 
             {scoped.length === 0 ? (
@@ -225,31 +227,31 @@ function ClassForm({
                     />
                 </Field>
                 <Field label={t("Grade")}>
-                    <select
+                    <FormSelect
                         value={draft.grade}
-                        onChange={(e) => setDraft({ ...draft, grade: Number(e.target.value) })}
-                        className={inputClass}
+                        onValueChange={(e) => setDraft({ ...draft, grade: Number(e) })}
+                        className="w-full"
                     >
                         {GRADES.map((g) => (
                             <option key={g} value={g}>{t("Grade")}{" "}{g}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                 </Field>
             </div>
             {actorIsSuper && (
                 <Field label={t("School")}>
-                    <select
+                    <FormSelect
                         value={draft.schoolId}
-                        onChange={(e) => setDraft({ ...draft, schoolId: e.target.value })}
-                        className={inputClass}
+                        onValueChange={(e) => setDraft({ ...draft, schoolId: e })}
+                        className="w-full"
                     >
                         {schools.map((s) => (
                             <option key={s.id} value={s.id}>
                                 {s.name}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                 </Field>
             )}
             <ErrorList errors={errors} />

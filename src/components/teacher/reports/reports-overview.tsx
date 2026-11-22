@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -7,7 +9,7 @@ import { useAttempts, useHydrated, useQuizzes, useStudents } from "@/lms/hooks";
 import { attemptsToCsv, downloadCsv } from "@/lms/services/csv";
 import { attemptStats, completionForQuiz, sortByNewest } from "@/lms/services/reports";
 import { ScorePill } from "@/components/ui/badges";
-import { inputClass, PageHeader, Skeleton } from "@/components/ui/panels";
+import { PageHeader, Skeleton } from "@/components/ui/panels";
 import PixelButton from "@/components/ui/pixel-button";
 import AttemptsTable from "./attempts-table";
 
@@ -91,21 +93,21 @@ export default function ReportsOverview() {
                 <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="font-pixel text-xs text-sky-300">{t("ALL ATTEMPTS (")}{filtered.length})</h2>
                     <div className="flex flex-col gap-2 sm:flex-row">
-                        <select value={quizId} onChange={(e) => setQuizId(e.target.value)} className={`${inputClass} sm:w-52`} aria-label={t("Filter by quiz")}>
+                        <FormSelect value={quizId} onValueChange={(e) => setQuizId(e)} className={`w-full sm:w-52`} aria-label={t("Filter by quiz")}>
                             <option value="">{t("All quizzes")}</option>
                             {quizzes.map((quiz) => (
                                 <option key={quiz.id} value={quiz.id}>
                                     {quiz.name}
                                 </option>
                             ))}
-                        </select>
-                        <select value={className} onChange={(e) => setClassName(e.target.value)} className={`${inputClass} sm:w-40`} aria-label={t("Filter by class")}>
+                        </FormSelect>
+                        <FormSelect value={className} onValueChange={(e) => setClassName(e)} className={`w-full sm:w-40`} aria-label={t("Filter by class")}>
                             <option value="">{t("All classes")}</option>
                             {classNames.map((name) => (
                                 <option key={name} value={name}>{t("Class")}{" "}{name}
                                 </option>
                             ))}
-                        </select>
+                        </FormSelect>
                     </div>
                 </div>
                 <AttemptsTable

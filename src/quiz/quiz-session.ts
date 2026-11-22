@@ -29,7 +29,7 @@ export class QuizSession {
         this.quiz = quiz;
         const restored = progress ? sanitizeProgress({ quiz: progress }, quiz.questions) : null;
         restored?.quiz.answers.forEach(({ questionIndex, answer }) => this.submitAnswerFor(questionIndex, answer, {
-            retryIncorrect: quiz.activityId === "catching_bugs" && quiz.mode === "practice",
+            retryIncorrect: (quiz.activityId === "catching_bugs" || quiz.activityId === "forest_serenade") && quiz.mode === "practice",
         }));
     }
 

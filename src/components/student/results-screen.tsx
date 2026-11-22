@@ -24,6 +24,8 @@ type ResultsScreenProps = {
 export default function ResultsScreen({ summary, primary, secondary, note, saveError }: ResultsScreenProps) {
     const { t } = useI18n();
     const bugs = summary.activityId === "catching_bugs";
+    const serenade = summary.activityId === "forest_serenade";
+    const hasRetries = bugs || serenade;
     const pct = summary.total > 0 ? Math.round((summary.correct / summary.total) * 100) : 0;
 
     const verdict =
@@ -45,11 +47,11 @@ export default function ResultsScreen({ summary, primary, secondary, note, saveE
                 <div className="mt-5 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-emerald-500/20 p-3">
                         <div className="font-pixel text-xl text-emerald-300">{summary.correct}</div>
-                        <div className="mt-1 text-[10px] uppercase text-emerald-200">{bugs ? t("Caught") : t("Caught")}</div>
+                        <div className="mt-1 text-[10px] uppercase text-emerald-200">{serenade ? t("Frogs summoned") : t("Caught")}</div>
                     </div>
                     <div className="rounded-lg bg-rose-500/20 p-3">
-                        <div className="font-pixel text-xl text-rose-300">{bugs ? summary.misses ?? summary.incorrect : summary.incorrect}</div>
-                        <div className="mt-1 text-[10px] uppercase text-rose-200">{bugs ? t("Miss") : t("Escaped")}</div>
+                        <div className="font-pixel text-xl text-rose-300">{hasRetries ? summary.misses ?? summary.incorrect : summary.incorrect}</div>
+                        <div className="mt-1 text-[10px] uppercase text-rose-200">{hasRetries ? t("Miss") : t("Escaped")}</div>
                     </div>
                     <div className="rounded-lg bg-sky-500/20 p-3">
                         <div className="font-pixel text-xl text-sky-300">{summary.total}</div>
@@ -58,7 +60,7 @@ export default function ResultsScreen({ summary, primary, secondary, note, saveE
                 </div>
 
                 <div className="mt-4 text-center font-pixel text-xs text-amber-200">{t("Score:")}{" "}{pct}%</div>
-                {bugs && (
+                {hasRetries && (
                     <p className="mt-2 text-center text-xs text-amber-100">
                         {summary.mode === "practice" ? t("Practice: scores use each question's final answer. Misses count all wrong attempts, including retries.") : t("Assessment: one attempt per question. Wrong answers count as misses.")}
                     </p>

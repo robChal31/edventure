@@ -1,5 +1,7 @@
 import type { ActivityId } from "./types";
 
+export type AnswerFeedbackCopy = { correct: string; incorrect: string; retry: string };
+
 /** Short UI copy an activity uses for its own buttons, labels and status lines. */
 export type ActivityCopy = {
     /** Quest board button for a quest that was never played. */
@@ -17,6 +19,7 @@ export type ActivityCopy = {
     /** Score line icon and label in the HUD, e.g. "🐟 2/5 caught". */
     scoreIcon: string;
     scoreLabel: string;
+    answerFeedback?: AnswerFeedbackCopy;
     /** Status line per activity phase (phase names come from the activity). */
     status: Record<string, string>;
 };
@@ -133,6 +136,33 @@ export const ACTIVITIES: ActivityDefinition[] = [
                 ["T / F", "Benar / salah"],
                 ["Enter", "Kirim jawaban singkat"],
                 ["Q", "Quest board (di desa)"],
+            ],
+        },
+    },
+    {
+        id: "forest_serenade", label: "Forest Serenade", icon: "🪈", location: "Deep Forest",
+        tagline: "Play your flute by the altar. Every correct answer calls one frog.", available: true,
+        copy: {
+            startLabel: "Play", actionLabel: "PLAY", waitingActionLabel: "PLAY",
+            questionCue: "A MELODY FOR THE FOREST", playAgainLabel: "PLAY ANOTHER MELODY",
+            scoreIcon: "", scoreLabel: "frogs summoned",
+            answerFeedback: { correct: "✔ LOVELY MELODY!", incorrect: "✘ THAT NOTE WAS OFF…", retry: "Practice: miss +1. Play again to retry this question; no frog is required to continue." },
+            status: { tuning: "Preparing your melody…", serenading: "Playing the flute…" },
+        },
+        guide: {
+            goal: "Finish every question to complete the serenade, even if no frogs arrive. Correct answers call one frog each; collecting items is optional.",
+            steps: [
+                "Choose the flute. Walk up the small stairs and stand in the marked clearing in front of the altar.",
+                "Press F / Space or PLAY. Your character plays the original flute animation, then a question appears.",
+                "Read and answer at your own pace. The feedback closes before the music and frog appear.",
+                "Correct: a pleasant melody, exactly one red or blue frog, and the altar flowers. Wrong: a sour melody and no frog.",
+                "Practice lets you retry the same question. Assessment records each answer once, including wrong answers.",
+                "Finish all questions for your results. Frog count never blocks completion or changes your academic score.",
+            ],
+            controls: [
+                ["Arrow keys", "Walk"], ["F or Space", "Play the equipped flute in the clearing"],
+                ["Equipment slot", "Choose a tool or empty hands"], ["1–6 or A–F", "Choose an answer"],
+                ["T / F", "True or false"], ["Enter", "Submit a short answer"],
             ],
         },
     },

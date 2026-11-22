@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import { useMemo, useState } from "react";
 import { canEditStaff, canManageStaff, isSuperAdmin } from "@/lms/access";
@@ -222,10 +224,10 @@ function StaffForm({
                     <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} className={inputClass} autoFocus />
                 </Field>
                 <Field label={t("Role")}>
-                    <select
+                    <FormSelect
                         value={draft.role}
-                        onChange={(e) => patch({ role: e.target.value as StaffRole })}
-                        className={inputClass}
+                        onValueChange={(e) => patch({ role: e as StaffRole })}
+                        className="w-full"
                         disabled={!superAdmin && draft.id !== undefined}
                     >
                         {roles.map((role) => (
@@ -233,7 +235,7 @@ function StaffForm({
                                 {t(ROLE_LABELS[role])}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                 </Field>
                 <Field label={t("Username")} hint={t("Lowercase, used to sign in")}>
                     <input value={draft.username} onChange={(e) => patch({ username: e.target.value })} className={`${inputClass} font-mono`} />
@@ -243,10 +245,10 @@ function StaffForm({
                 </Field>
                 {draft.role !== "super_admin" && (
                     <Field label={t("School")}>
-                        <select
+                        <FormSelect
                             value={draft.schoolId ?? ""}
-                            onChange={(e) => patch({ schoolId: e.target.value || null, classIds: [] })}
-                            className={inputClass}
+                            onValueChange={(e) => patch({ schoolId: e || null, classIds: [] })}
+                            className="w-full"
                             disabled={!superAdmin}
                         >
                             <option value="">{t("Choose a school…")}</option>
@@ -255,7 +257,7 @@ function StaffForm({
                                     {s.name}
                                 </option>
                             ))}
-                        </select>
+                        </FormSelect>
                     </Field>
                 )}
             </div>
