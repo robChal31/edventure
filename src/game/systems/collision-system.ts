@@ -5,8 +5,11 @@ import { WorldObject } from "../world/world-object";
 import { WORLD_CONFIG } from "../config/world-config";
 import { DEPTH_CONFIG } from "../config/depth-config";
 import { getOpaqueBounds } from "../common/texture/opaque-bounds";
+import { readTiledCollisionRectangles } from "../world/tiled-collision";
 
 export class CollisionSystem {
+    #tiledBodies: Phaser.GameObjects.Rectangle[] = [];
+
     constructor(
         private scene: Phaser.Scene,
         private player: Player,
@@ -21,7 +24,20 @@ export class CollisionSystem {
         this.#setupFenceCollision(); 
         this.#setupHigherGroundEdgeCollision(); 
         this.#setupObjectCollision();
-        this.#setupAnimationCollision(); 
+        this.#setupAnimationCollision();
+        // Authored geometry is additive: never replace or resize automatic object bodies.
+        this.#setupTiledCollision();
+    }
+
+    #setupTiledCollision(): void {
+        readTiledCollisionRectangles(this.worldMap.map.objects, WORLD_CONFIG.scale).forEach((bounds) => {
+            const body = this.scene.add.rectangle(bounds.x, bounds.y, bounds.width, bounds.height)
+                .setOrigin(0, 0).setVisible(false).setName(`tiled-collision-${bounds.layer}-${bounds.objectId}`);
+            this.scene.physics.add.existing(body, true);
+            const collider = this.scene.physics.add.collider(this.player, body);
+            body.once("destroy", () => collider.destroy());
+            this.#tiledBodies.push(body);
+        });
     }
 
     #setupWorldCollision(): void {
@@ -182,6 +198,10 @@ export class CollisionSystem {
                 body.height
             );
         });
+
+        // Cyan: exact Tiled-authored rectangles, alongside the existing green auto bodies.
+        graphics.lineStyle(2, 0x38bdf8, 1);
+        this.#tiledBodies.forEach((body) => graphics.strokeRect(body.x, body.y, body.width, body.height));
 
         // ⬇️ Debug render buat fence
         const fenceLayer = this.worldMap.map.getLayer("fence")

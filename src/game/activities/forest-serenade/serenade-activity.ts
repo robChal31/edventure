@@ -138,15 +138,17 @@ export class SerenadeActivity implements Activity {
         const { worldMap, scene } = this.ctx, size = worldMap.tileWidth;
         const ground = worldMap.getLayer("deep_forest_grass");
         const edges = worldMap.collisionLayerNames.map((name) => worldMap.getLayer(name));
-        const solids = [...scene.physics.world.staticBodies].filter((body) => body.enable);
         const points: FrogPoint[] = [], radius = size * 0.2;
+        // Includes both automatic props and additive Tiled collision rectangles, padded for frog feet.
+        const solids: FrogBounds[] = [...scene.physics.world.staticBodies].filter((body) => body.enable)
+            .map(body => ({ x: body.left - radius, y: body.top - radius, width: body.right - body.left + radius * 2, height: body.bottom - body.top + radius * 2 }));
         // A one-tile margin keeps the original frog frame and its ordinal inside the map.
         for (let y = size * 1.5; y < worldMap.heightInPixels - size; y += size) for (let x = size * 1.5; x < worldMap.widthInPixels - size; x += size) {
             if ((ground?.getTileAtWorldXY(x, y)?.index ?? -1) < 0 || edges.some((layer) => (layer?.getTileAtWorldXY(x, y)?.index ?? -1) >= 0)) continue;
-            if (solids.some((body) => x + radius > body.left && x - radius < body.right && y + radius > body.top && y - radius < body.bottom)) continue;
+            if (solids.some(bounds => x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height)) continue;
             points.push({ x, y });
         }
-        return new FrogGround(points, size, this.ctx.player);
+        return new FrogGround(points, size, this.ctx.player, solids);
     }
     #readHill(): FrogBounds {
         const size = this.ctx.worldMap.tileWidth, rim: FrogPoint[] = [];
@@ -177,16 +179,17 @@ export class SerenadeActivity implements Activity {
     #approach(index: number): number {
         const frog = this.#frogs.get(index), landing = this.#reserveLanding(index);
         if (!frog || !landing) return 0;
-        const path = this.#ground.route(frog.sprite, landing);
+        const path = this.#ground.travelRoute(frog.sprite, landing);
         if (!path.length) { this.#puff(frog, landing); return 0; }
-        const duration = frogTravelDuration(path), hop = { t: 0 };
-        frog.sprite.setData("state", "approaching");
+        const duration = frogTravelDuration(path, this.#ground.tileSize), hop = { t: 0 };
+        frog.sprite.setData({ state: "approaching", route: path, travelDuration: duration });
         this.#animate({ targets: hop, t: 1, duration, ease: "Sine.inOut",
             onUpdate: () => {
                 if (!frog.sprite.active) return;
                 const point = frogRoutePosition(path, hop.t);
-                const tag = Math.abs(point.dx) > 0 ? "side_jump" : point.dy < 0 ? "back_jump" : "front_jump";
-                frog.sprite.setFlipX(point.dx < 0).play({ key: frogAnimation(frog.color, tag), repeat: -1 }, true);
+                const horizontal = Math.abs(point.dx) > Math.abs(point.dy);
+                const tag = horizontal ? "side_jump" : point.dy < 0 ? "back_jump" : "front_jump";
+                frog.sprite.setFlipX(horizontal && point.dx < 0).play({ key: frogAnimation(frog.color, tag), repeat: -1 }, true);
                 frog.sprite.setPosition(point.x, point.y - Math.sin(point.traveled / this.#ground.tileSize * Math.PI) ** 2 * 4).setDepth(point.y + 3);
                 frog.label.setPosition(frog.sprite.x, frog.sprite.y - 10 * WORLD_CONFIG.scale);
             },

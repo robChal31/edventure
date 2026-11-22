@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { FrogGround, distanceFromHill, frogRoutePosition, frogTravelDuration, type FrogPoint } from "../src/game/activities/forest-serenade/frog-layout";
+import { FrogGround, FROG_MOTION, distanceFromHill, frogRoutePosition, frogTravelDuration, type FrogPoint } from "../src/game/activities/forest-serenade/frog-layout";
 import { SerenadeSession } from "../src/game/activities/forest-serenade/serenade-session";
 import { readPerformanceArea } from "../src/game/activities/forest-serenade/serenade-area";
 import { TARGET_CORNER_SIZE, targetCornerPositions } from "../src/game/equipment/target-marker-layout";
@@ -50,7 +50,7 @@ test("frog layout: disconnected floors are excluded and approach routes use the 
     assert.ok(route.some(p => p.x === 72 && p.y === 88));
     for (let i = 1; i < route.length; i++) assert.equal(Math.hypot(route[i].x - route[i - 1].x, route[i].y - route[i - 1].y), 16);
     for (const point of route) assert.ok(points.some(p => p.x === point.x && p.y === point.y));
-    assert.ok(frogTravelDuration(route) >= 650 && frogTravelDuration(route) <= 2200);
+    assert.equal(frogTravelDuration(route), Math.max(FROG_MOTION.minDurationMs, (route.length - 1) / FROG_MOTION.tilesPerSecond * 1000));
     const last = frogRoutePosition(route, 1); assert.equal(last.x, 152); assert.equal(last.y, 8);
     const first = frogRoutePosition(route, 0); assert.equal(first.x, 8); assert.equal(first.y, 8);
     assert.deepEqual(new FrogGround([], 16, origin).scatter(7, hill), []);

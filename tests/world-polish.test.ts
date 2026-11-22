@@ -108,18 +108,19 @@ test("clouds: explicitly typed objects and property tags work outside a cloud-na
     assert.equal(isCloudObject({ type: "tree" }), false);
 });
 
-test("maps: all authored choppable tree/wood objects declare resolvable Tiled class properties", () => {
+test("maps: all authored choppable tree/wood objects declare resolvable Tiled class/type properties", () => {
     for (const path of ["world/system_map", "farm/barn"]) {
         const raw = JSON.parse(readFileSync(`public/assets/images/levels/${path}.json`, "utf8"));
         let count = 0;
         for (const layer of raw.layers) {
             if (!/mahogany/.test(layer.name)) continue;
             for (const object of layer.objects) {
-                assert.ok(["tree", "wood"].includes(object.class));
+                const declared = object.class || object.type;
+                assert.ok(["tree", "wood"].includes(declared));
                 assert.equal(resolveTreeObjectType("any-renamed-layer", object), layer.name);
                 const properties = Object.fromEntries(object.properties.map((p: { name: string; value: unknown }) => [p.name, p.value]));
                 assert.equal(properties.species, "mahogany");
-                assert.equal(properties.stage, object.class === "wood" ? "stump" : "standing");
+                assert.equal(properties.stage, declared === "wood" ? "stump" : "standing");
                 count += 1;
             }
         }
