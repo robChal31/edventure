@@ -1,7 +1,9 @@
 export type FrogPoint = { x: number; y: number };
 export type FrogBounds = FrogPoint & { width: number; height: number };
 
-export const FROG_NEIGHBORHOOD = { scatterMinTiles: 2, scatterMaxTiles: 4, gatheringMaxTiles: 2 } as const;
+type RouteCell = { point: FrogPoint; previous: string | null; steps: number };
+export const FROG_NEIGHBORHOOD = { scatterMinTiles: 2, scatterMaxTiles: 4, gatheringMaxTiles: 2, gatheringDetourTiles: 2 } as const;
+export const FROG_MOTION = { tilesPerSecond: 2.5, minDurationMs: 1100 } as const;
 const distance = (a: FrogPoint, b: FrogPoint) => Math.hypot(a.x - b.x, a.y - b.y);
 const key = (point: FrogPoint, tileSize: number) => `${Math.floor(point.x / tileSize)},${Math.floor(point.y / tileSize)}`;
 const center = (bounds: FrogBounds): FrogPoint => ({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 });
@@ -32,16 +34,17 @@ export class FrogGround {
     readonly points: readonly FrogPoint[];
     #cells: Map<string, FrogPoint>;
 
-    constructor(points: readonly FrogPoint[], readonly tileSize: number, origin: FrogPoint) {
-        const cells = new Map(points.map((point) => [key(point, tileSize), point]));
-        const start = nearest(points, origin);
+    constructor(points: readonly FrogPoint[], readonly tileSize: number, origin: FrogPoint, private blockers: readonly FrogBounds[] = []) {
+        const safe = points.filter(point => !blockers.some(bounds => inside(point, bounds)));
+        const cells = new Map(safe.map((point) => [key(point, tileSize), point]));
+        const start = nearest(safe, origin);
         const connected = new Map<string, FrogPoint>();
         if (start) {
             const queue = [start]; connected.set(key(start, tileSize), start);
             for (let i = 0; i < queue.length; i += 1) {
                 for (const next of neighbors(queue[i], tileSize)) {
                     const id = key(next, tileSize), point = cells.get(id);
-                    if (point && !connected.has(id)) { connected.set(id, point); queue.push(point); }
+                    if (point && !connected.has(id) && !this.#crossesBlocker(queue[i], point)) { connected.set(id, point); queue.push(point); }
                 }
             }
         }
@@ -69,7 +72,7 @@ export class FrogGround {
         return Array.from({ length: count }, (_, index) => ({ ...homes[index % homes.length] }));
     }
 
-    /** Fixed question-index slots around the hill, not around the player's current position. */
+    /** Reserve each frog's nearest reachable hill-side slot, never an arbitrary angle across the hill. */
     gathering(count: number, hill: FrogBounds, startArea?: FrogBounds | null): FrogPoint[] {
         if (!this.points.length || count <= 0) return [];
         const entrance = startArea ? { x: startArea.x - this.tileSize, y: startArea.y, width: startArea.width + this.tileSize * 2, height: startArea.height + this.tileSize * 2 } : null;
@@ -77,33 +80,77 @@ export class FrogGround {
         const ring = outside.filter(point => distanceFromHill(point, hill) <= this.tileSize * FROG_NEIGHBORHOOD.gatheringMaxTiles);
         const candidates = ring.length ? ring : outside.length ? [nearest(outside, center(hill))!] : [];
         if (!candidates.length) return [];
-        const used = new Set<FrogPoint>(), origin = center(hill), slots: FrogPoint[] = [];
-        for (let i = 0; i < count; i += 1) {
-            const angle = -Math.PI + i * Math.PI * 2 / count, dx = Math.cos(angle), dy = Math.sin(angle);
-            const radius = Math.min((hill.width / 2 + this.tileSize) / Math.max(0.0001, Math.abs(dx)), (hill.height / 2 + this.tileSize) / Math.max(0.0001, Math.abs(dy)));
-            const target = { x: origin.x + dx * radius, y: origin.y + dy * radius };
-            const point = nearest(candidates.filter(candidate => !used.has(candidate)), target) ?? nearest(candidates, target)!;
-            used.add(point); slots.push({ ...point });
-        }
-        return slots;
+        const used = new Map<FrogPoint, number>(), routes = new Map<string, Map<string, RouteCell>>();
+        // Reserve all identities up front, including unanswered/wrong questions, so resume keeps gaps stable.
+        return this.scatter(count, hill).map(home => {
+            const id = key(home, this.tileSize);
+            let reachable = routes.get(id);
+            if (!reachable) { reachable = this.#walk(home); routes.set(id, reachable); }
+            const ranked = candidates.map(point => ({ point, steps: reachable.get(key(point, this.tileSize))?.steps ?? Infinity }))
+                .filter(candidate => Number.isFinite(candidate.steps))
+                .sort((a, b) => a.steps - b.steps || distance(a.point, home) - distance(b.point, home) || distanceFromHill(a.point, hill) - distanceFromHill(b.point, hill));
+            const closest = ranked[0];
+            if (!closest) return { ...home }; // No animation/path dependency can block a question.
+            const local = ranked.filter(candidate => candidate.steps <= closest.steps + FROG_NEIGHBORHOOD.gatheringDetourTiles);
+            // Prefer a free local cell; if crowded, share nearby rather than orbiting to a distant free side.
+            const free = local.find(({ point }) => !used.has(point));
+            const selected = free ?? local.reduce((best, candidate) => (used.get(candidate.point) ?? 0) < (used.get(best.point) ?? 0) ? candidate : best);
+            used.set(selected.point, (used.get(selected.point) ?? 0) + 1);
+            return { ...selected.point };
+        });
     }
 
-    /** A four-way route uses the same connected cells as the scatter; no tweening through props. */
+    /** Shortest four-way route over the connected ground, including thin authored blockers between cells. */
     route(from: FrogPoint, to: FrogPoint): FrogPoint[] {
-        const start = nearest(this.points, from), end = nearest(this.points, to);
-        if (!start || !end) return [];
-        const target = key(end, this.tileSize), first = key(start, this.tileSize);
-        const previous = new Map<string, string | null>([[first, null]]), queue = [start];
-        for (let i = 0; i < queue.length && !previous.has(target); i += 1) {
+        const end = nearest(this.points, to);
+        if (!end) return [];
+        const target = key(end, this.tileSize), visited = this.#walk(from, target);
+        if (!visited.has(target)) return [];
+        const path: FrogPoint[] = [];
+        for (let id: string | null = target; id !== null; id = visited.get(id)!.previous) path.push(visited.get(id)!.point);
+        return path.reverse();
+    }
+
+    /** Remove unnecessary zigzags only when the entire segment is safe; never cut a cliff/prop corner. */
+    travelRoute(from: FrogPoint, to: FrogPoint): FrogPoint[] {
+        const path = this.route(from, to);
+        if (path.length < 3) return path;
+        const smooth = [path[0]];
+        for (let i = 0; i < path.length - 1;) {
+            let next = path.length - 1;
+            while (next > i + 1 && !this.#clearSegment(path[i], path[next])) next -= 1;
+            smooth.push(path[next]); i = next;
+        }
+        return smooth;
+    }
+
+    #walk(from: FrogPoint, target?: string): Map<string, RouteCell> {
+        const start = nearest(this.points, from), visited = new Map<string, RouteCell>();
+        if (!start) return visited;
+        visited.set(key(start, this.tileSize), { point: start, previous: null, steps: 0 });
+        const queue = [start];
+        for (let i = 0; i < queue.length && (!target || !visited.has(target)); i += 1) {
+            const previous = key(queue[i], this.tileSize), steps = visited.get(previous)!.steps + 1;
             for (const next of neighbors(queue[i], this.tileSize)) {
                 const id = key(next, this.tileSize), point = this.#cells.get(id);
-                if (point && !previous.has(id)) { previous.set(id, key(queue[i], this.tileSize)); queue.push(point); }
+                if (point && !visited.has(id) && !this.#crossesBlocker(queue[i], point)) {
+                    visited.set(id, { point, previous, steps }); queue.push(point);
+                }
             }
         }
-        if (!previous.has(target)) return [];
-        const path: FrogPoint[] = [];
-        for (let id: string | null = target; id !== null; id = previous.get(id) ?? null) path.push(this.#cells.get(id)!);
-        return path.reverse();
+        return visited;
+    }
+    #crossesBlocker(from: FrogPoint, to: FrogPoint): boolean { return this.blockers.some(bounds => segmentTouchesBounds(from, to, bounds)); }
+    #clearSegment(from: FrogPoint, to: FrogPoint): boolean {
+        if (this.#crossesBlocker(from, to)) return false;
+        const size = this.tileSize;
+        // Supercover check: even a diagonal touching a blocked cell's corner is rejected.
+        for (let y = Math.floor(Math.min(from.y, to.y) / size); y <= Math.floor(Math.max(from.y, to.y) / size); y += 1) {
+            for (let x = Math.floor(Math.min(from.x, to.x) / size); x <= Math.floor(Math.max(from.x, to.x) / size); x += 1) {
+                if (!this.#cells.has(`${x},${y}`) && segmentTouchesBounds(from, to, { x: x * size, y: y * size, width: size, height: size })) return false;
+            }
+        }
+        return true;
     }
 }
 
@@ -113,9 +160,23 @@ function nearest(points: readonly FrogPoint[], origin: FrogPoint): FrogPoint | u
 function neighbors(point: FrogPoint, size: number): FrogPoint[] {
     return [{ x: point.x - size, y: point.y }, { x: point.x + size, y: point.y }, { x: point.x, y: point.y - size }, { x: point.x, y: point.y + size }];
 }
+function segmentTouchesBounds(from: FrogPoint, to: FrogPoint, bounds: FrogBounds): boolean {
+    let enter = 0, exit = 1;
+    for (const axis of ["x", "y"] as const) {
+        const delta = to[axis] - from[axis], min = bounds[axis], max = min + (axis === "x" ? bounds.width : bounds.height);
+        if (delta === 0) { if (from[axis] < min || from[axis] > max) return false; }
+        else {
+            const a = (min - from[axis]) / delta, b = (max - from[axis]) / delta;
+            enter = Math.max(enter, Math.min(a, b)); exit = Math.min(exit, Math.max(a, b));
+            if (enter > exit) return false;
+        }
+    }
+    return true;
+}
 
-export function frogTravelDuration(path: readonly FrogPoint[]): number {
-    return Math.max(650, Math.min(2200, routeLength(path) / 180 * 1000));
+/** No upper time cap that would accelerate a longer route. Sine easing supplies a gentle start/stop. */
+export function frogTravelDuration(path: readonly FrogPoint[], tileSize = 16): number {
+    return Math.max(FROG_MOTION.minDurationMs, routeLength(path) / (tileSize * FROG_MOTION.tilesPerSecond) * 1000);
 }
 function routeLength(path: readonly FrogPoint[]): number {
     return path.slice(1).reduce((total, point, index) => total + distance(path[index], point), 0);

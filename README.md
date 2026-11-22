@@ -100,8 +100,14 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   tidak ada timer baca atau penalti waktu berpikir.
 - Jawaban benar → melodi merdu WebAudio; **katak milik soal itu** melompat mendekat
   lewat jalur lantai ke titiknya **mengelilingi luar bukit altar**, bukan mengikuti
-  atau berkumpul di depan pemain. Titik ditentukan dari rim hill Tiled dan indeks
-  soal; area altar/tangga tetap kosong. Katak lalu memainkan `puffing` (6 frame
+  atau berkumpul di depan pemain. Tiap katak memilih titik yang dapat dicapai
+  **paling dekat dari posisi awalnya**, bukan sudut yang dipaksakan oleh nomor
+  soal. Titik kosong di sisi terdekat diutamakan; bila padat, titik lokal dipakai
+  ulang daripada memutari bukit. Reservasi tetap deterministik per soal saat resume.
+  Jalur dipersingkat hanya jika aman dari cliff dan semua footprint objek, termasuk
+  collision tambahan Tiled. Gerak memakai easing halus, minimal 1,1 detik, dengan
+  laju dasar **2,5 tile/detik**; jalur panjang tidak dipercepat oleh batas durasi.
+  Area altar/tangga tetap kosong. Katak lalu memainkan `puffing` (6 frame
   asli, loop 600 ms). Altar
   berubah dari `idle_altar` ke `altar_flower_play`. Tidak ada katak tambahan yang
   di-spawn. Jawaban salah → melodi sumbang; katak terkait tetap diam di tempatnya.
@@ -132,6 +138,25 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   label kuis panjang dibatasi ke soal aktif, tanpa mengurangi jumlah kataknya.
 - Demo **Forest Serenade** (`quiz-sample-forest-serenade`) ditambahkan sekali ke
   browser lama tanpa menimpa kuis guru. Tidak ada kebutuhan menulis cerita/soal khusus.
+
+### Collision tambahan dari Tiled
+
+- Semua map otomatis membaca **object layer bernama `collision`**, termasuk
+  yang berada di dalam group. Tidak perlu menambahkan nama objek/bangunan ke
+  konfigurasi map atau menghubungkan rectangle dengan sprite tertentu.
+- Rectangle tersebut **ditambahkan** ke collision otomatis objek/animasi, bukan
+  menggantikan atau mengecilkannya. Objek tanpa rectangle tambahan tetap memakai
+  collision sebelumnya; beberapa rectangle dapat membentuk footprint bangunan L.
+- Gunakan **rectangle tanpa rotasi** di Tiled. Posisi mengikuti sudut kiri-atas
+  rectangle, bukan origin kiri-bawah sprite. Koordinat pecahan, offset layer/group,
+  dan skala dunia dipertahankan. Polygon, ellipse, point, text dan tile-object
+  bukan rectangle collision yang didukung sistem Arcade ini.
+- Layer/objek helper boleh disembunyikan di editor; visibility tidak mematikan
+  collision. Rectangle selalu tidak terlihat saat bermain. Tambahkan `?debug`
+  untuk melihat footprint otomatis (hijau) dan tambahan Tiled (biru muda).
+- Collision tambahan dibuat sebelum aktivitas dimulai, sehingga penempatan/jalur
+  katak juga menghindarinya. Restart aktivitas tidak menggandakan body map;
+  perpindahan map membersihkan body dan collider bersama scene sebelumnya.
 
 ### Tas dan pickup
 
