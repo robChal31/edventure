@@ -158,7 +158,7 @@ export function seedQuizzes(): Quiz[] {
         {
             ...GLOBAL_QUIZ_DEFAULTS,
             id: "quiz-sample-forest-serenade", name: "Forest Serenade",
-            description: "Katak tersebar satu per soal. Main flute di depan altar; jawaban benar membuat katak soal itu mendekat dan puffing. Selesaikan semua soal.",
+            description: "Katak menunggu dekat bukit altar, satu per soal. Jawaban benar mengajak katak bergabung mengelilingi bukit sambil puffing. Selesaikan semua soal untuk mendengar lagu penutup.",
             activityId: "forest_serenade", mode: "assessment",
             questionIds: ["bank-1", "bank-tf-1", "bank-sa-2", "bank-sa-4", "bank-tf-3"],
             assignment: { mode: "everyone" }, grade: 4, curriculum: "general", difficulty: "easy", cognitiveLevel: "understand",

@@ -4,6 +4,8 @@
  * the first user gesture or in a non-audio environment).
  */
 
+import { playSerenadeFinale } from "./serenade-music";
+
 let ctx: AudioContext | null = null;
 
 function getCtx(): AudioContext | null {
@@ -121,6 +123,8 @@ export const sfx = {
             tone(note * 2, note * 2, 0.18, "sine", 0.009, index * 0.19);
         });
     },
+    /** Forest-only closing music; other activities retain their existing completion chime. */
+    serenadeFinale(): () => void { return playSerenadeFinale(getCtx()); },
     pickup(): void { tone(659, 1046, 0.12, "triangle", 0.04); },
     complete(): void {
         const notes = [523, 659, 784, 1046];

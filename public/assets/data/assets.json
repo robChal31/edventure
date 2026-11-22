@@ -552,6 +552,15 @@
           "frameWidth": 32,
           "frameHeight": 48
         }
+      },
+      {
+        "type": "spritesheet",
+        "key": "FLUTE_NOTES",
+        "url": "Character/Character/PNG/22. Flute/Fx.png",
+        "frameConfig": {
+          "frameWidth": 32,
+          "frameHeight": 32
+        }
       }
     ]
   },

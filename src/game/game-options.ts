@@ -41,7 +41,7 @@ export type CatchingBugsPhase =
     | "round-transition"
     | "complete";
 
-export type SerenadePhase = "idle" | "tuning" | "answering" | "closing-question" | "serenading" | "complete";
+export type SerenadePhase = "idle" | "tuning" | "answering" | "closing-question" | "serenading" | "finale" | "complete";
 
 export type ActivityPhase = FishingPhase | CatchingBugsPhase | SerenadePhase;
 

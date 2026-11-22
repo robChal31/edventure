@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { FrogGround, frogRoutePosition, frogTravelDuration, type FrogPoint } from "../src/game/activities/forest-serenade/frog-layout";
+import { FrogGround, distanceFromHill, frogRoutePosition, frogTravelDuration, type FrogPoint } from "../src/game/activities/forest-serenade/frog-layout";
 import { SerenadeSession } from "../src/game/activities/forest-serenade/serenade-session";
 import { readPerformanceArea } from "../src/game/activities/forest-serenade/serenade-area";
 import { TARGET_CORNER_SIZE, targetCornerPositions } from "../src/game/equipment/target-marker-layout";
@@ -19,24 +19,25 @@ function grid(width = 40, height = 20, accept: (x: number, y: number) => boolean
         .filter(({ x, y }) => accept(x, y)).map(({ x, y }) => ({ x: x * 16 + 8, y: y * 16 + 8 }));
 }
 const origin = { x: 496, y: 144 };
+const hill = { x: 416, y: 64, width: 144, height: 96 };
 
 for (const count of [1, 5, 7, 23, 50, 2000]) test(`frog layout: ${count} questions have exactly ${count} stable homes, with no 30-frog cap`, () => {
     const ground = new FrogGround(grid(), 16, origin);
-    const homes = ground.scatter(count, origin);
+    const homes = ground.scatter(count, hill);
     assert.equal(homes.length, count);
-    assert.deepEqual(homes.slice(0, 5), ground.scatter(Math.min(5, count), origin));
+    assert.deepEqual(homes.slice(0, 5), ground.scatter(Math.min(5, count), hill));
     for (const home of homes) {
         assert.ok(home.x >= 8 && home.x <= 632 && home.y >= 8 && home.y <= 312);
-        assert.ok(Math.hypot(home.x - origin.x, home.y - origin.y) >= 48);
+        assert.ok(distanceFromHill(home, hill) >= 32 && distanceFromHill(home, hill) <= 64);
     }
     assert.equal(new Set(homes.slice(0, Math.min(count, 50)).map(p => `${p.x},${p.y}`)).size, Math.min(count, 50));
 });
 
-test("frog layout: scattered homes are well separated, not stacked around the altar", () => {
-    const homes = new FrogGround(grid(), 16, origin).scatter(7, origin);
-    assert.ok(Math.max(...homes.map(p => p.x)) - Math.min(...homes.map(p => p.x)) >= 320);
-    assert.ok(Math.max(...homes.map(p => p.y)) - Math.min(...homes.map(p => p.y)) >= 160);
-    for (let i = 0; i < homes.length; i++) for (let j = i + 1; j < homes.length; j++) assert.ok(Math.hypot(homes[i].x - homes[j].x, homes[i].y - homes[j].y) >= 48);
+test("frog layout: scattered homes stay local to the altar hill, not at distant map corners", () => {
+    const homes = new FrogGround(grid(), 16, origin).scatter(7, hill);
+    assert.ok(Math.max(...homes.map(p => p.x)) - Math.min(...homes.map(p => p.x)) >= 144);
+    assert.ok(Math.max(...homes.map(p => p.y)) - Math.min(...homes.map(p => p.y)) >= 96);
+    for (let i = 0; i < homes.length; i++) for (let j = i + 1; j < homes.length; j++) assert.ok(Math.hypot(homes[i].x - homes[j].x, homes[i].y - homes[j].y) >= 32);
 });
 
 test("frog layout: disconnected floors are excluded and approach routes use the real gap, never cross a solid cell", () => {
@@ -52,18 +53,20 @@ test("frog layout: disconnected floors are excluded and approach routes use the 
     assert.ok(frogTravelDuration(route) >= 650 && frogTravelDuration(route) <= 2200);
     const last = frogRoutePosition(route, 1); assert.equal(last.x, 152); assert.equal(last.y, 8);
     const first = frogRoutePosition(route, 0); assert.equal(first.x, 8); assert.equal(first.y, 8);
-    assert.deepEqual(new FrogGround([], 16, origin).scatter(7, origin), []);
+    assert.deepEqual(new FrogGround([], 16, origin).scatter(7, hill), []);
 });
 
-test("frog layout: arrivals reserve distinct nearby cells outside the 32px start square", () => {
-    const ground = new FrogGround(grid(), 16, origin), occupied: FrogPoint[] = [];
-    for (let i = 0; i < 7; i++) {
-        const landing = ground.landing(origin, occupied)!; assert.ok(landing);
-        assert.ok(Math.abs(landing.x - origin.x) > 16 || Math.abs(landing.y - origin.y) > 16);
-        assert.ok(Math.hypot(landing.x - origin.x, landing.y - origin.y) < 64);
-        assert.ok(occupied.every(p => Math.hypot(p.x - landing.x, p.y - landing.y) >= 12.8));
-        occupied.push(landing);
+test("frog layout: gathering slots circle the hill, stay outside it, and leave the entrance clear", () => {
+    const ground = new FrogGround(grid(), 16, origin);
+    const slots = ground.gathering(7, hill, { x: 480, y: 128, width: 32, height: 32 });
+    assert.equal(slots.length, 7); assert.equal(new Set(slots.map(p => `${p.x},${p.y}`)).size, 7);
+    for (const point of slots) {
+        assert.ok(distanceFromHill(point, hill) > 0 && distanceFromHill(point, hill) <= 32);
+        assert.equal(point.x >= 464 && point.x <= 528 && point.y >= 128 && point.y <= 192, false);
     }
+    assert.ok(slots.some(p => p.x < hill.x)); assert.ok(slots.some(p => p.x > hill.x + hill.width));
+    assert.ok(slots.some(p => p.y < hill.y)); assert.ok(slots.some(p => p.y > hill.y + hill.height));
+    assert.deepEqual(ground.gathering(7, hill, { x: 480, y: 128, width: 32, height: 32 }), slots);
 });
 
 test("frog identity: restore keeps success indices with gaps, not a renumbered group of spawned frogs", () => {
@@ -105,6 +108,6 @@ test("language picker: both sizes show a real flag plus ID only, keeping the ful
 test("revised serenade guides, outcomes and scores have matching Indonesian copy", () => {
     const activity = getActivity("forest_serenade");
     for (const message of [activity.tagline, activity.guide.goal, ...activity.guide.steps, activity.copy.scoreLabel, "Frogs befriended",
-        "Your frog is coming closer!", "That melody was off. Your frog stays where it is.", "Your frog is waiting — play again to retry the same question.", "Your frog stays put. Play again for the next question."])
+        "Your frog is joining the altar circle!", "That melody was off. Your frog stays where it is.", "Your frog is waiting — play again to retry the same question.", "Your frog stays put. Play again for the next question."])
         assert.ok(hasTranslation(message), message);
 });

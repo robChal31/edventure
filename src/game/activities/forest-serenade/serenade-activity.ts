@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import type { AnswerValue } from "@/quiz/types";
 import { sfx } from "@/game/common/audio/sfx";
+import { SERENADE_FINALE_DURATION_MS } from "@/game/common/audio/serenade-music";
 import { DEPTH_CONFIG } from "@/game/config/depth-config";
 import { WORLD_CONFIG } from "@/game/config/world-config";
 import type { SerenadePhase } from "@/game/game-options";
@@ -12,11 +13,12 @@ import { CapturePopups } from "../capture-popup";
 import { SerenadeSession, type SerenadeOutcome } from "./serenade-session";
 import { inPerformanceArea, readPerformanceArea, type PerformanceArea } from "./serenade-area";
 import { ALTAR_ANIMATIONS, FROG_ASSETS, frogAnimation, type FrogColor } from "./serenade-assets";
-import { FrogGround, frogRoutePosition, frogTravelDuration, type FrogPoint } from "./frog-layout";
+import { FrogGround, altarHillBounds, frogRoutePosition, frogTravelDuration, type FrogBounds, type FrogPoint } from "./frog-layout";
+import { SerenadeNotes } from "./serenade-notes";
 
-type QuestionFrog = { sprite: Phaser.GameObjects.Sprite; label: Phaser.GameObjects.Text; color: FrogColor };
+type QuestionFrog = { index: number; sprite: Phaser.GameObjects.Sprite; label: Phaser.GameObjects.Text; color: FrogColor };
 
-/** One existing frog per question. Only its correct answer invites it closer, then puffing. */
+/** One existing frog per question. Correct answers invite it around the altar hill, then puffing. */
 export class SerenadeActivity implements Activity {
     #session: SerenadeSession;
     #area: PerformanceArea | null;
@@ -26,6 +28,10 @@ export class SerenadeActivity implements Activity {
     #frogs = new Map<number, QuestionFrog>();
     #landings = new Map<number, FrogPoint>();
     #ground: FrogGround;
+    #hill: FrogBounds;
+    #gathering: FrogPoint[];
+    #notes: SerenadeNotes;
+    #stopFinale?: () => void;
     #popups: CapturePopups;
     #timers = new Set<Phaser.Time.TimerEvent>();
     #tweens = new Set<Phaser.Tweens.Tween>();
@@ -40,7 +46,10 @@ export class SerenadeActivity implements Activity {
         this.#area = readPerformanceArea(ctx.worldMap.map.getObjectLayer("forest_serenade")?.objects ?? [], WORLD_CONFIG.scale);
         this.#altar = ctx.mapObjects.find((object): object is Phaser.GameObjects.Sprite => object.name === "altar" && object instanceof Phaser.GameObjects.Sprite);
         this.#popups = new CapturePopups(ctx.scene);
+        this.#notes = new SerenadeNotes(ctx.scene);
         this.#ground = this.#readGround();
+        this.#hill = this.#readHill();
+        this.#gathering = this.#ground.gathering(this.#session.quiz.total, this.#hill, this.#area);
     }
 
     create(): void {
@@ -49,14 +58,14 @@ export class SerenadeActivity implements Activity {
             fontFamily: '"Press Start 2P"', fontSize: "7px", color: "#fff3b0", stroke: "#234d45", strokeThickness: 2,
         }).setName("serenade-area-label").setOrigin(0.5).setDepth(DEPTH_CONFIG.WORLD_UI);
         this.#altar?.play({ key: this.#session.quiz.correctCount > 0 ? ALTAR_ANIMATIONS.FLOWER : ALTAR_ANIMATIONS.IDLE, repeat: -1 });
-        this.#ground.scatter(this.#session.quiz.total, this.#gatheringOrigin()).forEach((home, index) => this.#createFrog(index, home));
+        this.#ground.scatter(this.#session.quiz.total, this.#hill).forEach((home, index) => this.#createFrog(index, home));
         // Rebuild the same question identities, not a second group of newly summoned frogs.
         this.#session.befriendedQuestions.forEach((index) => {
             const frog = this.#frogs.get(index), landing = this.#reserveLanding(index);
             if (frog && landing) this.#puff(frog, landing);
         });
         this.#syncLabels();
-        if (this.#session.quiz.isComplete) this.#complete();
+        if (this.#session.quiz.isComplete) this.#finish();
         else this.#toIdle();
     }
 
@@ -77,11 +86,12 @@ export class SerenadeActivity implements Activity {
         }
         this.ctx.player.setInputLocked(true);
         this.ctx.player.playFlute();
+        this.#notes.follow("player", this.ctx.player, "player");
         this.#setPhase("tuning"); this.#prompt(null);
         this.#later(650, () => {
-            this.ctx.player.stopFlute();
+            // Keep the original flute loop playing while the student reads, types and answers.
             const question = this.#session.quiz.currentQuestion;
-            if (!question) { this.#complete(); return; }
+            if (!question) { this.#finish(); return; }
             this.#setPhase("answering"); this.#emitHud();
             this.ctx.emit({ type: "question", question, questionNumber: this.#session.quiz.currentNumber, total: this.#session.quiz.total });
         });
@@ -96,7 +106,7 @@ export class SerenadeActivity implements Activity {
         this.ctx.emit({ type: "answer", correct: outcome.correct, question: outcome.question, answer: outcome.answer,
             correctAnswer: describeCorrectAnswer(outcome.question), caught: this.#session.quiz.correctCount,
             answered: this.#session.quiz.answeredCount, total: this.#session.quiz.total, retryable: outcome.retryable,
-            feedback: outcome.correct ? "Your frog is coming closer!" : "That melody was off. Your frog stays where it is." });
+            feedback: outcome.correct ? "Your frog is joining the altar circle!" : "That melody was off. Your frog stays where it is." });
         this.#emitHud(questionIndex + 1);
         this.#later(outcome.correct ? 1400 : 2400, () => {
             const requestId = this.#closeGate.request(() => this.#resolve(outcome));
@@ -110,18 +120,16 @@ export class SerenadeActivity implements Activity {
 
     #resolve(outcome: SerenadeOutcome): void {
         this.#setPhase("serenading");
-        this.ctx.player.playFlute();
         sfx.flute(outcome.correct);
         let travel = 0;
         if (outcome.frogIndex !== null && !this.#landings.has(outcome.frogIndex)) {
             this.#altar?.play({ key: ALTAR_ANIMATIONS.FLOWER, repeat: -1 });
             travel = this.#approach(outcome.frogIndex);
         }
-        this.#prompt(outcome.correct ? "Your frog is coming closer!" : outcome.retryable ? "Your frog is waiting — play again to retry the same question." : "Your frog stays put. Play again for the next question.");
+        this.#prompt(outcome.correct ? "Your frog is joining the altar circle!" : outcome.retryable ? "Your frog is waiting — play again to retry the same question." : "Your frog stays put. Play again for the next question.");
         // Let the supplied 600ms puffing cycle be visible before advancing, without any score gate.
         this.#later(Math.max(1350, travel + 650), () => {
-            this.ctx.player.stopFlute();
-            if (this.#session.quiz.isComplete) this.#complete();
+            if (this.#session.quiz.isComplete) this.#finish();
             else this.#toIdle(outcome.retryable);
         });
     }
@@ -140,25 +148,31 @@ export class SerenadeActivity implements Activity {
         }
         return new FrogGround(points, size, this.ctx.player);
     }
-    #gatheringOrigin(): FrogPoint {
-        const area = this.#area;
-        return area ? { x: area.x + area.width / 2, y: area.y + area.height / 2 } : this.ctx.player;
+    #readHill(): FrogBounds {
+        const size = this.ctx.worldMap.tileWidth, rim: FrogPoint[] = [];
+        this.ctx.worldMap.getLayer("deep_forest_hill")?.forEachTile((tile: Phaser.Tilemaps.Tile) => {
+            if (tile.index >= 0) rim.push({ x: (tile.x + 0.5) * size, y: (tile.y + 0.5) * size });
+        });
+        const area = this.#area ?? { x: this.ctx.player.x, y: this.ctx.player.y, width: 0, height: 0 };
+        const anchor = this.#altar ? { x: this.#altar.x + this.#altar.displayWidth / 2, y: this.#altar.y - this.#altar.displayHeight / 2 }
+            : { x: area.x + area.width / 2, y: area.y + area.height / 2 };
+        return altarHillBounds(rim, size, anchor) ?? area;
     }
     #reserveLanding(index: number): FrogPoint | null {
-        const point = this.#ground.landing(this.#gatheringOrigin(), [...this.#landings.values()]);
+        const point = this.#gathering[index];
         if (point) this.#landings.set(index, point);
-        return point;
+        return point ?? null;
     }
     #createFrog(index: number, home: FrogPoint): void {
         const color: FrogColor = index % 2 === 0 ? "red" : "blue";
         const sprite = this.ctx.scene.add.sprite(home.x, home.y, FROG_ASSETS[color], "24")
             .setScale(WORLD_CONFIG.scale).setDepth(home.y + 3).setName(`serenade-frog-${index}`)
-            .setData({ color, questionIndex: index, state: "waiting", home: { ...home } });
+            .setData({ color, questionIndex: index, state: "waiting", home: { ...home }, gathering: this.#gathering[index], hill: this.#hill });
         sprite.play({ key: frogAnimation(color, "front_idle"), repeat: -1 });
         const label = this.ctx.scene.add.text(home.x, home.y - 10 * WORLD_CONFIG.scale, String(index + 1), {
             fontFamily: '"Press Start 2P"', fontSize: "5px", color: "#d5efdf", stroke: "#173c3c", strokeThickness: 2,
         }).setOrigin(0.5, 1).setName(`serenade-question-${index}`).setDepth(DEPTH_CONFIG.WORLD_UI - 2);
-        this.#frogs.set(index, { sprite, label, color });
+        this.#frogs.set(index, { index, sprite, label, color });
     }
     #approach(index: number): number {
         const frog = this.#frogs.get(index), landing = this.#reserveLanding(index);
@@ -187,6 +201,7 @@ export class SerenadeActivity implements Activity {
         frog.sprite.setPosition(point.x, point.y).setDepth(point.y + 3).setFlipX(false).setData("state", "puffing")
             .play({ key: frogAnimation(frog.color, "puffing"), repeat: -1 });
         frog.label.setPosition(point.x, point.y - 10 * WORLD_CONFIG.scale).setColor("#a7ffcd");
+        this.#notes.follow(`frog-${frog.index}`, frog.sprite, "frog", frog.index);
     }
     #syncLabels(): void {
         this.#frogs.forEach(({ sprite, label }, index) => {
@@ -197,15 +212,29 @@ export class SerenadeActivity implements Activity {
     }
 
     #toIdle(retry = false): void {
+        this.ctx.player.stopFlute(); this.#notes.stop("player");
         this.#revealPending = false;
         this.ctx.player.setInputLocked(false);
         this.#setPhase("idle"); this.#emitHud(); this.#syncLabels();
         this.#prompt(retry ? "Your frog is waiting — play again to retry the same question." : "Walk up the stairs to the marked clearing in front of the altar, then play your flute.");
     }
+    #finish(): void {
+        if (this.#destroyed || this.#phase === "finale" || this.#phase === "complete") return;
+        this.ctx.player.setInputLocked(true); this.ctx.player.playFlute();
+        this.#notes.follow("player", this.ctx.player, "player");
+        this.#setPhase("finale"); this.#emitHud();
+        this.#prompt("All questions answered! Enjoy a short forest song.");
+        this.#stopFinale = sfx.serenadeFinale();
+        // A fixed visual outro, never an audio-ended/score/frog-count gate (also works muted/offline).
+        this.#later(SERENADE_FINALE_DURATION_MS, () => {
+            this.#stopFinale?.(); this.#stopFinale = undefined;
+            this.#complete();
+        });
+    }
     #complete(): void {
-        this.ctx.player.stopFlute(); this.ctx.player.setInputLocked(true);
+        this.ctx.player.stopFlute(); this.#notes.stop("player"); this.ctx.player.setInputLocked(true);
         this.#setPhase("complete"); this.#emitHud(); this.#prompt(null); this.#syncLabels();
-        sfx.complete(); this.ctx.emit({ type: "complete", summary: this.#session.summary() });
+        this.ctx.emit({ type: "complete", summary: this.#session.summary() });
     }
     #feet(): { x: number; y: number } { const body = this.ctx.player.body as Phaser.Physics.Arcade.Body; return { x: body.center.x, y: body.center.y }; }
     #emitHud(questionNumber = this.#session.quiz.currentNumber): void {
@@ -225,7 +254,7 @@ export class SerenadeActivity implements Activity {
             if (visible) sprite.anims.resume();
             else if (sprite.getData("state") !== "approaching") sprite.anims.pause();
         });
-        this.#syncLabels();
+        this.#syncLabels(); this.#notes.update();
     }
 
     restart(): void {
@@ -238,7 +267,8 @@ export class SerenadeActivity implements Activity {
         this.#destroyed = true; this.#clearRun();
     }
     #clearRun(): void {
-        this.#generation += 1; this.#closeGate.cancel(); this.#nextVisibility = 0;
+        this.#generation += 1; this.#closeGate.cancel(); this.#nextVisibility = 0; this.#phase = "idle";
+        this.#stopFinale?.(); this.#stopFinale = undefined; this.#notes.clear();
         this.#timers.forEach((timer) => timer.remove(false)); this.#timers.clear();
         this.#tweens.forEach((tween) => tween.remove()); this.#tweens.clear();
         this.#label?.destroy(); this.#label = undefined;
