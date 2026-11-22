@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -87,10 +89,10 @@ export default function StudentManager() {
                     className={`${inputClass} sm:max-w-xs`}
                     aria-label={t("Search students")}
                 />
-                <select
+                <FormSelect
                     value={classFilter}
-                    onChange={(e) => setClassFilter(e.target.value)}
-                    className={`${inputClass} sm:w-44`}
+                    onValueChange={(e) => setClassFilter(e)}
+                    className={`w-full sm:w-44`}
                     aria-label={t("Filter by class")}
                 >
                     <option value="">{t("All classes")}</option>
@@ -98,7 +100,7 @@ export default function StudentManager() {
                         <option key={klass.id} value={klass.id}>{t("Class")}{" "}{klass.name}
                         </option>
                     ))}
-                </select>
+                </FormSelect>
             </div>
 
             {!hydrated ? (

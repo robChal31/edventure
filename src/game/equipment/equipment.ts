@@ -1,6 +1,6 @@
 import type { ActivityId } from "@/quiz/types";
 
-export type EquipmentId = "none" | "axe" | "rod" | "net" | "shovel" | "log";
+export type EquipmentId = "none" | "axe" | "rod" | "net" | "flute" | "shovel" | "log";
 export type TargetingKind = "object" | "point" | "tile";
 export type EquipmentIcon = { url: string; width: number; height: number; x?: number; y?: number };
 export type EquipmentDefinition = {
@@ -15,7 +15,7 @@ export const EQUIPMENT: Record<EquipmentId, EquipmentDefinition> = {
     none: { id: "none", label: "Empty hands", actionLabel: "ACTION", targeting: "object", available: true,
         hint: "Explore without a tool. Choose equipment to use an action.", icon: null },
     axe: { id: "axe", label: "Axe", actionLabel: "CHOP", targeting: "object", available: true,
-        hint: "Face a tree trunk and press F / Space.",
+        hint: "Face a tree trunk or bush and press F / Space.",
         icon: { url: `${RPG}/Weapons and Armor/1. Wood/Axe.png`, width: 32, height: 16 } },
     rod: { id: "rod", label: "Fishing rod", actionLabel: "CAST", targeting: "point", available: true,
         activityId: "fishing", hint: "For fishing at the beach. The marker shows where the bait will land.",
@@ -23,6 +23,9 @@ export const EQUIPMENT: Record<EquipmentId, EquipmentDefinition> = {
     net: { id: "net", label: "Net", actionLabel: "CATCH", targeting: "object", available: true,
         activityId: "catching_bugs", hint: "For crickets at the farm. Approach a cricket marked ?.",
         icon: { url: `${RPG}/Extras/Bug net.png`, width: 16, height: 16 } },
+    flute: { id: "flute", label: "Flute", actionLabel: "PLAY", targeting: "tile", available: true,
+        activityId: "forest_serenade", hint: "For Forest Serenade. Stand in the clearing in front of the altar and press F / Space.",
+        icon: { url: "/assets/images/ui/flute-icon.png", width: 16, height: 16 } },
     shovel: { id: "shovel", label: "Shovel", actionLabel: "DIG", targeting: "tile", available: false,
         hint: "Not available yet — digging has not been implemented.",
         icon: { url: `${RPG}/Weapons and Armor/1. Wood/Shovel.png`, width: 32, height: 16 } },
@@ -36,7 +39,7 @@ export type EquipmentContext = {
     playerBusy: boolean; playerLocked: boolean;
 };
 export function defaultEquipment(activityId?: ActivityId | null): EquipmentId {
-    return activityId === "fishing" ? "rod" : activityId === "catching_bugs" ? "net" : "none";
+    return activityId === "fishing" ? "rod" : activityId === "catching_bugs" ? "net" : activityId === "forest_serenade" ? "flute" : "none";
 }
 export function isEquipmentId(value: unknown): value is EquipmentId {
     return typeof value === "string" && Object.hasOwn(EQUIPMENT, value);

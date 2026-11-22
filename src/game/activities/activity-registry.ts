@@ -3,6 +3,7 @@ import type { MapId } from "../world/maps/map-registry";
 import type { Activity, ActivityContext } from "./activity";
 import { FishingActivity } from "./fishing/fishing-activity";
 import { CatchingBugsActivity } from "./catching-bugs/catching-bugs-activity";
+import { SerenadeActivity } from "./forest-serenade/serenade-activity";
 
 export type ActivityEntry = {
     /** The map the student travels to for this activity. */
@@ -15,6 +16,7 @@ export type ActivityEntry = {
  * activities (and their maps) here.
  */
 export const ACTIVITY_REGISTRY: Record<ActivityId, ActivityEntry> = {
+    forest_serenade: { mapId: "deep_forest", create: (context) => new SerenadeActivity(context) },
     catching_bugs: {
         mapId: "farm",
         create: (context) => new CatchingBugsActivity(context),

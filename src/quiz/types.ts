@@ -13,7 +13,7 @@ import type {
 } from "./taxonomy";
 
 /** Activities (games/maps) a quiz can be played in. See `./activities.ts`. */
-export type ActivityId = "fishing" | "catching_bugs";
+export type ActivityId = "fishing" | "catching_bugs" | "forest_serenade";
 
 /** Assessment resolves each question once; practice lets a wrong target be retried. */
 export type QuizMode = "assessment" | "practice";

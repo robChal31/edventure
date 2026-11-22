@@ -11,6 +11,7 @@ import type { MapId } from "./world/maps/map-registry";
 
 import type { MusicState } from "./common/audio/map-music";
 import type { EquipmentId, EquipmentState } from "./equipment/equipment";
+import type { InventoryItems } from "./inventory/inventory";
 
 export type { MapId };
 
@@ -40,7 +41,9 @@ export type CatchingBugsPhase =
     | "round-transition"
     | "complete";
 
-export type ActivityPhase = FishingPhase | CatchingBugsPhase;
+export type SerenadePhase = "idle" | "tuning" | "answering" | "closing-question" | "serenading" | "complete";
+
+export type ActivityPhase = FishingPhase | CatchingBugsPhase | SerenadePhase;
 
 export type ActivityHudState = {
     caught: number;
@@ -59,6 +62,7 @@ export type GameEvent =
     | { type: "progress"; progress: ActivityProgress }
     | ({ type: "music" } & MusicState)
     | ({ type: "equipment" } & EquipmentState)
+    | { type: "inventory"; items: InventoryItems }
     | { type: "question:close"; requestId: number }
     /** A map finished loading (first boot or after travelling). */
     | {
@@ -125,6 +129,8 @@ export type GameOptions = {
     initialMap?: MapId;
     /** Display only; never used as a quiz/student identifier. */
     playerName?: string;
+    /** Durable bag per student; previews keep a temporary in-memory bag. */
+    inventoryOwner?: string;
     /** Start straight into an activity (e.g. teacher preview). */
     initialQuiz?: PlayableQuiz;
     onEvent: (event: GameEvent) => void;

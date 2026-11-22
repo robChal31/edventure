@@ -141,6 +141,15 @@ function addCatchingBugsSample(): void {
     window.localStorage.setItem(BUGS_SAMPLE_KEY, new Date().toISOString());
 }
 
+/** Offer the supplied forest activity once, without restoring demos a teacher has deleted. */
+function addSerenadeSample(): void {
+    const key = "learning-world.lms.forest-serenade-sample.v1";
+    if (window.localStorage.getItem(key)) return;
+    const existing = new Set(quizStore.getSnapshot().map((quiz) => quiz.id));
+    quizStore.upsertMany(seedQuizzes().filter((quiz) => quiz.activityId === "forest_serenade" && !existing.has(quiz.id)));
+    window.localStorage.setItem(key, new Date().toISOString());
+}
+
 /**
  * Runs the migration once per browser. Safe to call often: the result is
  * memoised and it does nothing on the server.
@@ -152,6 +161,7 @@ export function ensureLmsMigrated(): boolean {
     try {
         if (window.localStorage.getItem(MIGRATION_KEY)) {
             addCatchingBugsSample();
+            addSerenadeSample();
             done = true;
             return true;
         }
@@ -162,6 +172,7 @@ export function ensureLmsMigrated(): boolean {
         migrateQuestions(schoolId);
         migrateQuizzes(schoolId);
         addCatchingBugsSample();
+        addSerenadeSample();
 
         window.localStorage.setItem(MIGRATION_KEY, new Date().toISOString());
     } catch {

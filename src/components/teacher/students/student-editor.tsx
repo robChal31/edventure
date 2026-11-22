@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import { useState } from "react";
 import {
@@ -107,10 +109,10 @@ function Form({
                 </Field>
                 {actorIsSuper ? (
                     <Field label={t("School")}>
-                        <select
+                        <FormSelect
                             value={draft.schoolId ?? ""}
-                            onChange={(event) => patch({ schoolId: event.target.value || null, classId: null })}
-                            className={inputClass}
+                            onValueChange={(event) => patch({ schoolId: event || null, classId: null })}
+                            className="w-full"
                         >
                             <option value="">{t("Choose a school…")}</option>
                             {schools.map((school) => (
@@ -118,14 +120,14 @@ function Form({
                                     {school.name}
                                 </option>
                             ))}
-                        </select>
+                        </FormSelect>
                     </Field>
                 ) : null}
                 <Field label={t("Class")}>
-                    <select
+                    <FormSelect
                         value={draft.classId ?? ""}
-                        onChange={(event) => patch({ classId: event.target.value || null })}
-                        className={inputClass}
+                        onValueChange={(event) => patch({ classId: event || null })}
+                        className="w-full"
                     >
                         <option value="">{t("No class yet")}</option>
                         {schoolClasses.map((klass) => (
@@ -133,7 +135,7 @@ function Form({
                                 {klass.name}{" "}{t("· Grade")}{" "}{klass.grade}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                 </Field>
             </div>
 

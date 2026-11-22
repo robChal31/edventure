@@ -451,9 +451,29 @@
                  "id":24,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -466,9 +486,29 @@
                  "id":53,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -481,9 +521,29 @@
                  "id":54,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -496,9 +556,29 @@
                  "id":13,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -511,9 +591,29 @@
                  "id":14,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -526,9 +626,29 @@
                  "id":15,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -541,9 +661,29 @@
                  "id":36,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -556,9 +696,29 @@
                  "id":37,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -571,9 +731,29 @@
                  "id":38,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -586,9 +766,29 @@
                  "id":39,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_medium"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"medium"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"medium"},{"name":"treeVariant","type":"string","value":"mahogany_tree_medium"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -612,9 +812,29 @@
                  "id":10,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"stump"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"chopped_mahogany_tree"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"stump"
+                        }],
                  "rotation":0,
                  "class":"wood",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"stump"},{"name":"variant","type":"string","value":"stump"},{"name":"treeVariant","type":"string","value":"chopped_mahogany_tree"}],
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -627,9 +847,29 @@
                  "id":11,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"stump"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"chopped_mahogany_tree"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"stump"
+                        }],
                  "rotation":0,
                  "class":"wood",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"stump"},{"name":"variant","type":"string","value":"stump"},{"name":"treeVariant","type":"string","value":"chopped_mahogany_tree"}],
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -642,9 +882,29 @@
                  "id":12,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"stump"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"chopped_mahogany_tree"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"stump"
+                        }],
                  "rotation":0,
                  "class":"wood",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"stump"},{"name":"variant","type":"string","value":"stump"},{"name":"treeVariant","type":"string","value":"chopped_mahogany_tree"}],
                  "type":"wood",
                  "visible":true,
                  "width":32,
@@ -668,9 +928,29 @@
                  "id":2,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -683,9 +963,29 @@
                  "id":3,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -698,9 +998,29 @@
                  "id":4,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -713,9 +1033,29 @@
                  "id":5,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -728,9 +1068,29 @@
                  "id":6,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -743,9 +1103,29 @@
                  "id":7,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -758,9 +1138,29 @@
                  "id":8,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -773,9 +1173,29 @@
                  "id":9,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -788,9 +1208,29 @@
                  "id":19,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -803,9 +1243,29 @@
                  "id":20,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -818,9 +1278,29 @@
                  "id":21,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -833,9 +1313,29 @@
                  "id":22,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -848,9 +1348,29 @@
                  "id":35,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -863,9 +1383,29 @@
                  "id":43,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -889,9 +1429,29 @@
                  "id":16,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"orange_mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"orange_mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -904,9 +1464,29 @@
                  "id":23,
                  "name":"",
                  "opacity":1,
+                 "properties":[
+                        {
+                         "name":"species",
+                         "type":"string",
+                         "value":"mahogany"
+                        },
+                        {
+                         "name":"stage",
+                         "type":"string",
+                         "value":"standing"
+                        },
+                        {
+                         "name":"treeVariant",
+                         "type":"string",
+                         "value":"orange_mahogany_tree_large"
+                        },
+                        {
+                         "name":"variant",
+                         "type":"string",
+                         "value":"large"
+                        }],
                  "rotation":0,
                  "class":"tree",
-                 "properties":[{"name":"species","type":"string","value":"mahogany"},{"name":"stage","type":"string","value":"standing"},{"name":"variant","type":"string","value":"large"},{"name":"treeVariant","type":"string","value":"orange_mahogany_tree_large"}],
                  "type":"tree",
                  "visible":true,
                  "width":32,
@@ -1201,7 +1781,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 

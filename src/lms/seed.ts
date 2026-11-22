@@ -157,6 +157,15 @@ export function seedQuizzes(): Quiz[] {
     const samples: Quiz[] = [
         {
             ...GLOBAL_QUIZ_DEFAULTS,
+            id: "quiz-sample-forest-serenade", name: "Forest Serenade",
+            description: "Main flute di depan altar hutan. Jawaban benar memanggil satu katak merah atau biru; semua soal tetap diselesaikan.",
+            activityId: "forest_serenade", mode: "assessment",
+            questionIds: ["bank-1", "bank-tf-1", "bank-sa-2", "bank-sa-4", "bank-tf-3"],
+            assignment: { mode: "everyone" }, grade: 4, curriculum: "general", difficulty: "easy", cognitiveLevel: "understand",
+            tags: ["demo", "lintas-mapel", "serenade"],
+        },
+        {
+            ...GLOBAL_QUIZ_DEFAULTS,
             id: "quiz-sample-catching-bugs",
             name: "Cricket di Ladang",
             description: "Contoh latihan lintas mapel: tangkap cricket, jawab soal, dan coba lagi kalau lepas. Tujuh soal dalam dua ronde.",

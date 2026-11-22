@@ -3,6 +3,7 @@
 import { useI18n } from "@/i18n/provider";
 import { useEffect, useId } from "react";
 import Image from "next/image";
+import type { AnswerFeedbackCopy } from "@/quiz/activities";
 import type { AnswerValue, Question } from "@/quiz/types";
 import { QuestionTypeBadge, SubjectTag } from "@/components/ui/badges";
 import Confetti from "./confetti";
@@ -30,6 +31,7 @@ type QuestionCardProps = {
     /** Heading shown in the card's top bar, from the activity's copy. */
     cue?: string;
     shortAnswerHint?: string;
+    feedbackCopy?: AnswerFeedbackCopy;
     closing?: boolean;
     onExited?: () => void;
     /** Bug-world celebration happens after this card unmounts. Fishing keeps its existing reveal. */
@@ -51,6 +53,7 @@ export default function QuestionCard({
     layout = "overlay",
     cue = "❓ QUESTION",
     shortAnswerHint,
+    feedbackCopy,
     closing = false,
     onExited,
     celebrate = true,
@@ -138,7 +141,7 @@ export default function QuestionCard({
                 </div>
             </div>
 
-            {reveal && <RevealBanner reveal={reveal} explanation={question.explanation} trueFalse={question.type === "true_false"} />}
+            {reveal && <RevealBanner copy={feedbackCopy} reveal={reveal} explanation={question.explanation} trueFalse={question.type === "true_false"} />}
         </div>
     );
 
@@ -157,8 +160,10 @@ function RevealBanner({
     reveal,
     explanation,
     trueFalse,
+    copy,
 }: {
     trueFalse: boolean;
+    copy?: AnswerFeedbackCopy;
     reveal: AnswerReveal;
     explanation?: string;
 }) {
@@ -180,7 +185,7 @@ function RevealBanner({
                             : "border-rose-300 text-rose-200"
                     }`}
                 >
-                    {reveal.correct ? t("✔ NICE CATCH!") : t("✘ IT GOT AWAY…")}
+                    {reveal.correct ? t(copy?.correct ?? "✔ NICE CATCH!") : t(copy?.incorrect ?? "✘ IT GOT AWAY…")}
                 </span>
                 {!reveal.correct && (
                     <span className="text-sm text-slate-200">{t("Answer:")}{" "}<strong className="text-emerald-300">{trueFalse ? t(reveal.correctAnswer) : reveal.correctAnswer}</strong>
@@ -188,7 +193,7 @@ function RevealBanner({
                 )}
             </div>
             {reveal.retryable && (
-                <p className="mt-2 text-sm text-amber-200">{t("Practice: cricket escaped, miss +1. Approach and catch it again to retry the same question.")}</p>
+                <p className="mt-2 text-sm text-amber-200">{t(copy?.retry ?? "Practice: cricket escaped, miss +1. Approach and catch it again to retry the same question.")}</p>
             )}
             {explanation && (
                 <p className="mt-2 text-sm text-slate-300">

@@ -16,7 +16,7 @@ function getCtx(): AudioContext | null {
         if (!Ctor) return null;
         if (!ctx) ctx = new Ctor();
         if (ctx.state === "suspended") {
-            void ctx.resume();
+            void ctx.resume().catch(() => undefined);
         }
         return ctx;
     } catch {
@@ -75,6 +75,8 @@ function noise(duration: number, gain = 0.05, when = 0): void {
 }
 
 export const sfx = {
+    /** Prime audio during a real pointer/key gesture before delayed quiz feedback (mobile autoplay). */
+    unlock(): void { void getCtx(); },
     cast(): void {
         tone(500, 180, 0.18, "sine", 0.05);
         noise(0.12, 0.03, 0.05);
@@ -111,6 +113,15 @@ export const sfx = {
         noise(0.2, 0.05);
         tone(400, 120, 0.25, "sine", 0.04, 0.05);
     },
+    /** Breath-like sine notes: a short consonant phrase, not an external/unlicensed track. */
+    flute(success: boolean): void {
+        const notes = success ? [523.25, 659.25, 783.99, 1046.5, 783.99] : [554.37, 523.25, 369.99, 349.23];
+        notes.forEach((note, index) => {
+            tone(note, success ? note : note * 0.91, 0.25, "sine", 0.065, index * 0.19);
+            tone(note * 2, note * 2, 0.18, "sine", 0.009, index * 0.19);
+        });
+    },
+    pickup(): void { tone(659, 1046, 0.12, "triangle", 0.04); },
     complete(): void {
         const notes = [523, 659, 784, 1046];
         notes.forEach((n, i) => tone(n, n, 0.14, "triangle", 0.07, i * 0.12));

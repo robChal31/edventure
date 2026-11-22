@@ -165,7 +165,7 @@ function QuestCard({
                         <span className="rounded bg-amber-200 px-2 py-0.5">
                             {t("{count} question{suffix}", { count: quest.questionCount, suffix: quest.questionCount === 1 ? "" : "s" })}
                         </span>
-                        {quest.activityId === "catching_bugs" && (
+                        {(quest.activityId === "catching_bugs" || quest.activityId === "forest_serenade") && (
                             <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-900">
                                 {quest.mode === "practice" ? t("Practice") : t("Assessment")}
                             </span>

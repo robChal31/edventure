@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import { useMemo, useState } from "react";
 import { ACTIVITIES, getActivity } from "@/quiz/activities";
@@ -193,16 +195,16 @@ function EditorForm({ initial, onClose }: { initial: QuizDraft; onClose: () => v
                         </p>
 
                         <ActivityPicker value={draft.activityId} onChange={(activityId) => patch({ activityId })} />
-                        {draft.activityId === "catching_bugs" && (
-                            <Field label={t("Catching Bugs mode")} hint={t("There are no barn lives. Each wrong answer adds a miss.")}>
-                                <select
+                        {(draft.activityId === "catching_bugs" || draft.activityId === "forest_serenade") && (
+                            <Field label={t("Activity mode")} hint={t("Each wrong answer adds a miss. Complete every question to finish, at any score.")}>
+                                <FormSelect
                                     value={draft.mode}
-                                    onChange={(event) => patch({ mode: event.target.value === "practice" ? "practice" : "assessment" })}
-                                    className={inputClass}
+                                    onValueChange={(event) => patch({ mode: event === "practice" ? "practice" : "assessment" })}
+                                    className="w-full"
                                 >
                                     <option value="assessment">{t("Assessment — one attempt per question")}</option>
-                                    <option value="practice">{t("Practice — escaped crickets can be retried")}</option>
-                                </select>
+                                    <option value="practice">{t("Practice — retry incorrect questions")}</option>
+                                </FormSelect>
                             </Field>
                         )}
                         <ActivityGuideDetails activity={activity} />

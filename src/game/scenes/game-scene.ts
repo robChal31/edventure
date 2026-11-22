@@ -28,7 +28,9 @@ import type { ActivityProgress } from "@/quiz/progress";
 import { TreeBreeze } from "../world/tree-breeze";
 import { WorldShadows } from "../world/world-shadows";
 import { MapMusic } from "../common/audio/map-music";
-import { CloudLayer } from "../world/cloud-layer";
+import { INVENTORY_PICKUP, addItem, type InventoryItems, type PickupRequest } from "../inventory/inventory";
+import { collectItem, inventoryStore } from "@/lms/repositories/inventory-repository";
+import { sfx } from "../common/audio/sfx";
 
 /** Data passed to `scene.restart()` when travelling between maps. */
 type GameSceneData = {
@@ -65,7 +67,14 @@ export class GameScene extends Phaser.Scene {
     #nameConnector?: Phaser.GameObjects.Graphics;
     #breeze?: TreeBreeze;
     #shadows?: WorldShadows;
-    #clouds?: CloudLayer;
+    #inventory: InventoryItems = { wood: 0 };
+    #unsubscribeInventory?: () => void;
+    #inventorySaveFailed = false;
+    #unlockAudio = () => {
+        sfx.unlock();
+        window.removeEventListener("pointerdown", this.#unlockAudio, true);
+        window.removeEventListener("keydown", this.#unlockAudio, true);
+    };
     #music?: MapMusic;
 
     // Per-run state (reset in init/create on every map load).
@@ -137,6 +146,7 @@ export class GameScene extends Phaser.Scene {
         this.#equipped = defaultEquipment(this.#quiz?.activityId);
         this.#phase = "idle";
         this.#overlayOpen = false;
+        this.#inventorySaveFailed = false;
         this.#equipmentPickerOpen = false;
         this.#lastEquipmentState = "";
         this.#marker = undefined;
@@ -165,9 +175,8 @@ export class GameScene extends Phaser.Scene {
         this.#initSystems();
         this.#marker = new TargetMarker(this);
         this.#collisionSystem.setup();
-        this.#breeze = new TreeBreeze(this, this.#worldObjectRegistry.objects);
+        this.#breeze = new TreeBreeze(this, this.#worldObjectRegistry.objects, this.#worldMap);
         this.#shadows = new WorldShadows(this, this.#player, this.#worldObjectRegistry.objects, this.#worldMap, this.#mapSprites);
-        this.#clouds = new CloudLayer(this, this.#worldMap.widthInPixels, this.#worldMap.heightInPixels, this.#worldMap.hasAuthoredClouds);
         this.#initDebug();
 
         this.#isReady = true;
@@ -186,6 +195,16 @@ export class GameScene extends Phaser.Scene {
             quizId: this.#quiz?.id ?? null,
         });
 
+        const owner = this.#options?.inventoryOwner;
+        if (owner) {
+            this.#inventory = inventoryStore.get(owner)?.items ?? { wood: 0 };
+            this.#unsubscribeInventory = inventoryStore.subscribe(() => {
+                this.#inventory = inventoryStore.get(owner)?.items ?? { wood: 0 };
+                this.#options?.onEvent({ type: "inventory", items: { ...this.#inventory } });
+            });
+        }
+        this.events.on(INVENTORY_PICKUP, this.#pickUp, this);
+        this.#options?.onEvent({ type: "inventory", items: { ...this.#inventory } });
         this.#initActivity();
         this.#music = new MapMusic(this, this.mapDefinition.soundtrack, (state) => this.#options?.onEvent({ type: "music", ...state }));
         this.#syncEquipment();
@@ -202,7 +221,10 @@ export class GameScene extends Phaser.Scene {
         this.#nameConnector?.destroy();
         this.#breeze?.destroy();
         this.#shadows?.destroy();
-        this.#clouds?.destroy();
+        this.events.off(INVENTORY_PICKUP, this.#pickUp, this);
+        this.#unsubscribeInventory?.(); this.#unsubscribeInventory = undefined;
+        window.removeEventListener("pointerdown", this.#unlockAudio, true);
+        window.removeEventListener("keydown", this.#unlockAudio, true);
         this.#music?.destroy();
     }
 
@@ -219,6 +241,8 @@ export class GameScene extends Phaser.Scene {
         this.input.keyboard.manager.enabled = true;
         this.input.keyboard.resetKeys();
         this.#controls = new VirtualInputComponent(this.input.keyboard);
+        window.addEventListener("pointerdown", this.#unlockAudio, { capture: true, once: true });
+        window.addEventListener("keydown", this.#unlockAudio, { capture: true, once: true });
     }
 
     #setKeyboardEnabled(enabled: boolean): void {
@@ -329,7 +353,7 @@ export class GameScene extends Phaser.Scene {
             onPrimaryAction: () => this.#useEquipment(),
         });
 
-        this.#player.setScale(WORLD_CONFIG.scale);
+        this.#player.setName("player").setScale(WORLD_CONFIG.scale);
         this.#player.wearAxe(this.#equipped === "axe");
         const name = this.#options?.playerName?.trim();
         if (name) {
@@ -392,6 +416,24 @@ export class GameScene extends Phaser.Scene {
         this.#controls.reset();
         prepared.execute();
         this.#syncEquipment();
+    }
+
+    #pickUp(request: PickupRequest): void {
+        if (!this.#isReady || this.#isTravelling || this.#overlayOpen || this.#equipmentPickerOpen) { request.complete(false); return; }
+        try {
+            const owner = this.#options?.inventoryOwner;
+            const items = owner ? collectItem(owner, request.itemId, request.quantity) : addItem(this.#inventory, request.itemId, request.quantity);
+            this.#inventory = items;
+            request.complete(true);
+            sfx.pickup();
+            if (this.#inventorySaveFailed) this.#options?.onEvent({ type: "prompt", message: null });
+            this.#inventorySaveFailed = false;
+            this.#options?.onEvent({ type: "inventory", items: { ...items } });
+        } catch {
+            this.#inventorySaveFailed = true;
+            request.complete(false);
+            this.#options?.onEvent({ type: "prompt", message: "Your bag could not be saved. The item is still here — try again." });
+        }
     }
 
     #onActivityEvent(event: GameEvent): void {
@@ -570,7 +612,6 @@ export class GameScene extends Phaser.Scene {
         this.#activity?.update(time, delta);
         this.#breeze?.update(time);
         this.#shadows?.update();
-        this.#clouds?.update(delta);
         const state = this.#equipmentState();
         if (this.#overlayOpen || this.#equipmentPickerOpen || this.#isTravelling) this.#marker?.hide();
         else this.#marker?.show(state.actionEnabled ? this.#prepareEquipment().target : null);

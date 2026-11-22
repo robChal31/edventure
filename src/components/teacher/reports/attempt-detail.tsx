@@ -36,7 +36,7 @@ export default function AttemptDetail({
                         <span>⏱ {formatDuration(attempt.startedAt, attempt.completedAt)}</span>
                     </div>
 
-                    {attempt.activityId === "catching_bugs" && (
+                    {(attempt.activityId === "catching_bugs" || attempt.activityId === "forest_serenade") && (
                         <p className="mb-4 rounded-lg border border-amber-700/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
                             {attempt.mode === "practice" ? t("Practice") : t("Assessment")}{" "}{t("· Miss:")}{" "}{attempt.misses ?? attempt.total - attempt.correct}
                             {attempt.mode === "practice" && t(" · Scores use each question’s final answer; misses count every wrong attempt.")}

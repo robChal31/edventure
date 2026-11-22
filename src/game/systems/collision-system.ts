@@ -57,7 +57,7 @@ export class CollisionSystem {
     #setupHigherGroundEdgeCollision(): void {
         // Boundary layers are optional and independent. A map with only a cliff
         // must still collide with it, even when it has no higher-ground layer.
-        for (const name of ["higher_ground_edge", "ground_cliff"]) {
+        for (const name of new Set(["higher_ground_edge", "ground_cliff", ...this.worldMap.collisionLayerNames])) {
             const layer = this.worldMap.getLayer(name);
             if (!layer) continue;
             layer.setCollisionByExclusion([-1]);

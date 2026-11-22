@@ -1,5 +1,7 @@
 "use client";
 
+import FormSelect from "@/components/ui/form-select";
+
 import { useI18n } from "@/i18n/provider";
 import { useState } from "react";
 import { addStudents } from "@/lms/repositories/student-repository";
@@ -60,31 +62,31 @@ function Body({ onClose, classes, schools, actorIsSuper }: Omit<Props, "open">) 
             <div className="grid gap-4 sm:grid-cols-2">
                 {actorIsSuper && (
                     <Field label={t("School")}>
-                        <select
+                        <FormSelect
                             value={schoolId}
-                            onChange={(e) => {
-                                setSchoolId(e.target.value);
+                            onValueChange={(e) => {
+                                setSchoolId(e);
                                 setClassId("");
                             }}
-                            className={inputClass}
+                            className="w-full"
                         >
                             {schools.map((s) => (
                                 <option key={s.id} value={s.id}>
                                     {s.name}
                                 </option>
                             ))}
-                        </select>
+                        </FormSelect>
                     </Field>
                 )}
                 <Field label={t("Class")}>
-                    <select value={classId} onChange={(e) => setClassId(e.target.value)} className={inputClass}>
+                    <FormSelect value={classId} onValueChange={(e) => setClassId(e)} className="w-full">
                         <option value="">{t("No class yet")}</option>
                         {schoolClasses.map((klass) => (
                             <option key={klass.id} value={klass.id}>
                                 {klass.name}{" "}{t("· Grade")}{" "}{klass.grade}
                             </option>
                         ))}
-                    </select>
+                    </FormSelect>
                 </Field>
             </div>
             <textarea

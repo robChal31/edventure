@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useHydrated, useLmsReady, useSignedInStudent, useStudents } from "@/lms/hooks";
 import { findStudentByCode } from "@/lms/repositories/student-repository";
+import CharacterPortrait from "@/components/ui/character-portrait";
 import { signInStudent, signOutStudent } from "@/lms/session/student-session";
 
 export default function StudentLogin() {
@@ -44,7 +45,8 @@ export default function StudentLogin() {
 
                 {hydrated && signedIn && (
                     <div className="mt-6 rounded-xl border-2 border-emerald-700 bg-emerald-950/40 p-4 text-center">
-                        <p className="text-sm text-emerald-100">{t("Welcome back,")}{" "}<strong>{signedIn.avatar} {signedIn.name}</strong>!
+                        <div className="mb-2 flex justify-center"><CharacterPortrait /></div>
+                        <p className="text-sm text-emerald-100">{t("Welcome back,")}{" "}<strong>{signedIn.name}</strong>!
                         </p>
                         <div className="mt-3 flex justify-center gap-2">
                             <Link

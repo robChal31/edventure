@@ -24,7 +24,7 @@ export function sanitizeCheckpoint(raw: unknown): QuizCheckpoint | null {
         typeof value.savedAt !== "string" || !Number.isFinite(Date.parse(value.savedAt)) || !value.quiz || typeof value.quiz !== "object") return null;
     const rawQuiz = value.quiz as Record<string, unknown>;
     if (typeof rawQuiz.id !== "string" || !rawQuiz.id || typeof rawQuiz.name !== "string" ||
-        (rawQuiz.activityId !== "fishing" && rawQuiz.activityId !== "catching_bugs") ||
+        (rawQuiz.activityId !== "fishing" && rawQuiz.activityId !== "catching_bugs" && rawQuiz.activityId !== "forest_serenade") ||
         !Array.isArray(rawQuiz.questions) || rawQuiz.questions.length === 0 || rawQuiz.questions.length > 2000 ||
         (rawQuiz.mode !== undefined && rawQuiz.mode !== "practice" && rawQuiz.mode !== "assessment")) return null;
     const questions = rawQuiz.questions.map(sanitizeQuestion);
