@@ -19,7 +19,7 @@ import { shouldShowTouchControls } from "../src/components/student/use-touch-con
 import QuestBoard from "../src/components/student/hub/quest-board";
 import QuestionCard from "../src/components/student/questions/question-card";
 import ResultsScreen from "../src/components/student/results-screen";
-import GameSettings, { GameSettingsButton } from "../src/components/student/game-settings";
+import GameMenu from "../src/components/student/game-menu";
 import ActivityHud from "../src/components/student/activity-hud";
 import type { Question, QuizSummary } from "../src/quiz/types";
 
@@ -116,20 +116,37 @@ test("touch controls: primary capability, never viewport width; active keyboard/
     }
 });
 
-test("game settings: compact native trigger opens a dedicated flag/code-only language panel, not a floating form", () => {
-    const trigger = renderToStaticMarkup(createElement(GameSettingsButton, { onClick: () => {} }));
-    assert.ok(trigger.includes('aria-label="Pengaturan"'));
-    assert.ok(trigger.includes('aria-haspopup="dialog"'));
-    assert.ok(trigger.includes('game-settings-icon'));
-    const props = { open: true, onClose: () => {}, music: { available: true, enabled: true, playing: false }, onMusicChange: () => {} };
-    const html = renderToStaticMarkup(createElement(GameSettings, props));
-    assert.ok(html.startsWith("<dialog"));
+const menuProps = {
+    open: false, onOpenChange: () => {}, help: { label: "Guide" as const, onClick: () => {} },
+    leave: { label: "Save / exit", onClick: () => {} },
+    music: { available: true, enabled: true, playing: false }, onMusicChange: () => {},
+};
+
+test("game menu: closed by default with exactly one corner button; all utility actions live inside its hidden panel", () => {
+    const html = renderToStaticMarkup(createElement(GameMenu, menuProps));
+    const [chrome, panel] = html.split("<dialog");
+    assert.equal((chrome.match(/<button /g) ?? []).length, 1);
+    assert.ok(chrome.includes('aria-label="Menu game"'));
+    assert.ok(chrome.includes('aria-haspopup="dialog"'));
+    assert.ok(chrome.includes('aria-expanded="false"'));
+    assert.ok(chrome.includes('game-menu-icon'));
+    assert.equal(/<dialog[^>]*\sopen(?:[= >])/.test(html), false, "native dialog stays hidden until showModal after a click");
+    for (const copy of ["Guide", "Language", "Save / exit", "Music on"]) {
+        assert.equal(chrome.includes(`>${id(copy)}<`), false);
+        assert.ok(panel.includes(id(copy)), copy);
+    }
+    const controls = chrome.match(/aria-controls="([^"]+)"/)![1];
+    assert.ok(panel.includes(`id="${controls}"`));
+});
+
+test("game menu: expanded panel combines Guide, flag/code-only language, optional music and Save / exit", () => {
+    const html = renderToStaticMarkup(createElement(GameMenu, { ...menuProps, open: true }));
+    assert.ok(html.includes('aria-expanded="true"'));
     assert.ok(html.includes('aria-modal="true"'));
-    for (const copy of ["Game settings", "Close settings", "Settings", "Language", "Continue", "Music on", "Music off"]) {
+    for (const copy of ["Game menu", "Close menu", "Settings", "Language", "Guide", "Save / exit", "Continue", "Music on", "Music off"]) {
         assert.ok(hasTranslation(copy), copy);
         assert.equal(en(copy), copy);
     }
-    assert.ok(html.includes("Pengaturan game"));
     assert.equal((html.match(/data-language-flag=/g) ?? []).length, 2);
     for (const code of ["ID", "EN"]) assert.ok(html.includes(`aria-hidden="true">${code}</span>`));
     assert.ok(html.includes('aria-pressed="true" aria-label="Bahasa Indonesia"'));
@@ -137,20 +154,54 @@ test("game settings: compact native trigger opens a dedicated flag/code-only lan
     assert.equal(html.includes(">Bahasa Indonesia<"), false);
     assert.equal(html.includes(">English<"), false);
     assert.equal(html.includes('role="combobox"'), false);
-    assert.ok(html.includes(id("Music on")));
-    const unavailable = renderToStaticMarkup(createElement(GameSettings, { ...props, music: { ...props.music, available: false } }));
+    assert.ok(html.includes('game-menu-guide'));
+    assert.ok(html.includes('game-menu-leave'));
+    const unavailable = renderToStaticMarkup(createElement(GameMenu, { ...menuProps, leave: undefined,
+        help: { label: "Help", onClick: () => {} }, music: { ...menuProps.music, available: false } }));
     assert.equal(unavailable.includes(id("Music on")), false);
-    assert.equal(renderToStaticMarkup(createElement(GameSettings, { ...props, open: false })), "");
+    assert.equal(unavailable.includes("game-menu-leave"), false);
+    assert.ok(unavailable.includes(id("Help")));
 });
 
-test("game settings: activity controls flow below the score, rather than overlaid with a fixed top offset", () => {
-    const html = renderToStaticMarkup(createElement(ActivityHud, { roomName: "A very long authored title", questionNumber: 1, total: 3, caught: 0,
-        answered: 0, misses: 0, scoreLabel: "Frogs joined", actions: createElement(GameSettingsButton, { onClick: () => {} }) }));
-    assert.ok(html.indexOf('game-settings-trigger') > html.indexOf('activity-hud-right'));
-    assert.ok(html.indexOf('game-settings-trigger') > html.indexOf('0/3</span>'));
+test("game menu: refresh suspension collapses the panel state; failed saving still has an accessible warning on the lone trigger", () => {
+    const html = renderToStaticMarkup(createElement(GameMenu, { ...menuProps, open: true, suspended: true, saveError: true }));
+    const [chrome] = html.split("<dialog");
+    assert.ok(chrome.includes('aria-expanded="false"'));
+    assert.equal((chrome.match(/<button /g) ?? []).length, 1);
+    assert.ok(chrome.includes('role="status"'));
+    assert.ok(chrome.includes(id("Progress not saved")));
+    assert.ok(chrome.includes('aria-describedby='));
+});
+
+test("activity HUD: left completion/round/mode remain; right avatar, caught and miss card are removed", () => {
+    const html = renderToStaticMarkup(createElement(ActivityHud, { roomName: "An authored title", questionNumber: 6, total: 7,
+        answered: 5, round: 2, rounds: 2, mode: "practice" }));
+    assert.ok(html.includes("An authored title"));
+    assert.ok(html.includes(translate("id", "Completed {answered}/{total}", { answered: 5, total: 7 })));
+    assert.ok(html.includes(id("Practice")));
+    assert.ok(html.includes('role="progressbar"'));
+    assert.ok(html.includes('aria-valuenow="5"'));
+    assert.ok(html.includes('aria-valuemax="7"'));
+    assert.equal(Number(html.match(/style="width:([\d.]+)%"/)?.[1]), 5 / 7 * 100);
+    for (const removed of ["activity-hud-right", "character-portrait", id("Miss:"), id("Caught"), "<button"]) {
+        assert.equal(html.includes(removed), false, removed);
+    }
     const screen = readFileSync("src/components/student/game-screen.tsx", "utf8");
-    assert.equal(screen.includes("LanguageSwitcher"), false, "no white language dropdown remains on the game HUD");
-    assert.equal(screen.includes("top-24"), false, "controls must follow the actual score panel height");
+    assert.equal((screen.match(/<GameMenu /g) ?? []).length, 1, "hub/activities share one menu instance");
+    for (const removed of ["GameSettings", "activity-menu", "hud.caught", "hud.misses", "scoreLabel="]) assert.equal(screen.includes(removed), false, removed);
+});
+
+test("activity HUD simplification never removes grading/misses from the separate final results", () => {
+    const summary: QuizSummary = { quizId: "custom", quizName: "Authored name", activityId: "catching_bugs", total: 7,
+        correct: 2, incorrect: 5, mode: "practice", misses: 8, records: [] };
+    const html = renderToStaticMarkup(createElement(ResultsScreen, { summary, primary: { label: "Play", onClick: () => {} },
+        secondary: { label: "Continue", onClick: () => {} } }));
+    assert.ok(html.includes(id("Miss")));
+    assert.ok(html.includes(id("Caught")));
+    assert.ok(html.includes("29%"));
+    assert.ok(html.includes('>8</div>'));
+    assert.equal(summary.misses, 8);
+    assert.equal(summary.correct, 2);
 });
 
 class RewardObject {

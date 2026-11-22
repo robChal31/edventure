@@ -88,6 +88,9 @@ test("profile: the student avatar uses a lossless original player frame rather t
     const original = readFileSync("public/assets/animations/player/idle/Idle-sheet.png");
     const portrait = readFileSync("public/assets/images/ui/josh-portrait.png");
     assert.equal(original.readUInt32BE(16), 128); assert.equal(portrait.readUInt32BE(16), 32); assert.equal(portrait.readUInt32BE(20), 32);
-    const hud = readFileSync("src/components/student/activity-hud.tsx", "utf8");
-    assert.ok(hud.includes("CharacterPortrait")); assert.equal(hud.includes("scoreIcon"), false);
+    // The avatar belongs to the student's village profile/login, not a duplicate activity score card.
+    for (const path of ["src/components/student/hub/student-badge.tsx", "src/components/student/student-login.tsx"]) {
+        const profile = readFileSync(path, "utf8");
+        assert.ok(profile.includes("CharacterPortrait")); assert.equal(profile.includes("scoreIcon"), false);
+    }
 });
