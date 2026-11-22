@@ -9,7 +9,7 @@ import type { MusicState } from "@/game/common/audio/map-music";
 import type { ActivityProgress } from "@/quiz/progress";
 import { checkpointId, checkpointStore, removeCheckpoint, saveCheckpoint, type QuizCheckpoint } from "@/lms/repositories/checkpoint-repository";
 import { createId } from "@/lms/ids";
-import { LanguageSwitcher, useI18n } from "@/i18n/provider";
+import { useI18n } from "@/i18n/provider";
 import { systemQuestText } from "@/i18n/system-quests";
 import { ActivityGuideDialog } from "@/components/ui/activity-guide";
 import Modal from "@/components/ui/modal";
@@ -21,6 +21,7 @@ import ResultsScreen from "./results-screen";
 import TouchControls from "./touch-controls";
 import EquipmentPicker from "./equipment-picker";
 import GameHelp from "./game-help";
+import GameSettings, { GameSettingsButton } from "./game-settings";
 import InventoryPanel from "./inventory-panel";
 import type { InventoryItems } from "@/game/inventory/inventory";
 import { EQUIPMENT, defaultEquipment, type EquipmentState } from "@/game/equipment/equipment";
@@ -73,7 +74,7 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
     const [guideOpen, setGuideOpen] = useState(false);
     const [helpOpen, setHelpOpen] = useState(false);
     const [inventoryOpen, setInventoryOpen] = useState(false);
-    const [languageOpen, setLanguageOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const [items, setItems] = useState<InventoryItems>({ wood: 0 });
     const [equipment, setEquipment] = useState<EquipmentState>({ equipped: defaultEquipment(initialQuiz?.activityId), locked: true, actionEnabled: false });
     const [closeRequest, setCloseRequest] = useState<number | null>(null);
@@ -132,7 +133,7 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
 
     const resetActivityUi = useCallback(() => {
         if (promptTimer.current) clearTimeout(promptTimer.current);
-        setInventoryOpen(false); setLanguageOpen(false); setPhase("idle"); setCurrent(null); setReveal(null); setSummary(null); setPrompt(null);
+        setInventoryOpen(false); setSettingsOpen(false); setPhase("idle"); setCurrent(null); setReveal(null); setSummary(null); setPrompt(null);
         setCloseRequest(null); setClosedReceipt(null); setCompletionSaveFailed(false);
     }, []);
 
@@ -225,7 +226,7 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
         ? savedRuns.filter((saved) => saved.studentId === progress.studentId && progress.canResumeQuiz(saved.quiz.id))
             .sort((a, b) => b.savedAt.localeCompare(a.savedAt))[0] ?? null : null;
     const resumeCandidate = selectedSave ?? automaticSave;
-    const overlayOpen = Boolean(current) || Boolean(summary) || hubOverlayOpen || Boolean(leaveAction) || guideOpen || helpOpen || inventoryOpen || languageOpen || Boolean(resumeCandidate);
+    const overlayOpen = Boolean(current) || Boolean(summary) || hubOverlayOpen || Boolean(leaveAction) || guideOpen || helpOpen || inventoryOpen || settingsOpen || Boolean(resumeCandidate);
     useLayoutEffect(() => { controller?.setKeyboardEnabled(!overlayOpen); }, [controller, overlayOpen, mapId]);
 
     const gameOptions = useMemo<GameOptions>(() => ({ initialQuiz, playerName, inventoryOwner: progress?.studentId, onEvent: handleEvent }),
@@ -281,8 +282,6 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
     };
     const activity = getActivity(activityId ?? activeQuiz?.activityId ?? "fishing");
     const statusLine = activityId ? activity.copy.status[phase] : undefined;
-    const musicButton = music.available && <button type="button" aria-pressed={music.enabled} onClick={() => controller?.setMusicEnabled(!music.enabled)}
-        className="rounded-lg bg-slate-800/90 px-3 py-2 text-xs text-slate-100">{music.enabled ? t("♫ {value0}", { value0: t("Music on") }) : t("♫ {value0}", { value0: t("Music off") })}</button>;
     const leaveLabel = leaveAction === "reload" ? "reload" : leaveAction === "hub" ? "return to village" : "exit";
 
     return <div className="relative h-full w-full overflow-hidden bg-[#edf9fb]">
@@ -290,25 +289,29 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
         {!mapId && <div className="absolute inset-0"><WorldLoading progress={loading} /></div>}
         {ribbon && <div className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 rounded-md bg-violet-600/90 px-3 py-1 font-pixel text-[9px] text-white shadow">{t(ribbon)}</div>}
         {isHub && !travelling && <>
-            {badge && <div className="absolute left-2 top-2 sm:left-3 sm:top-3">{badge}</div>}
-            {!resumeCandidate && renderHub && <HubOverlay renderHub={renderHub} controls={hubControls} />}
-            <div className="absolute right-2 top-2 flex flex-col items-end gap-2 sm:right-3 sm:top-3">
-                <LanguageSwitcher compact onOpenChange={setLanguageOpen} />
-                {musicButton}
-                <button type="button" onClick={() => setHelpOpen(true)} className="pixel-btn rounded-lg bg-sky-700/95 px-3 py-2 font-pixel text-[9px] text-sky-50">❔ {t("Help")}</button>
+            <div className="game-hub-header pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2 sm:p-3">
+                <div className="pointer-events-auto min-w-0">{badge}</div>
+                <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+                    <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => setHelpOpen(true)}
+                        className="pixel-btn min-h-11 rounded-lg bg-sky-700 px-2 py-2 font-pixel text-[9px] text-sky-50 sm:px-3">? {t("Help")}</button>
+                    <GameSettingsButton onClick={() => setSettingsOpen(true)} />
+                </div>
             </div>
+            {!resumeCandidate && renderHub && <HubOverlay renderHub={renderHub} controls={hubControls} />}
         </>}
         {activityId && !travelling && <>
             <ActivityHud roomName={activeQuiz ? systemQuestText(activeQuiz.id, "name", activeQuiz.name, t) : t(activity.label)} questionNumber={hud.questionNumber} total={hud.total} caught={hud.caught} answered={hud.answered}
-                scoreLabel={activity.copy.scoreLabel} misses={hud.misses} round={hud.round} rounds={hud.rounds} mode={hud.mode} />
-            {!summary && <div className="activity-menu absolute right-2 top-24 flex flex-col items-end gap-1.5 sm:right-3">
-                <LanguageSwitcher compact onOpenChange={setLanguageOpen} />
-                {musicButton}
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setHelpOpen(true)} aria-label={t("Replay instructions")} className="pixel-btn rounded-lg bg-sky-700 px-3 py-2 font-pixel text-[9px] text-sky-50">? {t("Guide")}</button>
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setLeaveAction(hasHub ? "hub" : "exit")}
-                    className="pixel-btn rounded-lg bg-slate-800/90 px-3 py-2 font-pixel text-[9px] text-slate-100">{progress ? t("Save / exit") : t(exit.label)}</button>
-                {saveError && <span role="status" className="max-w-40 rounded bg-rose-950/90 p-2 text-xs text-rose-100">{t("Progress not saved")}</span>}
-            </div>}
+                scoreLabel={activity.copy.scoreLabel} misses={hud.misses} round={hud.round} rounds={hud.rounds} mode={hud.mode}
+                actions={!summary && <div className="activity-menu flex max-w-40 flex-col items-end gap-2 sm:max-w-44">
+                    <div className="flex items-center gap-2">
+                        <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => setHelpOpen(true)} aria-label={t("Replay instructions")}
+                            className="pixel-btn min-h-11 rounded-lg bg-sky-700 px-2 py-2 font-pixel text-[9px] text-sky-50 sm:px-3">? {t("Guide")}</button>
+                        <GameSettingsButton onClick={() => setSettingsOpen(true)} />
+                    </div>
+                    <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => setLeaveAction(hasHub ? "hub" : "exit")}
+                        className="pixel-btn max-w-full rounded-lg bg-slate-800 px-2 py-2 font-pixel text-[9px] leading-relaxed text-slate-100">{progress ? t("Save / exit") : t(exit.label)}</button>
+                    {saveError && <span role="status" className="max-w-full rounded bg-rose-950 p-2 text-xs text-rose-100">{t("Progress not saved")}</span>}
+                </div>} />
         </>}
         {prompt && !summary && !current && !travelling && <div className="equipment-prompt pointer-events-none absolute inset-x-0 z-10 flex justify-center px-3">
             <div className="lw-pop-in pixel-panel world-hud-panel max-w-[92vw] rounded-lg bg-slate-900 px-4 py-2 text-center text-sm text-amber-200">{t(prompt)}</div>
@@ -318,7 +321,7 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
         </div>}
         {activityId && current && !summary && <QuestionCard key={`${current.questionNumber}-${current.question.id}`} cue={activity.copy.questionCue} shortAnswerHint={activity.copy.shortAnswerHint} feedbackCopy={activity.copy.answerFeedback}
             question={current.question} questionNumber={current.questionNumber} total={current.total} reveal={reveal} closing={closeRequest !== null}
-            onExited={finishQuestionExit} celebrate={activityId === "fishing"} suspended={Boolean(leaveAction) || helpOpen || guideOpen} onAnswer={handleAnswer} />}
+            onExited={finishQuestionExit} celebrate={activityId === "fishing"} suspended={Boolean(leaveAction) || helpOpen || guideOpen || settingsOpen} onAnswer={handleAnswer} />}
         <TouchControls controller={controller} hidden={!mapId || overlayOpen || travelling} action={{ label: t(equipment.equipped === "rod" && phase === "waiting" ? activity.copy.waitingActionLabel : EQUIPMENT[equipment.equipped].actionLabel),
             enabled: equipment.actionEnabled, onPress: () => controller?.primaryAction() }} />
         {mapId && !overlayOpen && !travelling && <>
@@ -330,8 +333,10 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
             saveError={completionSaveFailed ? { retry: persistCompletion } : undefined}
             primary={hasHub ? { label: "🏡 BACK TO VILLAGE", onClick: () => controller?.returnToHub() } : { label: "▶ PLAY AGAIN", onClick: restartQuiz }}
             secondary={hasHub ? { label: activity.copy.playAgainLabel, onClick: restartQuiz } : { label: exit.label, onClick: exit.onExit }} />}
-        <ActivityGuideDialog activity={activity} open={guideOpen} suspended={Boolean(leaveAction)} onClose={() => setGuideOpen(false)} />
-        <GameHelp open={helpOpen} suspended={Boolean(leaveAction)} onClose={() => setHelpOpen(false)} activity={activityId ? activity : undefined} />
+        <GameSettings open={settingsOpen} onClose={() => setSettingsOpen(false)} suspended={Boolean(leaveAction)}
+            music={music} onMusicChange={enabled => controller?.setMusicEnabled(enabled)} />
+        <ActivityGuideDialog activity={activity} open={guideOpen} suspended={Boolean(leaveAction) || settingsOpen} onClose={() => setGuideOpen(false)} />
+        <GameHelp open={helpOpen} suspended={Boolean(leaveAction) || settingsOpen} onClose={() => setHelpOpen(false)} activity={activityId ? activity : undefined} />
         <Modal open={Boolean(leaveAction)} title={t("Pause your quest?")} onClose={() => setLeaveAction(null)} footer={<>
             <PixelButton tone="slate" onClick={() => setLeaveAction(null)}>{t("Keep playing")}</PixelButton>
             <PixelButton tone="rose" onClick={() => leave(false)}>{t("Leave without saving")}</PixelButton>

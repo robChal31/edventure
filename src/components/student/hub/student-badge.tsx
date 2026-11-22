@@ -17,7 +17,7 @@ export default function StudentBadge({
             <CharacterPortrait />
             <div className="min-w-0">
                 <div className="truncate font-pixel text-[10px] text-amber-300">{student.name}</div>
-                <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-200">
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-200">
                     {student.className && <span>{t("Class")}{" "}{student.className}</span>}
                     <button
                         type="button"

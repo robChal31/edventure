@@ -1,6 +1,4 @@
 import Phaser from "phaser";
-import { WORLD_REWARD_MS } from "@/quiz/reward-feedback";
-import { CapturePopups } from "../capture-popup";
 import { describeCorrectAnswer } from "@/quiz/grading";
 import { QuizSession } from "@/quiz/quiz-session";
 import type { AnswerValue } from "@/quiz/types";
@@ -43,7 +41,6 @@ export class FishingActivity implements Activity {
     #surface: WaterSurface;
     #water: WaterEffects;
     #feedback: FeedbackEffects;
-    #rewards: CapturePopups;
     #school?: AmbientFishSchool;
     #debug?: WaterDebugOverlay;
     #footprint = fishFootprint();
@@ -63,7 +60,6 @@ export class FishingActivity implements Activity {
         this.#surface = new WaterSurface(ctx.worldMap, ctx.mapObjects);
         this.#water = new WaterEffects(ctx.scene);
         this.#feedback = new FeedbackEffects(ctx.scene);
-        this.#rewards = new CapturePopups(ctx.scene);
     }
 
     private get scene(): Phaser.Scene {
@@ -383,11 +379,11 @@ export class FishingActivity implements Activity {
             { x: this.player.x, y: this.player.y - 18 },
             timing.catchDuration,
             this.#guard(() => {
-                this.#rewards.show(this.player.x, this.player.y - 28);
+                this.#feedback.sparkles(this.player.x, this.player.y - 12);
+                this.#feedback.popup("+1", this.player.x, this.player.y - 28, "#4ade80");
                 fish.destroy();
                 this.#fish = null;
-                // The final fish gets the same visible reward as every other one before results.
-                this.#later(WORLD_REWARD_MS, () => this.#afterResolve());
+                this.#afterResolve();
             })
         );
     }
@@ -529,7 +525,7 @@ export class FishingActivity implements Activity {
     /** Cancels everything in flight for the current challenge. */
     #clearRound(): void {
         this.#round += 1;
-        this.#rewards.clear();
+        this.#feedback.clear();
         this.#timers.forEach((timer) => timer.remove(false));
         this.#timers.clear();
         this.#stopRipples();

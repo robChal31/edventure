@@ -245,7 +245,6 @@ body {
     background: url("/assets/images/farm%20asset%20pack/Objects/Tree/Common/Shadow/Birch%20Tree.png") -64px -32px / 512px 192px no-repeat;
     image-rendering: pixelated;
 }
-@media (max-width: 479px) { .activity-menu { top: 110px; } }
 
 .student-preview {
     --color-slate-950: #020617;
@@ -283,6 +282,34 @@ body {
 .language-switcher .select-choice { gap: 6px; }
 .select-choice-icon:has(.language-flag) { width: 26px; height: 18px; border-radius: 3px; overflow: hidden; background: transparent; box-shadow: 0 0 0 1px #24435826; }
 .language-flag { display: block; width: 100%; height: 100%; }
+
+/* Language/music are deliberately off the HUD, in one small settings panel.
+   The menu tile is the original cyan 16x16 button at (432,160), drawn at 2x. */
+.game-settings-icon {
+    display: block; flex: none; width: 32px; height: 32px;
+    background: url("/assets/images/farm%20asset%20pack/UI/button.png") -864px -320px / 1696px 1088px no-repeat;
+    image-rendering: pixelated;
+}
+.game-settings-trigger { cursor: pointer; touch-action: manipulation; }
+.game-settings-trigger:hover { filter: brightness(1.15); }
+.game-settings-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(360px, calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+    max-width: none;
+    max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 12px;
+    background: #111c30;
+    color: #e2e8f0;
+    color-scheme: dark;
+}
+.game-settings-dialog::backdrop { background: #02061799; }
+.game-settings-dialog :focus-visible, .game-settings-trigger:focus-visible { outline: 3px solid #fcd34d; outline-offset: 3px; }
+.game-settings-flag { display: block; flex: none; width: 27px; height: 18px; overflow: hidden; border-radius: 2px; box-shadow: 0 0 0 1px #ffffff40; }
 
 /* Activity instructions: original nine-slice RPG frame + one native portrait expression.
    Kept separate from staff panels, questions, results and the village Help modal. */

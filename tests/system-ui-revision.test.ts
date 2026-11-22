@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type Phaser from "phaser";
@@ -9,7 +11,7 @@ import { hasTranslation, translate } from "../src/i18n/translate";
 import { seedQuizzes } from "../src/lms/seed";
 import { ACTIVITIES } from "../src/quiz/activities";
 import { EQUIPMENT } from "../src/game/equipment/equipment";
-import { CORRECT_REVEAL_MS, WORLD_REWARD_MS } from "../src/quiz/reward-feedback";
+import { CORRECT_REVEAL_MS } from "../src/quiz/reward-feedback";
 import { CapturePopups } from "../src/game/activities/capture-popup";
 import { ASSET_KEYS } from "../src/game/common/assets";
 import { sfx } from "../src/game/common/audio/sfx";
@@ -17,6 +19,8 @@ import { shouldShowTouchControls } from "../src/components/student/use-touch-con
 import QuestBoard from "../src/components/student/hub/quest-board";
 import QuestionCard from "../src/components/student/questions/question-card";
 import ResultsScreen from "../src/components/student/results-screen";
+import GameSettings, { GameSettingsButton } from "../src/components/student/game-settings";
+import ActivityHud from "../src/components/student/activity-hud";
 import type { Question, QuizSummary } from "../src/quiz/types";
 
 const id = (message: string) => translate("id", message);
@@ -112,65 +116,150 @@ test("touch controls: primary capability, never viewport width; active keyboard/
     }
 });
 
+test("game settings: compact native trigger opens a dedicated flag/code-only language panel, not a floating form", () => {
+    const trigger = renderToStaticMarkup(createElement(GameSettingsButton, { onClick: () => {} }));
+    assert.ok(trigger.includes('aria-label="Pengaturan"'));
+    assert.ok(trigger.includes('aria-haspopup="dialog"'));
+    assert.ok(trigger.includes('game-settings-icon'));
+    const props = { open: true, onClose: () => {}, music: { available: true, enabled: true, playing: false }, onMusicChange: () => {} };
+    const html = renderToStaticMarkup(createElement(GameSettings, props));
+    assert.ok(html.startsWith("<dialog"));
+    assert.ok(html.includes('aria-modal="true"'));
+    for (const copy of ["Game settings", "Close settings", "Settings", "Language", "Continue", "Music on", "Music off"]) {
+        assert.ok(hasTranslation(copy), copy);
+        assert.equal(en(copy), copy);
+    }
+    assert.ok(html.includes("Pengaturan game"));
+    assert.equal((html.match(/data-language-flag=/g) ?? []).length, 2);
+    for (const code of ["ID", "EN"]) assert.ok(html.includes(`aria-hidden="true">${code}</span>`));
+    assert.ok(html.includes('aria-pressed="true" aria-label="Bahasa Indonesia"'));
+    assert.ok(html.includes('aria-pressed="false" aria-label="English"'));
+    assert.equal(html.includes(">Bahasa Indonesia<"), false);
+    assert.equal(html.includes(">English<"), false);
+    assert.equal(html.includes('role="combobox"'), false);
+    assert.ok(html.includes(id("Music on")));
+    const unavailable = renderToStaticMarkup(createElement(GameSettings, { ...props, music: { ...props.music, available: false } }));
+    assert.equal(unavailable.includes(id("Music on")), false);
+    assert.equal(renderToStaticMarkup(createElement(GameSettings, { ...props, open: false })), "");
+});
+
+test("game settings: activity controls flow below the score, rather than overlaid with a fixed top offset", () => {
+    const html = renderToStaticMarkup(createElement(ActivityHud, { roomName: "A very long authored title", questionNumber: 1, total: 3, caught: 0,
+        answered: 0, misses: 0, scoreLabel: "Frogs joined", actions: createElement(GameSettingsButton, { onClick: () => {} }) }));
+    assert.ok(html.indexOf('game-settings-trigger') > html.indexOf('activity-hud-right'));
+    assert.ok(html.indexOf('game-settings-trigger') > html.indexOf('0/3</span>'));
+    const screen = readFileSync("src/components/student/game-screen.tsx", "utf8");
+    assert.equal(screen.includes("LanguageSwitcher"), false, "no white language dropdown remains on the game HUD");
+    assert.equal(screen.includes("top-24"), false, "controls must follow the actual score panel height");
+});
+
 class RewardObject {
     name = ""; destroyed = false; active = true; scale = 1;
-    constructor(public x: number, public y: number, public text?: string, public texture?: string, public frame?: number, public style?: object) {}
+    constructor(public x: number, public y: number, public text?: string, public texture?: string, public style?: Record<string, unknown>) {}
     setName(name: string) { this.name = name; return this; }
-    setOrigin() { return this; } setDepth() { return this; } setTint() { return this; }
+    setOrigin() { return this; } setDepth() { return this; }
     setScale(scale: number) { this.scale = scale; return this; }
     destroy() { this.destroyed = true; this.active = false; }
 }
-function rewardScene(textureExists = true) {
-    const objects: RewardObject[] = [], tweens: Phaser.Types.Tweens.TweenBuilderConfig[] = [], killed: unknown[] = [];
-    return { objects, tweens, killed, scene: {
-        textures: { exists: () => textureExists },
+function rewardScene() {
+    const objects: RewardObject[] = [], tweens: Phaser.Types.Tweens.TweenBuilderConfig[] = [], removed: unknown[] = [], killed: unknown[] = [];
+    return { objects, tweens, removed, killed, scene: {
         add: {
-            text: (x: number, y: number, text: string, style: object) => { const o = new RewardObject(x, y, text, undefined, undefined, style); objects.push(o); return o; },
-            image: (x: number, y: number, key: string, frame: number) => { const o = new RewardObject(x, y, undefined, key, frame); objects.push(o); return o; },
+            text: (x: number, y: number, text: string, style: Record<string, unknown>) => { const o = new RewardObject(x, y, text, undefined, style); objects.push(o); return o; },
+            image: (x: number, y: number, key: string) => { const o = new RewardObject(x, y, undefined, key); objects.push(o); return o; },
         },
-        tweens: { add: (config: Phaser.Types.Tweens.TweenBuilderConfig) => { tweens.push(config); return {}; }, killTweensOf: (object: unknown) => killed.push(object) },
+        tweens: {
+            add: (config: Phaser.Types.Tweens.TweenBuilderConfig) => { tweens.push(config); return { remove: () => removed.push(config) }; },
+            killTweensOf: (object: unknown) => killed.push(object),
+        },
     } as unknown as Phaser.Scene };
 }
 
-test("reward feedback: visible hold, bounded original-art burst and immediate owned cleanup on restart/travel", () => {
-    assert.ok(CORRECT_REVEAL_MS >= 2000 && CORRECT_REVEAL_MS <= 3000);
-    assert.ok(WORLD_REWARD_MS >= 1600 && WORLD_REWARD_MS <= 2500);
-    const fake = rewardScene(), rewards = new CapturePopups(fake.scene, () => false);
+test("reward rollback: original unboxed 9px yellow +1, 17px rise and 180+1050ms subtle fade; no scale/burst", () => {
+    assert.equal(CORRECT_REVEAL_MS, 2200, "the separate question-card reveal is not rolled back");
+    const fake = rewardScene(), rewards = new CapturePopups(fake.scene);
     rewards.show(42.1, 25.4);
-    const label = fake.objects[0], stars = fake.objects.slice(1);
+    assert.equal(fake.objects.length, 1, "only the original text, no new star burst");
+    const label = fake.objects[0];
     assert.equal(label.name, "capture-plus-one"); assert.equal(label.text, "+1");
-    assert.equal(stars.length, 8);
-    assert.ok(stars.every(star => star.texture === ASSET_KEYS.REWARD_SHINE && [0, 1].includes(star.frame!)));
-    const fade = fake.tweens.find(tween => tween.targets === label && tween.alpha === 0)!;
-    assert.ok(Number(fade.delay) >= 1200, "no immediate fade of the +1");
-    assert.equal(Number(fade.delay) + Number(fade.duration), WORLD_REWARD_MS);
+    assert.deepEqual({ x: label.x, y: label.y, scale: label.scale }, { x: 42, y: 25, scale: 1 });
+    assert.deepEqual(label.style, { fontFamily: '\"Press Start 2P\"', fontSize: "9px", color: "#fef08a", stroke: "#285b3d", strokeThickness: 2 });
+    assert.equal(fake.tweens.length, 1);
+    const tween = fake.tweens[0];
+    assert.equal(tween.targets, label); assert.equal(tween.y, 8); assert.equal(tween.alpha, 0);
+    assert.equal(tween.delay, 180); assert.equal(tween.duration, 1050); assert.equal(tween.ease, "Sine.out");
+    assert.equal(tween.scale, undefined);
     rewards.clear();
-    assert.equal(fake.killed.length, 9); assert.ok(fake.objects.every(object => object.destroyed));
-    rewards.clear(); assert.equal(fake.killed.length, 9, "cleanup is idempotent");
-    rewards.show(5, 9); assert.equal(fake.objects.length, 18, "next run can celebrate normally");
-    rewards.clear();
-});
-
-test("reward feedback: reduced motion keeps a legible +1 but no position/scale tween; missing art cannot block completion", () => {
-    const fake = rewardScene(), rewards = new CapturePopups(fake.scene, () => true);
-    rewards.show(40, 20);
-    assert.equal(fake.objects.length, 3);
-    assert.ok(fake.tweens.every(tween => tween.x === undefined && tween.y === undefined && tween.scale === undefined));
-    for (const tween of fake.tweens) (tween.onComplete as (() => void))?.();
+    assert.equal(fake.removed.length, 1); assert.ok(label.destroyed);
+    rewards.clear(); assert.equal(fake.removed.length, 1, "cleanup stays idempotent");
+    rewards.show(5, 9);
+    assert.equal(fake.objects.length, 2, "next run can show the original popup normally");
+    (fake.tweens[1].onComplete as (() => void))();
     assert.ok(fake.objects.every(object => object.destroyed));
-    rewards.clear(); assert.equal(fake.killed.length, 0, "finished objects leave ownership set");
-    const noArt = rewardScene(false), fallback = new CapturePopups(noArt.scene, () => false);
-    fallback.show(4, 8); assert.equal(noArt.objects.length, 1); fallback.clear();
+    rewards.clear(); assert.equal(fake.removed.length, 1, "completed popup is no longer owned");
 });
 
-test("reward art: preload exactly the two native 16px Shine frames from the original pixel pack", () => {
+/** Exercise the actual effects class with Phaser's tiny random/texture surface, not a browser renderer. */
+function fishingFeedback() {
+    const sandboxModule = { exports: {} };
+    const compiled = ts.transpileModule(readFileSync("src/game/activities/fishing/effects/feedback-effects.ts", "utf8"), {
+        compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+    }).outputText;
+    runInNewContext(compiled, { module: sandboxModule, exports: sandboxModule.exports, require: (path: string) => {
+        if (path === "phaser") return { Math: { Between: (min: number) => min } };
+        if (path.endsWith("/locale")) return { getLocale: () => "en" };
+        if (path.endsWith("/translate")) return { translate };
+        if (path.endsWith("/depth-config")) return { DEPTH_CONFIG: { WORLD_UI: 100 } };
+        if (path.endsWith("/fishing-textures")) return { FISHING_TEXTURE_KEYS: { SPARKLE: "lw_sparkle", EXCLAIM: "lw_exclaim" } };
+        throw new Error(`Unexpected effects dependency: ${path}`);
+    } });
+    return sandboxModule.exports as typeof import("../src/game/activities/fishing/effects/feedback-effects");
+}
+
+test("reward rollback: Fishing keeps its original green popup and native sparkles, with safe restart/travel cleanup", () => {
+    const { FeedbackEffects } = fishingFeedback(), fake = rewardScene(), effects = new FeedbackEffects(fake.scene);
+    effects.sparkles(20, 40);
+    effects.popup("+1", 20, 24, "#4ade80");
+    assert.equal(fake.objects.length, 9);
+    assert.ok(fake.objects.slice(0, 8).every(object => object.texture === "lw_sparkle"));
+    const label = fake.objects[8];
+    assert.equal(label.text, "+1"); assert.equal(label.style?.fontSize, "10px");
+    assert.equal(label.style?.color, "#4ade80"); assert.equal(label.style?.backgroundColor, undefined);
+    const popup = fake.tweens[8];
+    assert.equal(popup.y, 2); assert.equal(popup.alpha, 0);
+    assert.equal(popup.delay, 250); assert.equal(popup.duration, 900);
+    effects.clear();
+    assert.equal(fake.killed.length, 9); assert.ok(fake.objects.every(object => object.destroyed));
+    effects.clear(); assert.equal(fake.killed.length, 9);
+    effects.exclaim(20, 40);
+    effects.clear(); assert.equal(fake.killed.length, 10, "also clears a bite indicator's nested tweens");
+    effects.popup("+1", 10, 10, "#4ade80");
+    (fake.tweens.at(-1)!.onComplete as (() => void))();
+    effects.clear(); assert.equal(fake.killed.length, 10, "finished effects are no longer owned");
+});
+
+test("reward rollback: activity placement/timing are restored without reverting the question reveal or audio", () => {
+    const bugs = readFileSync("src/game/activities/catching-bugs/catching-bugs-activity.ts", "utf8");
+    const fishing = readFileSync("src/game/activities/fishing/fishing-activity.ts", "utf8");
+    const serenade = readFileSync("src/game/activities/forest-serenade/serenade-activity.ts", "utf8");
+    assert.ok(bugs.includes("this.#later(920, () => this.#finishTarget(target, outcome))"));
+    assert.ok(bugs.includes("sfx.capture()"));
+    assert.ok(fishing.includes('this.#feedback.popup("+1", this.player.x, this.player.y - 28, "#4ade80")'));
+    assert.ok(fishing.includes("this.#feedback.clear()"));
+    assert.ok(fishing.includes("sfx.fishLeap()"));
+    assert.ok(serenade.includes("this.#popups.show(frog.sprite.x, frog.sprite.y - 15)"));
+    assert.equal(serenade.includes("this.#popups.show(this.ctx.player"), false, "+1 returns to the frog landing, not the player");
+    assert.ok(serenade.includes("Math.max(1350, travel + 650)"));
+    for (const activity of [bugs, fishing, serenade]) assert.equal(activity.includes("WORLD_REWARD_MS"), false);
+    assert.ok(bugs.includes("CORRECT_REVEAL_MS")); assert.ok(serenade.includes("CORRECT_REVEAL_MS"));
+});
+
+test("reward rollback: unused Shine preload is removed, but original pack artwork is never deleted", () => {
     const pack = JSON.parse(readFileSync("public/assets/data/assets.json", "utf8"));
-    const assets = pack.flatMap((group: { path: string; files: { key: string; url: string; frameConfig?: object }[] }) => group.files.map(file => ({ ...file, path: group.path })));
-    const shine = assets.filter((asset: { key: string }) => asset.key === ASSET_KEYS.REWARD_SHINE);
-    assert.equal(shine.length, 1);
-    assert.equal(shine[0].url, "Character/Character/Others/Shine.png");
-    assert.deepEqual(shine[0].frameConfig, { frameWidth: 16, frameHeight: 16 });
-    const png = readFileSync(`public/${shine[0].path}/${shine[0].url}`);
+    const assets = pack.flatMap((group: { files: { key: string }[] }) => group.files);
+    assert.equal(assets.some((asset: { key: string }) => asset.key === "REWARD_SHINE"), false);
+    assert.equal("REWARD_SHINE" in ASSET_KEYS, false);
+    const png = readFileSync("public/assets/images/farm asset pack/Character/Character/Others/Shine.png");
     assert.equal(png.readUInt32BE(16), 32); assert.equal(png.readUInt32BE(20), 16);
 });
 

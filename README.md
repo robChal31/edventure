@@ -49,6 +49,11 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   mengenali **ID + teks bawaan yang belum diedit** (termasuk data browser lama).
   Nama/deskripsi kustom guru, soal, pilihan jawaban dan penjelasan tidak diterjemahkan,
   tidak ditulis ulang, dan tetap tersimpan dalam bahasa aslinya.
+  Di dunia game, pilihan **bendera + ID / EN** berada di panel **Pengaturan / Settings**
+  bersama toggle musik, bukan dropdown yang menumpuk di HUD. Tombol menu pixel asli
+  selalu sejajar dengan Bantuan/Panduan; pada misi, baris ini mengalir di bawah skor
+  (tanpa offset `top` tetap). Panel menahan input dunia/soal, menjaga draft, dan mendukung
+  Esc, Tab, serta pilihan simpan saat F5/Ctrl+R.
 - Awal misi menampilkan **satu pesan singkat** lewat percakapan RPG **bawah layar**:
   frame `ui/dialog_ui.png` asli + portrait NPC Jack, Gaston atau Elyria. Tombol
   **Panduan / Guide** membuka ulang pesan singkat; **Detail / Details** secara
@@ -62,12 +67,14 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   muncul untuk input sentuh/pena; keyboard/mouse menyembunyikannya otomatis, termasuk
   perpindahan input di perangkat hybrid. Melepas pointer, blur, overlay dan unmount
   selalu membersihkan arah yang ditahan.
-- Cap jawaban benar terbaca selama 2,2 detik. Sesudahnya, reward dunia menampilkan
-  **+1** dekat karakter dan bintang dari `Character/Character/Others/Shine.png` asli,
-  disertai suara tangkap jaring / lompatan ikan / seruling sesuai aktivitas. Momen
-  reward minimal 1,8 detik juga berlaku sebelum hasil jawaban terakhir. Reduced motion
-  mengurangi bintang dan menghilangkan gerak terbang; semua efek dibersihkan saat
-  restart/pindah map. Penilaian, retry latihan dan finalitas asesmen tidak berubah.
+- Cap jawaban benar tetap terbaca selama 2,2 detik. Animasi **+1** dikembalikan
+  ke versi sebelum revisi reward: teks kuning kecil 9px tanpa kotak/burst Shine,
+  naik 17px dan memudar (jeda 180ms + tween 1050ms). Catching Bugs menampilkannya
+  dekat pemain; Serenade kembali menampilkannya di katak setelah tiba di altar.
+  Fishing kembali memakai popup hijau 10px dan sparkle aslinya saat ikan tiba,
+  tanpa jeda reward tambahan. Suara tangkap/lompatan/seruling tetap dipertahankan;
+  efek dibersihkan saat restart/pindah map. Penilaian, retry latihan, finalitas
+  asesmen, dan penyelesaian kuis bernilai 0% tidak berubah.
 - Fishing dimulai di depan pintu rumah nelayan pada dermaga, `(456, 536)` dalam
   piksel map. Geometri Tiled dan gabungan collision otomatis + authored tetap utuh.
 

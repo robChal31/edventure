@@ -68,7 +68,7 @@ export default function QuestBoard({ controls, quests, buildQuiz, autoOpen = fal
 
     return (
         <>
-            <div className="absolute right-2 top-28 sm:right-3 sm:top-28">
+            <div className="hub-quest-trigger absolute right-2 top-16 sm:right-3 sm:top-[68px]">
                 <button
                     type="button"
                     tabIndex={-1}
