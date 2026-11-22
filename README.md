@@ -42,6 +42,25 @@ registry, and set `available: true`.
 Students who play a quiz travel to its activity map. Currently available: **fishing** (on the
 beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
 
+### Activity instruction dialogues
+
+- Awal misi baru dan **Help** di dalam aktivitas memakai percakapan RPG di **bawah
+  layar**: frame `ui/dialog_ui.png` asli dengan portrait NPC Jack (fishing), Gaston
+  (farm), atau Elyria (forest). Portrait mengambil satu frame 64×64 dari sheet asli,
+  bukan menampilkan seluruh atlas atau membuat artwork pengganti.
+- Tujuan, setiap langkah dan semua kontrol tetap bersumber dari
+  `src/quiz/activities.ts`. Kontrol dibagi maksimal tiga per halaman; Help juga
+  mempertahankan tips kapak, tas dan penyimpanan browser. Referensi lipat di quest
+  board/editor guru serta Help desa tetap seperti sebelumnya.
+- **Enter / Spasi** atau tombol utama menampilkan teks langsung saat sedang diketik,
+  lalu berpindah ke halaman berikutnya. Ada **Kembali**, **Lewati panduan**, dan
+  **Esc**; tidak ada perpindahan otomatis, countdown atau penalti membaca. Help
+  membuka ulang panduan dari awal. Reduced motion menampilkan teks lengkap langsung.
+- Native modal dialog menahan fokus dan input dunia; soal di belakang Help tetap
+  menyimpan isian dan tidak menerima shortcut jawaban. Pilihan simpan saat F5 /
+  Ctrl+R sementara menyembunyikan percakapan, lalu mengembalikan halaman yang sama.
+  Layout mendukung layar kecil/landscape, safe area, dan teks yang bisa digulir.
+
 ### Catching Bugs — farm
 
 - Pilih **Catching Bugs** di editor kuis. Pilih **Asesmen** (satu percobaan per

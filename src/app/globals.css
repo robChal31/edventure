@@ -276,3 +276,95 @@ body {
 .language-switcher .select-choice { gap: 6px; }
 .select-choice-icon:has(.language-flag) { width: 26px; height: 18px; border-radius: 3px; overflow: hidden; background: transparent; box-shadow: 0 0 0 1px #24435826; }
 .language-flag { display: block; width: 100%; height: 100%; }
+
+/* Activity instructions: original nine-slice RPG frame + one native portrait expression.
+   Kept separate from staff panels, questions, results and the village Help modal. */
+.activity-dialogue {
+    position: fixed;
+    inset: auto 0 calc(16px + env(safe-area-inset-bottom, 0px));
+    margin: 0 auto;
+    width: min(1040px, calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+    max-width: none;
+    max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 4px 12px;
+    border: 16px solid #e0bd46;
+    border-image: url("/assets/images/ui/dialog_ui.png") 16 fill / 16px / 0 stretch;
+    background: #131e25;
+    color: #f7edcf;
+    color-scheme: dark;
+    box-shadow: 0 12px 32px #0008;
+    overflow: hidden;
+    image-rendering: pixelated;
+}
+.activity-dialogue::backdrop { background: linear-gradient(#02061718 20%, #02061770); }
+.activity-dialogue[open], .activity-dialogue-layout { display: flex; flex-direction: column; }
+.activity-dialogue-layout { width: 100%; min-height: 0; }
+.activity-dialogue-header { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #d1ae4a40; }
+.activity-dialogue-context { color: #c6ccb9; font-size: 9px; line-height: 1.8; }
+.activity-dialogue-skip { display: flex; flex: none; align-items: center; justify-content: center; gap: 10px; min-height: 40px; padding: 4px 8px; color: #d8cfb6; font-size: 12px; cursor: pointer; touch-action: manipulation; }
+.activity-dialogue-skip span { color: #f3d47e; font-size: 24px; line-height: 1; }
+.activity-dialogue-skip:hover { background: #f3d47e12; color: #fff0c4; }
+.activity-dialogue-conversation { display: grid; flex: 1 1 auto; min-height: 0; grid-template-columns: 144px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "portrait speaker" "portrait content"; column-gap: 24px; row-gap: 10px; padding: 18px 0; }
+.activity-dialogue-portrait { grid-area: portrait; display: grid; align-self: start; place-items: center; width: 144px; height: 144px; border: 2px solid #987d44; background: #28372f; box-shadow: inset 0 0 0 4px #14241e, 3px 3px 0 #080e13; }
+.activity-dialogue-portrait-art { display: block; width: 128px; height: 128px; background-size: 400% 200%; background-position: 0 0; background-repeat: no-repeat; image-rendering: pixelated; }
+.activity-dialogue-speaker { grid-area: speaker; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.activity-dialogue-name { color: #ffe49b; font-size: 14px; line-height: 1.8; }
+.activity-dialogue-role { color: #a9c4b9; font-size: 12px; }
+.activity-dialogue-heading { margin-left: auto; color: #e6ce8a; font-size: 12px; font-weight: 600; }
+.activity-dialogue-body { grid-area: content; min-height: 96px; max-height: 28dvh; padding: 2px 6px 2px 0; overflow-y: auto; overflow-wrap: anywhere; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #9e8a51 #131e25; }
+.activity-dialogue-text { font-size: 17px; line-height: 1.75; }
+.activity-dialogue-unrevealed { visibility: hidden; }
+.activity-dialogue-controls { display: grid; gap: 10px; font-size: 14px; line-height: 1.5; }
+.activity-dialogue-controls > div { display: grid; grid-template-columns: minmax(90px, 0.4fr) minmax(0, 1fr); align-items: baseline; gap: 12px; }
+.activity-dialogue-controls kbd { padding: 2px 6px; border: 1px solid #85744b; background: #091319; color: #ffe49b; font-family: ui-monospace, monospace; font-size: 12px; box-decoration-break: clone; }
+.activity-dialogue-controls dd { color: #e3e3d3; }
+.activity-dialogue-footer { display: flex; flex: none; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid #d1ae4a40; }
+.activity-dialogue-info { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.activity-dialogue-counter { color: #e3c983; font-size: 9px; line-height: 1.8; }
+.activity-dialogue-pace { color: #b9c3b8; font-size: 12px; }
+.activity-dialogue-shortcut { padding: 3px 5px; border: 1px solid #697366; color: #c3cbbb; font-family: ui-monospace, monospace; font-size: 10px; }
+.activity-dialogue-actions { display: flex; align-items: stretch; gap: 10px; margin-left: auto; }
+.activity-dialogue-button { min-height: 44px; padding: 10px 16px; border: 2px solid #9c8d60; background: #26312e; color: #e8e1c8; font-family: var(--font-pixel), "Press Start 2P", monospace; font-size: 9px; line-height: 1.6; box-shadow: 0 3px 0 #050c11; cursor: pointer; touch-action: manipulation; }
+.activity-dialogue-button:hover:not(:disabled) { filter: brightness(1.15); }
+.activity-dialogue-button:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #050c11; }
+.activity-dialogue-button:disabled { opacity: 0.4; cursor: default; }
+.activity-dialogue-primary { min-width: 150px; border-color: #f4d581; background: #f0d38a; color: #243026; }
+.activity-dialogue-arrow { display: inline-block; margin-left: 12px; border-block: 4px solid transparent; border-left: 6px solid currentColor; }
+.activity-dialogue :focus-visible { outline: 3px solid #f9e3a3; outline-offset: 3px; }
+@media (max-width: 639px) {
+    .activity-dialogue { inset-block-end: calc(8px + env(safe-area-inset-bottom, 0px)); width: calc(100% - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); padding: 0 4px 4px; max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+    .activity-dialogue-header { gap: 4px; padding-bottom: 4px; }
+    .activity-dialogue-context { font-size: 8px; }
+    .activity-dialogue-location { display: none; }
+    .activity-dialogue-skip { min-height: 44px; gap: 6px; padding-inline: 4px; }
+    .activity-dialogue-conversation { grid-template-columns: 80px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "portrait speaker" "content content"; gap: 12px; padding-block: 12px; }
+    .activity-dialogue-portrait { width: 80px; height: 80px; }
+    .activity-dialogue-portrait-art { width: 64px; height: 64px; }
+    .activity-dialogue-speaker { flex-direction: column; justify-content: center; align-items: start; gap: 2px; }
+    .activity-dialogue-name { font-size: 12px; }
+    .activity-dialogue-heading { margin: 4px 0 0; }
+    .activity-dialogue-body { min-height: 104px; max-height: 30dvh; }
+    .activity-dialogue-text { font-size: 16px; line-height: 1.65; }
+    .activity-dialogue-controls { font-size: 13px; }
+    .activity-dialogue-controls > div { grid-template-columns: minmax(78px, 0.4fr) minmax(0, 1fr); gap: 10px; }
+    .activity-dialogue-footer { gap: 10px; padding-top: 10px; }
+    .activity-dialogue-info { width: 100%; justify-content: space-between; gap: 6px; }
+    .activity-dialogue-shortcut { display: none; }
+    .activity-dialogue-button { padding-inline: 12px; }
+    .activity-dialogue-primary { min-width: 140px; }
+}
+@media (max-height: 499px) {
+    .activity-dialogue { inset-block-end: calc(8px + env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+    .activity-dialogue-header { padding-bottom: 0; }
+    .activity-dialogue-conversation { grid-template-columns: 80px minmax(0, 1fr); grid-template-areas: "portrait speaker" "portrait content"; column-gap: 16px; row-gap: 4px; padding-block: 8px; }
+    .activity-dialogue-portrait { width: 80px; height: 80px; }
+    .activity-dialogue-portrait-art { width: 64px; height: 64px; }
+    .activity-dialogue-body { min-height: 0; max-height: 28dvh; }
+    .activity-dialogue-text { font-size: 15px; line-height: 1.6; }
+    .activity-dialogue-footer { gap: 6px; padding-top: 8px; }
+    .activity-dialogue-info { width: auto; }
+    .activity-dialogue-pace, .activity-dialogue-shortcut { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .activity-dialogue-button:active:not(:disabled) { transform: none; }
+}

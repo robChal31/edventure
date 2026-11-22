@@ -2,8 +2,7 @@
 
 import { useI18n } from "@/i18n/provider";
 import type { ActivityDefinition } from "@/quiz/activities";
-import Modal from "./modal";
-import PixelButton from "./pixel-button";
+import ActivityDialogue from "./activity-dialogue";
 
 /** The goal, numbered steps and controls of one activity. Used everywhere it is explained. */
 export function ActivityGuideContent({ activity }: { activity: ActivityDefinition }) {
@@ -52,28 +51,12 @@ export function ActivityGuideDetails({ activity }: { activity: ActivityDefinitio
     );
 }
 
-/** Pops up the instructions of an activity (opened automatically when a quest starts). */
-export function ActivityGuideDialog({
-    activity,
-    open,
-    onClose,
-}: {
+/** Opens the bottom-screen conversation automatically when a fresh quest starts. */
+export function ActivityGuideDialog({ activity, open, onClose, suspended = false }: {
     activity: ActivityDefinition;
     open: boolean;
     onClose: () => void;
+    suspended?: boolean;
 }) {
-    const { t } = useI18n();
-    return (
-        <Modal
-            open={open}
-            onClose={onClose}
-            title={t("How to play · {value0} {value1}", { value0: activity.icon, value1: t(activity.label) })}
-            size="md"
-            footer={
-                <PixelButton tone="emerald" onClick={onClose}>{t("▶ Got it, let's go!")}</PixelButton>
-            }
-        >
-            <ActivityGuideContent activity={activity} />
-        </Modal>
-    );
+    return <ActivityDialogue activity={activity} open={open} onClose={onClose} suspended={suspended} />;
 }

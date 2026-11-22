@@ -329,8 +329,8 @@ export default function GameScreen({ initialQuiz, playerName, renderHub, badge, 
             saveError={completionSaveFailed ? { retry: persistCompletion } : undefined}
             primary={hasHub ? { label: "🏡 BACK TO VILLAGE", onClick: () => controller?.returnToHub() } : { label: "▶ PLAY AGAIN", onClick: restartQuiz }}
             secondary={hasHub ? { label: activity.copy.playAgainLabel, onClick: restartQuiz } : { label: exit.label, onClick: exit.onExit }} />}
-        <ActivityGuideDialog activity={activity} open={guideOpen} onClose={() => setGuideOpen(false)} />
-        <GameHelp open={helpOpen} onClose={() => setHelpOpen(false)} activity={activityId ? activity : undefined} />
+        <ActivityGuideDialog activity={activity} open={guideOpen} suspended={Boolean(leaveAction)} onClose={() => setGuideOpen(false)} />
+        <GameHelp open={helpOpen} suspended={Boolean(leaveAction)} onClose={() => setHelpOpen(false)} activity={activityId ? activity : undefined} />
         <Modal open={Boolean(leaveAction)} title={t("Pause your quest?")} onClose={() => setLeaveAction(null)} footer={<>
             <PixelButton tone="slate" onClick={() => setLeaveAction(null)}>{t("Keep playing")}</PixelButton>
             <PixelButton tone="rose" onClick={() => leave(false)}>{t("Leave without saving")}</PixelButton>
