@@ -141,21 +141,22 @@ export const ACTIVITIES: ActivityDefinition[] = [
     },
     {
         id: "forest_serenade", label: "Forest Serenade", icon: "🪈", location: "Deep Forest",
-        tagline: "Play your flute by the altar. Every correct answer calls one frog.", available: true,
+        tagline: "One frog per question waits in the forest. Play your flute to invite it closer.", available: true,
         copy: {
             startLabel: "Play", actionLabel: "PLAY", waitingActionLabel: "PLAY",
             questionCue: "A MELODY FOR THE FOREST", playAgainLabel: "PLAY ANOTHER MELODY",
-            scoreIcon: "", scoreLabel: "frogs summoned",
-            answerFeedback: { correct: "✔ LOVELY MELODY!", incorrect: "✘ THAT NOTE WAS OFF…", retry: "Practice: miss +1. Play again to retry this question; no frog is required to continue." },
+            scoreIcon: "", scoreLabel: "frogs befriended",
+            answerFeedback: { correct: "✔ LOVELY MELODY!", incorrect: "✘ THAT NOTE WAS OFF…", retry: "Practice: miss +1. Play again to retry this question with the same frog." },
             status: { tuning: "Preparing your melody…", serenading: "Playing the flute…" },
         },
         guide: {
-            goal: "Finish every question to complete the serenade, even if no frogs arrive. Correct answers call one frog each; collecting items is optional.",
+            goal: "Finish every question to complete the serenade, even if no frogs come closer. Each correct answer befriends its question's frog; collecting items is optional.",
             steps: [
+                "Frogs are scattered and numbered in question order, one for every question.",
                 "Choose the flute. Walk up the small stairs and stand in the marked clearing in front of the altar.",
                 "Press F / Space or PLAY. Your character plays the original flute animation, then a question appears.",
-                "Read and answer at your own pace. The feedback closes before the music and frog appear.",
-                "Correct: a pleasant melody, exactly one red or blue frog, and the altar flowers. Wrong: a sour melody and no frog.",
+                "Read and answer at your own pace. The feedback closes before your frog starts moving.",
+                "Correct: a pleasant melody, your question's frog comes closer and puffs, and the altar flowers. Wrong: a sour melody; that frog stays put.",
                 "Practice lets you retry the same question. Assessment records each answer once, including wrong answers.",
                 "Finish all questions for your results. Frog count never blocks completion or changes your academic score.",
             ],

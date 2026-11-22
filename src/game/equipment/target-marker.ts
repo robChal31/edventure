@@ -61,6 +61,6 @@ export class TargetMarker {
         if (!this.#target) return;
         const b = this.#target.bounds;
         const pulse = this.#pulseRemaining > 0 ? Math.sin(this.#pulseRemaining / 240 * Math.PI) * 2 : 0;
-        targetCornerPositions(b, pulse).forEach(({ x, y }, index) => this.#corners[index].setPosition(x, y));
+        targetCornerPositions(b, pulse, this.#target.markerPadding).forEach(({ x, y }, index) => this.#corners[index].setPosition(x, y));
     }
 }

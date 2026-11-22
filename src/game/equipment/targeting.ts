@@ -7,6 +7,8 @@ export type ActionTarget = {
     kind: "object" | "point" | "tile";
     status: "candidate" | "valid" | "invalid";
     bounds: TargetBounds;
+    /** Optional visual padding; a deliberate start area can keep its exact authored size. */
+    markerPadding?: number;
 };
 export type PreparedAction = { target: ActionTarget | null; execute: () => void };
 

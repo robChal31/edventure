@@ -10,20 +10,22 @@ import type { Activity, ActivityContext } from "../activity";
 import { QuestionCloseGate } from "../catching-bugs/question-close-gate";
 import { CapturePopups } from "../capture-popup";
 import { SerenadeSession, type SerenadeOutcome } from "./serenade-session";
-import { frogLanding, inPerformanceArea, readPerformanceArea, type PerformanceArea } from "./serenade-area";
+import { inPerformanceArea, readPerformanceArea, type PerformanceArea } from "./serenade-area";
 import { ALTAR_ANIMATIONS, FROG_ASSETS, frogAnimation, type FrogColor } from "./serenade-assets";
+import { FrogGround, frogRoutePosition, frogTravelDuration, type FrogPoint } from "./frog-layout";
 
-const MAX_VISIBLE_FROGS = 30;
+type QuestionFrog = { sprite: Phaser.GameObjects.Sprite; label: Phaser.GameObjects.Text; color: FrogColor };
 
-/** Correct = one pleasant phrase + one frog; wrong = a sour phrase, never a completion gate. */
+/** One existing frog per question. Only its correct answer invites it closer, then puffing. */
 export class SerenadeActivity implements Activity {
     #session: SerenadeSession;
     #area: PerformanceArea | null;
     #altar?: Phaser.GameObjects.Sprite;
     #phase: SerenadePhase = "idle";
     #label?: Phaser.GameObjects.Text;
-    #frogs: Phaser.GameObjects.Sprite[] = [];
-    #spawned = new Set<number>();
+    #frogs = new Map<number, QuestionFrog>();
+    #landings = new Map<number, FrogPoint>();
+    #ground: FrogGround;
     #popups: CapturePopups;
     #timers = new Set<Phaser.Time.TimerEvent>();
     #tweens = new Set<Phaser.Tweens.Tween>();
@@ -31,12 +33,14 @@ export class SerenadeActivity implements Activity {
     #revealPending = false;
     #destroyed = false;
     #generation = 0;
+    #nextVisibility = 0;
 
     constructor(private ctx: ActivityContext) {
         this.#session = new SerenadeSession(ctx.quiz, ctx.progress);
         this.#area = readPerformanceArea(ctx.worldMap.map.getObjectLayer("forest_serenade")?.objects ?? [], WORLD_CONFIG.scale);
         this.#altar = ctx.mapObjects.find((object): object is Phaser.GameObjects.Sprite => object.name === "altar" && object instanceof Phaser.GameObjects.Sprite);
         this.#popups = new CapturePopups(ctx.scene);
+        this.#ground = this.#readGround();
     }
 
     create(): void {
@@ -45,10 +49,13 @@ export class SerenadeActivity implements Activity {
             fontFamily: '"Press Start 2P"', fontSize: "7px", color: "#fff3b0", stroke: "#234d45", strokeThickness: 2,
         }).setName("serenade-area-label").setOrigin(0.5).setDepth(DEPTH_CONFIG.WORLD_UI);
         this.#altar?.play({ key: this.#session.quiz.correctCount > 0 ? ALTAR_ANIMATIONS.FLOWER : ALTAR_ANIMATIONS.IDLE, repeat: -1 });
-        // Reconstruct only academic successes, never in-flight actions or duplicate summons.
-        this.#session.snapshot().quiz.answers.forEach(({ questionIndex }) => this.#spawned.add(questionIndex));
-        const successes = this.#session.quiz.correctCount;
-        for (let index = Math.max(0, successes - MAX_VISIBLE_FROGS); index < successes; index += 1) this.#spawnFrog(index, false);
+        this.#ground.scatter(this.#session.quiz.total, this.#gatheringOrigin()).forEach((home, index) => this.#createFrog(index, home));
+        // Rebuild the same question identities, not a second group of newly summoned frogs.
+        this.#session.befriendedQuestions.forEach((index) => {
+            const frog = this.#frogs.get(index), landing = this.#reserveLanding(index);
+            if (frog && landing) this.#puff(frog, landing);
+        });
+        this.#syncLabels();
         if (this.#session.quiz.isComplete) this.#complete();
         else this.#toIdle();
     }
@@ -57,7 +64,7 @@ export class SerenadeActivity implements Activity {
     preparePrimaryAction(): PreparedAction {
         const area = this.#area;
         const valid = area !== null && inPerformanceArea(this.#feet(), area);
-        return { target: this.#phase === "idle" && area ? { id: "serenade-area", kind: "tile", status: valid ? "valid" : "candidate", bounds: area } : null,
+        return { target: this.#phase === "idle" && area ? { id: "serenade-area", kind: "tile", status: valid ? "valid" : "candidate", bounds: area, markerPadding: 0 } : null,
             execute: () => this.#begin() };
     }
     handlePrimaryAction(): void { this.preparePrimaryAction().execute(); }
@@ -89,10 +96,10 @@ export class SerenadeActivity implements Activity {
         this.ctx.emit({ type: "answer", correct: outcome.correct, question: outcome.question, answer: outcome.answer,
             correctAnswer: describeCorrectAnswer(outcome.question), caught: this.#session.quiz.correctCount,
             answered: this.#session.quiz.answeredCount, total: this.#session.quiz.total, retryable: outcome.retryable,
-            feedback: outcome.correct ? "A frog answered your melody!" : "That melody was off. No frog this time." });
+            feedback: outcome.correct ? "Your frog is coming closer!" : "That melody was off. Your frog stays where it is." });
         this.#emitHud(questionIndex + 1);
         this.#later(outcome.correct ? 1400 : 2400, () => {
-            const requestId = this.#closeGate.request(() => this.#resolve(questionIndex, outcome));
+            const requestId = this.#closeGate.request(() => this.#resolve(outcome));
             this.#setPhase("closing-question");
             this.ctx.emit({ type: "question:close", requestId });
         });
@@ -101,57 +108,103 @@ export class SerenadeActivity implements Activity {
         if (!this.#destroyed && this.#phase === "closing-question") this.#closeGate.acknowledge(requestId);
     }
 
-    #resolve(questionIndex: number, outcome: SerenadeOutcome): void {
+    #resolve(outcome: SerenadeOutcome): void {
         this.#setPhase("serenading");
         this.ctx.player.playFlute();
         sfx.flute(outcome.correct);
-        if (outcome.frogs === 1 && !this.#spawned.has(questionIndex)) {
-            this.#spawned.add(questionIndex);
+        let travel = 0;
+        if (outcome.frogIndex !== null && !this.#landings.has(outcome.frogIndex)) {
             this.#altar?.play({ key: ALTAR_ANIMATIONS.FLOWER, repeat: -1 });
-            this.#spawnFrog(this.#session.quiz.correctCount - 1, true);
-            this.#popups.show(this.ctx.player.x, this.ctx.player.y - 25);
+            travel = this.#approach(outcome.frogIndex);
         }
-        this.#prompt(outcome.correct ? "A frog answered your melody!" : outcome.retryable ? "No frog yet — play again to retry the same question." : "No frog this time. Play again for the next question.");
-        this.#later(1350, () => {
+        this.#prompt(outcome.correct ? "Your frog is coming closer!" : outcome.retryable ? "Your frog is waiting — play again to retry the same question." : "Your frog stays put. Play again for the next question.");
+        // Let the supplied 600ms puffing cycle be visible before advancing, without any score gate.
+        this.#later(Math.max(1350, travel + 650), () => {
             this.ctx.player.stopFlute();
             if (this.#session.quiz.isComplete) this.#complete();
             else this.#toIdle(outcome.retryable);
         });
     }
 
-    #spawnFrog(index: number, animate: boolean): void {
-        const altar = this.#altar;
-        if (!altar) return;
-        const origin = { x: altar.x + altar.displayWidth / 2, y: altar.y - 4 * WORLD_CONFIG.scale };
-        const end = frogLanding(index, origin, { width: this.ctx.worldMap.widthInPixels, height: this.ctx.worldMap.heightInPixels });
-        const color: FrogColor = index % 2 === 0 ? "red" : "blue";
-        const frog = this.ctx.scene.add.sprite(animate ? origin.x : end.x, animate ? origin.y : end.y, FROG_ASSETS[color], "24")
-            .setScale(WORLD_CONFIG.scale).setDepth(end.y + 3).setName(`serenade-frog-${index}`).setData("color", color);
-        this.#frogs.push(frog);
-        // Large teacher quizzes remain playable: old decorative frogs make room, score stays exact.
-        if (this.#frogs.length > MAX_VISIBLE_FROGS) {
-            const oldest = this.#frogs.shift()!;
-            this.ctx.scene.tweens.killTweensOf(oldest); oldest.destroy();
+    #readGround(): FrogGround {
+        const { worldMap, scene } = this.ctx, size = worldMap.tileWidth;
+        const ground = worldMap.getLayer("deep_forest_grass");
+        const edges = worldMap.collisionLayerNames.map((name) => worldMap.getLayer(name));
+        const solids = [...scene.physics.world.staticBodies].filter((body) => body.enable);
+        const points: FrogPoint[] = [], radius = size * 0.2;
+        // A one-tile margin keeps the original frog frame and its ordinal inside the map.
+        for (let y = size * 1.5; y < worldMap.heightInPixels - size; y += size) for (let x = size * 1.5; x < worldMap.widthInPixels - size; x += size) {
+            if ((ground?.getTileAtWorldXY(x, y)?.index ?? -1) < 0 || edges.some((layer) => (layer?.getTileAtWorldXY(x, y)?.index ?? -1) >= 0)) continue;
+            if (solids.some((body) => x + radius > body.left && x - radius < body.right && y + radius > body.top && y - radius < body.bottom)) continue;
+            points.push({ x, y });
         }
-        if (!animate) { frog.play({ key: frogAnimation(color, "front_idle"), repeat: -1 }); return; }
-        frog.play(frogAnimation(color, "front_jump"));
-        const hop = { t: 0 };
-        this.#animate({ targets: hop, t: 1, duration: 850, ease: "Sine.inOut",
+        return new FrogGround(points, size, this.ctx.player);
+    }
+    #gatheringOrigin(): FrogPoint {
+        const area = this.#area;
+        return area ? { x: area.x + area.width / 2, y: area.y + area.height / 2 } : this.ctx.player;
+    }
+    #reserveLanding(index: number): FrogPoint | null {
+        const point = this.#ground.landing(this.#gatheringOrigin(), [...this.#landings.values()]);
+        if (point) this.#landings.set(index, point);
+        return point;
+    }
+    #createFrog(index: number, home: FrogPoint): void {
+        const color: FrogColor = index % 2 === 0 ? "red" : "blue";
+        const sprite = this.ctx.scene.add.sprite(home.x, home.y, FROG_ASSETS[color], "24")
+            .setScale(WORLD_CONFIG.scale).setDepth(home.y + 3).setName(`serenade-frog-${index}`)
+            .setData({ color, questionIndex: index, state: "waiting", home: { ...home } });
+        sprite.play({ key: frogAnimation(color, "front_idle"), repeat: -1 });
+        const label = this.ctx.scene.add.text(home.x, home.y - 10 * WORLD_CONFIG.scale, String(index + 1), {
+            fontFamily: '"Press Start 2P"', fontSize: "5px", color: "#d5efdf", stroke: "#173c3c", strokeThickness: 2,
+        }).setOrigin(0.5, 1).setName(`serenade-question-${index}`).setDepth(DEPTH_CONFIG.WORLD_UI - 2);
+        this.#frogs.set(index, { sprite, label, color });
+    }
+    #approach(index: number): number {
+        const frog = this.#frogs.get(index), landing = this.#reserveLanding(index);
+        if (!frog || !landing) return 0;
+        const path = this.#ground.route(frog.sprite, landing);
+        if (!path.length) { this.#puff(frog, landing); return 0; }
+        const duration = frogTravelDuration(path), hop = { t: 0 };
+        frog.sprite.setData("state", "approaching");
+        this.#animate({ targets: hop, t: 1, duration, ease: "Sine.inOut",
             onUpdate: () => {
-                if (frog.active) frog.setPosition(Phaser.Math.Linear(origin.x, end.x, hop.t), Phaser.Math.Linear(origin.y, end.y, hop.t) - Math.sin(hop.t * Math.PI) * 12);
+                if (!frog.sprite.active) return;
+                const point = frogRoutePosition(path, hop.t);
+                const tag = Math.abs(point.dx) > 0 ? "side_jump" : point.dy < 0 ? "back_jump" : "front_jump";
+                frog.sprite.setFlipX(point.dx < 0).play({ key: frogAnimation(frog.color, tag), repeat: -1 }, true);
+                frog.sprite.setPosition(point.x, point.y - Math.sin(point.traveled / this.#ground.tileSize * Math.PI) ** 2 * 4).setDepth(point.y + 3);
+                frog.label.setPosition(frog.sprite.x, frog.sprite.y - 10 * WORLD_CONFIG.scale);
             },
-            onComplete: () => { if (frog.active) frog.setPosition(end.x, end.y).play({ key: frogAnimation(color, "front_idle"), repeat: -1 }); } });
+            onComplete: () => {
+                if (!frog.sprite.active) return;
+                this.#puff(frog, landing);
+                this.#popups.show(frog.sprite.x, frog.sprite.y - 15);
+            } });
+        return duration;
+    }
+    #puff(frog: QuestionFrog, point: FrogPoint): void {
+        frog.sprite.setPosition(point.x, point.y).setDepth(point.y + 3).setFlipX(false).setData("state", "puffing")
+            .play({ key: frogAnimation(frog.color, "puffing"), repeat: -1 });
+        frog.label.setPosition(point.x, point.y - 10 * WORLD_CONFIG.scale).setColor("#a7ffcd");
+    }
+    #syncLabels(): void {
+        this.#frogs.forEach(({ sprite, label }, index) => {
+            const current = index === this.#session.quiz.currentNumber - 1 && !this.#session.quiz.isComplete;
+            label.setColor(this.#landings.has(index) ? "#a7ffcd" : current ? "#fff3a3" : this.#session.quiz.hasAnswered(index) ? "#96afb0" : "#d5efdf");
+            label.setVisible(sprite.visible && (this.#frogs.size <= 40 || current));
+        });
     }
 
     #toIdle(retry = false): void {
         this.#revealPending = false;
         this.ctx.player.setInputLocked(false);
-        this.#setPhase("idle"); this.#emitHud();
-        this.#prompt(retry ? "No frog yet — play again to retry the same question." : "Walk up the stairs to the marked clearing in front of the altar, then play your flute.");
+        this.#setPhase("idle"); this.#emitHud(); this.#syncLabels();
+        this.#prompt(retry ? "Your frog is waiting — play again to retry the same question." : "Walk up the stairs to the marked clearing in front of the altar, then play your flute.");
     }
     #complete(): void {
         this.ctx.player.stopFlute(); this.ctx.player.setInputLocked(true);
-        this.#setPhase("complete"); this.#emitHud(); this.#prompt(null);
+        this.#setPhase("complete"); this.#emitHud(); this.#prompt(null); this.#syncLabels();
         sfx.complete(); this.ctx.emit({ type: "complete", summary: this.#session.summary() });
     }
     #feet(): { x: number; y: number } { const body = this.ctx.player.body as Phaser.Physics.Arcade.Body; return { x: body.center.x, y: body.center.y }; }
@@ -162,7 +215,18 @@ export class SerenadeActivity implements Activity {
     }
     #setPhase(phase: SerenadePhase): void { this.#phase = phase; this.ctx.emit({ type: "phase", phase }); this.#label?.setVisible(phase === "idle"); }
     #prompt(message: string | null): void { this.ctx.emit({ type: "prompt", message }); }
-    update(): void { /* Frogs idle using the supplied Aseprite animation, never wander or gate the next question. */ }
+    update(time: number): void {
+        if (time < this.#nextVisibility) return;
+        this.#nextVisibility = time + 120;
+        const view = this.ctx.scene.cameras.main.worldView;
+        this.#frogs.forEach(({ sprite }) => {
+            const visible = view.contains(sprite.x, sprite.y);
+            sprite.setVisible(visible);
+            if (visible) sprite.anims.resume();
+            else if (sprite.getData("state") !== "approaching") sprite.anims.pause();
+        });
+        this.#syncLabels();
+    }
 
     restart(): void {
         this.#clearRun(); this.#destroyed = false;
@@ -174,11 +238,11 @@ export class SerenadeActivity implements Activity {
         this.#destroyed = true; this.#clearRun();
     }
     #clearRun(): void {
-        this.#generation += 1; this.#closeGate.cancel();
+        this.#generation += 1; this.#closeGate.cancel(); this.#nextVisibility = 0;
         this.#timers.forEach((timer) => timer.remove(false)); this.#timers.clear();
         this.#tweens.forEach((tween) => tween.remove()); this.#tweens.clear();
         this.#label?.destroy(); this.#label = undefined;
-        this.#frogs.forEach((frog) => frog.destroy()); this.#frogs = []; this.#spawned.clear();
+        this.#frogs.forEach(({ sprite, label }) => { sprite.destroy(); label.destroy(); }); this.#frogs.clear(); this.#landings.clear();
         this.#popups.clear(); this.#revealPending = false;
         if (this.ctx.player.active) this.ctx.player.stopFlute();
     }

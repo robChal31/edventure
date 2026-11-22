@@ -3,6 +3,7 @@ import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from "re
 import { DEFAULT_LOCALE, getLocale, initializeLocale, isLocale, LOCALE_KEY, setLocale, subscribeLocale } from "./locale";
 import { translate, type MessageValues } from "./translate";
 import FormSelect from "@/components/ui/form-select";
+import LanguageFlag from "@/components/ui/language-flag";
 
 /** Locale selection is client-local; existing LMS/bookmarked routes never change. */
 export function LocaleProvider({ children }: { children: ReactNode }) {
@@ -24,11 +25,10 @@ export function useI18n() {
 export function LanguageSwitcher({ compact = false, onOpenChange }: { compact?: boolean; onOpenChange?: (open: boolean) => void }) {
     const { locale, setLocale, t } = useI18n();
     return <div className={`language-switcher ${compact ? "is-compact" : ""}`}>
-        <span className="language-caption" aria-hidden>{t("Language")}</span>
         <FormSelect aria-label={t("Language")} value={locale} onValueChange={(value) => setLocale(value === "en" ? "en" : "id")}
             searchable={false} onOpenChange={onOpenChange} options={[
-                { value: "id", label: compact ? "Indonesia" : "Bahasa Indonesia", icon: "ID", description: "Antarmuka dalam Bahasa Indonesia" },
-                { value: "en", label: "English", icon: "EN", description: "Interface in English" },
+                { value: "id", label: "ID", accessibleLabel: "Bahasa Indonesia", icon: <LanguageFlag locale="id" /> },
+                { value: "en", label: "EN", accessibleLabel: "English", icon: <LanguageFlag locale="en" /> },
             ]} />
     </div>;
 }

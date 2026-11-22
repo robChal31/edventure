@@ -87,15 +87,22 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
 
 - Pilih **Forest Serenade / Senandung Hutan** di editor kuis. Semua mapel dan
   tiga tipe soal dapat dipakai, dengan mode **Asesmen** atau **Latihan**.
+- Sejak awal ada **satu katak per soal**, tersebar dan bernomor sesuai urutan
+  soal. Warna merah/biru memakai export asli. Spawn pada lantai yang terhubung,
+  bukan di cliff atau footprint objek padat; jumlah katak tidak dibatasi 30.
 - Pemain masuk dengan **flute**. Naiki tangga asli map dan berdiri di area
-  bertanda **F** di depan altar, lalu tekan **F / Spasi / MAIN**. Marker kuning
-  berarti posisi sudah valid; aksi dari luar area tidak memakai soal/miss.
-- Jawaban benar → melodi merdu WebAudio, **tepat satu katak** merah/biru, dan
-  altar berubah dari `idle_altar` ke `altar_flower_play`. Jawaban salah → melodi
-  sumbang dan **tanpa katak**. Umpan balik soal selesai ditutup/di-unmount dahulu.
-- Latihan mengulang soal yang sama dan menyimpan semua miss. Asesmen mencatat
-  jawaban sekali. **Semua soal selesai = kuis selesai, termasuk 0% / nol katak.**
-  Jumlah katak bukan syarat progres atau sumber daya untuk membuka soal.
+  bertanda **F** di depan altar, lalu tekan **F / Spasi / MAIN**. Area dan outline
+  marker saat idle berukuran **32 × 32 world px**, tanpa padding marker tambahan.
+  Marker kuning berarti posisi valid; aksi dari luar area tidak memakai soal/miss.
+- Jawaban benar → melodi merdu WebAudio; **katak milik soal itu** melompat mendekat
+  lewat jalur lantai, lalu memainkan `puffing` (6 frame asli, loop 600 ms). Altar
+  berubah dari `idle_altar` ke `altar_flower_play`. Tidak ada katak tambahan yang
+  di-spawn. Jawaban salah → melodi sumbang; katak terkait tetap diam di tempatnya.
+  Gerak dimulai setelah panel umpan balik selesai ditutup/di-unmount.
+- Latihan mengulang soal dan katak yang sama, serta menyimpan semua miss.
+  Asesmen mencatat jawaban sekali. **Semua soal selesai = kuis selesai, termasuk
+  0% / tidak ada katak yang mendekat.** Jumlah katak bersahabat terpisah dari
+  progres soal; katak tidak menjadi syarat atau sumber daya untuk membuka soal.
 - Rectangle `performance_area` di object layer `forest_serenade` pada
   `public/assets/images/levels/deep_forest/deep_forest.tmj` adalah area main.
   Pindahkan lewat Tiled bila altar/platform diubah; tidak ada lokasi fallback.
@@ -104,10 +111,11 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
 - Export asli: `animations/player/flute/`, `animations/animal/frog/`, dan
   `animations/object/altar/`. Kedua frog memiliki nama tag yang sama, sehingga
   key runtime diberi namespace palet agar animasinya tidak saling menimpa.
-- Checkpoint memulihkan jawaban, miss, bunga altar dan jumlah keberhasilan;
-  aksi/timer/receipt tidak disimpan. Replay/travel membatalkan efek lama.
-  Untuk kuis panjang maksimal 30 katak dekoratif tampak sekaligus; setiap jawaban
-  benar tetap memberi satu keberhasilan dan total hasil tetap tepat.
+- Checkpoint memulihkan jawaban, miss, bunga altar dan identitas setiap katak:
+  hanya katak yang soalnya benar berada dekat altar sambil puffing; lainnya
+  kembali ke posisi sebar yang stabil. Aksi/timer/receipt tidak disimpan.
+  Replay/travel membatalkan efek lama. Animasi katak di luar kamera dijeda dan
+  label kuis panjang dibatasi ke soal aktif, tanpa mengurangi jumlah kataknya.
 - Demo **Forest Serenade** (`quiz-sample-forest-serenade`) ditambahkan sekali ke
   browser lama tanpa menimpa kuis guru. Tidak ada kebutuhan menulis cerita/soal khusus.
 
@@ -157,7 +165,9 @@ beach map), **Catching Bugs** (farm), and **Forest Serenade** (`deep_forest`).
   bahasa di halaman masuk, panel staf, dan game. Pilihan menetap di browser.
   Teks soal, opsi, nama siswa dan isi buatan guru tidak diterjemahkan otomatis.
   Katalog UI ada di `src/i18n/messages-id.json`. Semua dropdown form/filter memakai
-  **React Select**, termasuk pilihan bahasa dengan badge ID/EN. Grade tetap
+  **React Select**, termasuk pilihan bahasa ringkas **bendera + ID/EN** saja.
+  Bendera SVG lokal tidak bergantung pada emoji/font perangkat; nama bahasa
+  lengkap tetap tersedia bagi pembaca layar. Grade tetap
   dikelompokkan menurut jenjang; subject/topic memakai Creatable agar istilah
   buatan guru tetap bisa diketik. Menu di-portal di atas dialog, mendukung
   keyboard/search, dan Escape menutup menu dahulu tanpa membuang form.

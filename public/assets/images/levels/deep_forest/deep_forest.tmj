@@ -1109,14 +1109,14 @@
  "name": "forest_serenade",
  "objects": [
   {
-   "height": 16,
+   "height": 32,
    "id": 57,
    "name": "performance_area",
    "rotation": 0,
    "type": "performance_area",
    "visible": true,
-   "width": 64,
-   "x": 464,
+   "width": 32,
+   "x": 480,
    "y": 128
   }
  ],

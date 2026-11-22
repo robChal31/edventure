@@ -47,7 +47,7 @@ export default function ResultsScreen({ summary, primary, secondary, note, saveE
                 <div className="mt-5 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-emerald-500/20 p-3">
                         <div className="font-pixel text-xl text-emerald-300">{summary.correct}</div>
-                        <div className="mt-1 text-[10px] uppercase text-emerald-200">{serenade ? t("Frogs summoned") : t("Caught")}</div>
+                        <div className="mt-1 text-[10px] uppercase text-emerald-200">{serenade ? t("Frogs befriended") : t("Caught")}</div>
                     </div>
                     <div className="rounded-lg bg-rose-500/20 p-3">
                         <div className="font-pixel text-xl text-rose-300">{hasRetries ? summary.misses ?? summary.incorrect : summary.incorrect}</div>
