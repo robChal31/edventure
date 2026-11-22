@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import Link from "next/link";
 import { useMemo } from "react";
 import { QUESTION_TYPE_ORDER, QUESTION_TYPES } from "@/quiz/question-types";
@@ -115,7 +116,7 @@ export default function StudentReport({ studentId }: { studentId: string }) {
                         {Array.from(progress.values()).map((item) => (
                             <div key={item.quizId} className="flex items-center justify-between gap-3 px-4 py-3">
                                 <div className="min-w-0">
-                                    <div className="truncate font-semibold text-slate-100">{item.quizName}</div>
+                                    <div className="truncate font-semibold text-slate-100">{systemQuestText(item.quizId, "name", item.quizName, t)}</div>
                                     <div className="text-xs text-slate-400">
                                         {t("{value0} attempt{value1}", { value0: item.count, value1: item.count === 1 ? "" : "s" })}{" "}{t("· last")}{" "}{formatRelative(item.latest.completedAt)}
                                     </div>
@@ -127,7 +128,7 @@ export default function StudentReport({ studentId }: { studentId: string }) {
                         {notStarted.map((quiz) => (
                             <div key={quiz.id} className="flex items-center justify-between gap-3 px-4 py-3">
                                 <div className="min-w-0">
-                                    <div className="truncate font-semibold text-slate-300">{quiz.name}</div>
+                                    <div className="truncate font-semibold text-slate-300">{systemQuestText(quiz.id, "name", quiz.name, t)}</div>
                                     <div className="text-xs text-slate-500">
                                         {isQuizAssignedTo(quiz, student) ? t("Assigned · not started") : t("Not started")}
                                     </div>

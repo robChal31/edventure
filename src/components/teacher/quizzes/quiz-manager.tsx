@@ -3,6 +3,7 @@
 import FormSelect from "@/components/ui/form-select";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { getActivity } from "@/quiz/activities";
@@ -107,7 +108,7 @@ export default function QuizManager() {
                             source === value ? "bg-amber-400 text-amber-950" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                         }`}
                     >
-                        {label}
+                        {t(label)}
                     </button>
                 ))}
                 <FormSelect value={grade} onValueChange={(e) => setGrade(e)} className={`w-full w-auto`} aria-label={t("Filter by grade")}>
@@ -148,9 +149,9 @@ export default function QuizManager() {
                             <article key={quiz.id} className="pixel-panel flex flex-col rounded-xl bg-slate-900 p-5">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <h2 className="truncate text-base font-bold text-slate-100">{quiz.name}</h2>
+                                        <h2 className="truncate text-base font-bold text-slate-100">{systemQuestText(quiz.id, "name", quiz.name, t)}</h2>
                                         {quiz.description && (
-                                            <p className="mt-1 line-clamp-2 text-sm text-slate-400">{quiz.description}</p>
+                                            <p className="mt-1 line-clamp-2 text-sm text-slate-400">{systemQuestText(quiz.id, "description", quiz.description, t)}</p>
                                         )}
                                     </div>
                                     <StatusPill published={quiz.published} />
@@ -238,7 +239,7 @@ export default function QuizManager() {
                 danger
                 confirmLabel={t("Delete")}
                 message={
-                    <p>{"“"}{deleting?.name}{t("” disappears from every quest board. Questions stay in the bank and past results stay in the reports.")}</p>
+                    <p>{"“"}{deleting ? systemQuestText(deleting.id, "name", deleting.name, t) : ""}{t("” disappears from every quest board. Questions stay in the bank and past results stay in the reports.")}</p>
                 }
                 onCancel={() => setDeleting(null)}
                 onConfirm={() => {

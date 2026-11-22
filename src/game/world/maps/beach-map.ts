@@ -32,8 +32,9 @@ export const BEACH_MAP: WorldMapDefinition = {
         bridge: "bridge",
     },
 
-    // On the sand at the foot of the right-hand pier (tile 24,17).
-    spawn: { x: 392, y: 280, facing: "down" },
+    // In front of the fisherman’s door on the wide pier (tile 28,33).
+    // Clear of the house footprint above and fish crates to the right.
+    spawn: { x: 456, y: 536, facing: "down" },
 
     objectLayers: [
         "fishman_house",

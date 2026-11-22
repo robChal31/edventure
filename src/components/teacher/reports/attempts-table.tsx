@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import Link from "next/link";
 import { useState } from "react";
 import type { QuizAttempt, Student } from "@/lms/types";
@@ -66,7 +67,7 @@ export default function AttemptsTable({
                                     {showQuiz && (
                                         <td className="px-4 py-2.5">
                                             <Link href={`/teacher/reports/${attempt.quizId}`} className="text-slate-200 hover:text-amber-300">
-                                                {attempt.quizName}
+                                                {systemQuestText(attempt.quizId, "name", attempt.quizName, t)}
                                             </Link>
                                         </td>
                                     )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import QuestionSnippet from "@/components/ui/question-snippet";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -58,7 +59,7 @@ export default function QuizReport({ quizId }: { quizId: string }) {
         <>
             <Link href="/teacher/reports" className="mb-3 inline-block text-xs font-semibold text-sky-300 hover:underline">{t("← All reports")}</Link>
             <PageHeader
-                title={title}
+                title={systemQuestText(quizId, "name", title, t)}
                 description={quiz ? <StatusPill published={quiz.published} /> : t("This quiz was deleted — showing saved results.")}
                 actions={
                     <>

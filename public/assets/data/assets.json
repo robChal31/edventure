@@ -38,6 +38,12 @@
     "path": "assets/images/farm asset pack",
     "files": [
       {
+        "type": "spritesheet",
+        "key": "REWARD_SHINE",
+        "url": "Character/Character/Others/Shine.png",
+        "frameConfig": { "frameWidth": 16, "frameHeight": 16 }
+      },
+      {
         "type": "image",
         "key": "UI_TARGET_MARKERS",
         "url": "UI/Extras.png"

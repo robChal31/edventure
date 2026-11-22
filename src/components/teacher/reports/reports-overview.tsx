@@ -3,6 +3,7 @@
 import FormSelect from "@/components/ui/form-select";
 
 import { useI18n } from "@/i18n/provider";
+import { systemQuestText } from "@/i18n/system-quests";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useAttempts, useHydrated, useQuizzes, useStudents } from "@/lms/hooks";
@@ -76,7 +77,7 @@ export default function ReportsOverview() {
                                 className="pixel-panel rounded-xl bg-slate-900 p-4 transition hover:-translate-y-0.5 hover:bg-slate-800/80"
                             >
                                 <div className="flex items-start justify-between gap-2">
-                                    <span className="font-semibold text-slate-100">{quiz.name}</span>
+                                    <span className="font-semibold text-slate-100">{systemQuestText(quiz.id, "name", quiz.name, t)}</span>
                                     <ScorePill score={stats.averageScore} label={t("avg")} />
                                 </div>
                                 <div className="mt-2 text-xs text-slate-400">
@@ -97,7 +98,7 @@ export default function ReportsOverview() {
                             <option value="">{t("All quizzes")}</option>
                             {quizzes.map((quiz) => (
                                 <option key={quiz.id} value={quiz.id}>
-                                    {quiz.name}
+                                    {systemQuestText(quiz.id, "name", quiz.name, t)}
                                 </option>
                             ))}
                         </FormSelect>

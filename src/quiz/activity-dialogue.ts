@@ -3,7 +3,7 @@ import type { ActivityId } from "./types";
 
 export type DialogueSpeaker = { name: string; role: string; portrait: string };
 export type DialoguePage = { id: string } & (
-    | { kind: "goal" | "tip"; text: string }
+    | { kind: "quick" | "goal" | "tip"; text: string }
     | { kind: "step"; text: string; step: number }
     | { kind: "controls"; controls: ReadonlyArray<readonly [string, string]> }
 );
@@ -16,10 +16,10 @@ export const DIALOGUE_SPEAKERS: Record<ActivityId, DialogueSpeaker> = {
     forest_serenade: { name: "Elyria", role: "Forest guide", portrait: `${portraits}/Mermaid/Premade/Elyria/Portrait.png` },
 };
 
-export const DIALOGUE_HEADINGS = { goal: "Your quest", step: "Step {value0}", controls: "Controls", tip: "Good to know" } as const;
+export const DIALOGUE_HEADINGS = { quick: "Quick guide", goal: "Your quest", step: "Step {value0}", controls: "Controls", tip: "Good to know" } as const;
 export const DIALOGUE_UI_MESSAGES = [
     "Your quest", "Step {value0}", "Good to know", "Back", "Next", "Show text", "Skip guide", "Let's go!",
-    "Dialogue page {current} of {total}", "Read at your own pace.", "Enter / Space",
+    "Dialogue page {current} of {total}", "Read at your own pace.", "Enter / Space", "Details", "Quick guide", "Guide available any time.",
 ] as const;
 export const WORLD_HELP_TIPS = [
     "Axe: trees take 5 chops, then 3 more to clear the wood. Bushes disappear after 3 chops without leaving a stump. Click dropped logs to collect them, then open Inventory to see your bag.",
@@ -35,8 +35,13 @@ function controlPages(controls: ReadonlyArray<readonly [string, string]>): Dialo
 }
 function worldTips(): DialoguePage[] { return WORLD_HELP_TIPS.map((text, index) => ({ id: `tip-${index}`, kind: "tip", text })); }
 
-/** Presentation only: preserve every authored goal, step and control in its original order. */
-export function activityDialoguePages(activity: ActivityDefinition, includeWorldTips = false): DialoguePage[] {
+/** One brief, skippable message. Full rules and controls are opt-in, never an opening obstacle. */
+export function activityDialoguePages(activity: ActivityDefinition): DialoguePage[] {
+    return [{ id: "quick", kind: "quick", text: activity.quickInstruction }];
+}
+
+/** Detailed reference preserves all rules, ordered steps and controls for the Details button. */
+export function activityReferencePages(activity: ActivityDefinition, includeWorldTips = false): DialoguePage[] {
     return [
         { id: "goal", kind: "goal", text: activity.guide.goal },
         ...activity.guide.steps.map((text, index): DialoguePage => ({ id: `step-${index}`, kind: "step", step: index + 1, text })),

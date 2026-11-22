@@ -194,9 +194,15 @@ test("beach: casts from the spawn and from the pier are judged correctly", () =>
     const spawn = BEACH_MAP.spawn!;
     const land = FISHING_CONFIG.castLanding;
 
-    // The spawn is on sand at the foot of the pier.
-    assert.equal(grid.surfaceAt(spawn.x, spawn.y), "land");
-    // Facing down from the spawn the bait hits the pier → no fishing.
+    // The house's native Tiled door is at x + 54, y (tile objects are bottom-anchored).
+    const map = JSON.parse(readFileSync("public/assets/images/levels/beach/beach_map.json", "utf8"));
+    const house = map.layers.find((layer: { name: string }) => layer.name === "fishman_house").objects[0];
+    assert.ok(Math.abs(spawn.x - (house.x + 54)) < 8, "spawn lines up with the original door");
+    assert.ok(spawn.y > house.y + 8 && spawn.y < house.y + 32, "stand in front, never inside the house");
+    assert.equal(spawn.facing, "down");
+    assert.equal(grid.surfaceAt(spawn.x, spawn.y), "bridge");
+    // Both feet corners are on the pier. Casting here still hits wood; walk to its edge first.
+    for (const dx of [-6, 6]) for (const dy of [0, 8]) assert.equal(grid.surfaceAt(spawn.x + dx, spawn.y + dy), "bridge");
     assert.equal(grid.surfaceAt(spawn.x + land.down.x, spawn.y + land.down.y), "bridge");
 
     // Standing on the pier (tile 23/24, row 22) and casting sideways → water.

@@ -12,10 +12,15 @@ const RAW_PROMPTS = new Set([
     "Bonk! The bait hit {obstacle}. Try another spot.",
     "Write between {min} and {max} options.",
 ]);
+// One already-interpolated prompt also existed in mixed-language builds. Keep that exact
+// system-only alias working while all new activities emit canonical English message keys.
+const RAW_PROMPT_ALIASES: Readonly<Record<string, readonly string[]>> = {
+    "Round {round}/{rounds} · {count} crickets. Find ? and use the net!": ["Ronde {round}/{rounds} · {count} cricket. Cari tanda ? dan pakai jaring!"],
+};
 for (const pair of MESSAGE_PAIRS) {
     dictionary.set(pair[0], pair); dictionary.set(pair[1], pair);
     if (!RAW_PROMPTS.has(pair[0])) continue;
-    for (const source of new Set(pair)) {
+    for (const source of new Set([...pair, ...(RAW_PROMPT_ALIASES[pair[0]] ?? [])])) {
         const names: string[] = [];
         let pattern = ""; let offset = 0;
         for (const match of source.matchAll(/\{(\w+)\}/g)) {

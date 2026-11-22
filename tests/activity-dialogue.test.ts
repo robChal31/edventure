@@ -4,15 +4,22 @@ import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ACTIVITIES, getActivity } from "../src/quiz/activities";
-import { activityDialoguePages, dialogueGraphemes, DIALOGUE_HEADINGS, DIALOGUE_SPEAKERS, DIALOGUE_UI_MESSAGES, WORLD_HELP_TIPS } from "../src/quiz/activity-dialogue";
+import { activityDialoguePages, activityReferencePages, dialogueGraphemes, DIALOGUE_HEADINGS, DIALOGUE_SPEAKERS, DIALOGUE_UI_MESSAGES, WORLD_HELP_TIPS } from "../src/quiz/activity-dialogue";
 import { ActivityGuideDetails, ActivityGuideDialog } from "../src/components/ui/activity-guide";
 import GameHelp from "../src/components/student/game-help";
 import { hasTranslation, translate } from "../src/i18n/translate";
 
 for (const activity of ACTIVITIES) {
-    test(`activity dialogue: ${activity.id} preserves every authored goal, ordered step and control without mutation`, () => {
+    test(`activity dialogue: ${activity.id} opens one brief message and preserves every detailed rule on demand`, () => {
         const before = JSON.stringify(activity);
-        const pages = activityDialoguePages(activity);
+        const quick = activityDialoguePages(activity);
+        assert.deepEqual(quick, [{ id: "quick", kind: "quick", text: activity.quickInstruction }]);
+        for (const locale of ["en", "id"] as const) {
+            const text = translate(locale, activity.quickInstruction);
+            assert.ok(text.split(/\s+/).length <= 30, `${locale}: ${text}`);
+            assert.ok(hasTranslation(activity.quickInstruction));
+        }
+        const pages = activityReferencePages(activity);
         assert.deepEqual(pages[0], { id: "goal", kind: "goal", text: activity.guide.goal });
         assert.deepEqual(pages.filter(page => page.kind === "step").map(page => [page.step, page.text]), activity.guide.steps.map((text, index) => [index + 1, text]));
         const controls = pages.filter(page => page.kind === "controls");
@@ -25,10 +32,11 @@ for (const activity of ACTIVITIES) {
     });
 }
 
-test("activity dialogue: Help appends both existing world tips, without replacing any activity instructions", () => {
+test("activity dialogue: optional Help details retain both world tips without lengthening the quick replay", () => {
     for (const activity of ACTIVITIES) {
-        const start = activityDialoguePages(activity);
-        const help = activityDialoguePages(activity, true);
+        const start = activityReferencePages(activity);
+        const help = activityReferencePages(activity, true);
+        assert.equal(activityDialoguePages(activity).length, 1);
         assert.deepEqual(help.slice(0, start.length), start);
         assert.deepEqual(help.slice(start.length).map(page => page.kind === "tip" ? page.text : null), WORLD_HELP_TIPS);
         assert.equal(new Set(help.map(page => page.id)).size, help.length);
@@ -38,7 +46,7 @@ test("activity dialogue: Help appends both existing world tips, without replacin
 test("activity dialogue: variable guide lengths do not drop controls or produce empty pages", () => {
     for (const count of [0, 1, 2, 3, 4, 7, 19]) {
         const controls: Array<[string, string]> = Array.from({ length: count }, (_, index) => [`Key ${index}`, `Action ${index}`]);
-        const pages = activityDialoguePages({ ...getActivity("fishing"), guide: { goal: "Goal", steps: [], controls } });
+        const pages = activityReferencePages({ ...getActivity("fishing"), guide: { goal: "Goal", steps: [], controls } });
         assert.equal(pages.length, 1 + Math.ceil(count / 3));
         assert.deepEqual(pages.flatMap(page => page.kind === "controls" ? page.controls : []), controls);
     }
@@ -88,7 +96,10 @@ test("activity dialogue: all three entry guides render one native dialogue and a
         assert.ok(html.includes('class="activity-dialogue-portrait-art"'));
         assert.ok(html.includes(DIALOGUE_SPEAKERS[activity.id].name));
         assert.ok(html.includes(translate("id", "Skip guide")));
-        assert.ok(html.includes('class="activity-dialogue-button" disabled=""'));
+        assert.ok(html.includes(translate("id", "Details")));
+        assert.ok(html.includes(translate("id", "Guide available any time.")));
+        assert.equal(html.includes('class="activity-dialogue-counter'), false);
+        assert.equal(html.includes('class="activity-dialogue-button" disabled=""'), false);
         assert.equal(renderToStaticMarkup(createElement(ActivityGuideDialog, { ...props, open: false })), "");
         assert.ok(renderToStaticMarkup(createElement(GameHelp, props)).includes("<dialog"));
     }
